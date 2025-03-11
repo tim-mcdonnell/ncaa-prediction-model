@@ -2,27 +2,32 @@
 
 ## High-Level Architecture
 
-The NCAA Basketball Prediction Model is built with a modular architecture that separates concerns and allows for independent development and testing of components.
+The NCAA Basketball Prediction Model is built with a modular pipeline architecture that separates concerns and allows for independent development and testing of components.
 
 ```mermaid
 graph TD
     subgraph Data Layer
-        A[ESPN API Client] --> B[Data Collection]
-        B --> C[Data Storage]
-        C --> D[Data Validation]
+        A[ESPN API Client] --> B[Collection Pipeline]
+        B --> C[Parquet Storage]
+        C --> D[Processing Pipeline]
     end
     
     subgraph Processing Layer
-        D --> E[Feature Engineering]
+        D --> E[Feature Pipeline]
         E --> F[Model Training]
         F --> G[Model Evaluation]
     end
     
     subgraph Application Layer
-        G --> H[Prediction Engine]
+        G --> H[Prediction Pipeline]
         H --> I[Visualization Dashboard]
         I --> J[API Endpoints]
     end
+
+    K[Daily Update Pipeline] --> B
+    K --> D
+    K --> E
+    K --> H
 ```
 
 ## Component Breakdown
@@ -30,52 +35,65 @@ graph TD
 ### Data Layer
 
 - **ESPN API Client**: Handles communication with the ESPN API, including rate limiting and error handling.
-- **Data Collection**: Orchestrates data retrieval and synchronization.
-- **Data Storage**: Manages the database schema and storage operations.
-- **Data Validation**: Ensures data quality and handles missing or inconsistent data.
+- **Collection Pipeline**: Orchestrates data retrieval and synchronization, with support for incremental updates.
+- **Parquet Storage**: Stores data in columnar Parquet files organized by processing stage.
+- **Processing Pipeline**: Cleans and transforms raw data into standardized formats.
 
 ### Processing Layer
 
-- **Feature Engineering**: Transforms raw data into features suitable for modeling.
+- **Feature Pipeline**: Calculates 60+ basketball metrics with automatic dependency resolution.
 - **Model Training**: Builds and optimizes prediction models.
 - **Model Evaluation**: Assesses model performance with appropriate metrics.
 
 ### Application Layer
 
-- **Prediction Engine**: Generates predictions for upcoming games.
+- **Prediction Pipeline**: Generates predictions for upcoming games.
 - **Visualization Dashboard**: Provides interactive visualizations of data and predictions.
 - **API Endpoints**: Offers programmatic access to predictions and data.
+
+### Cross-Cutting Concerns
+
+- **Daily Update Pipeline**: Combines all pipelines for efficient daily updates during basketball season.
+- **Configuration Management**: Provides centralized configuration for all components.
+- **Logging and Monitoring**: Tracks pipeline execution and performance.
 
 ## Technical Decisions
 
 ### Storage Strategy
 
-We're starting with SQLite for simplicity during development but with a database abstraction layer that will allow us to migrate to PostgreSQL if needed for scaling. The schema is normalized to optimize for:
+We use a Parquet-first approach for data storage, which provides:
 
-- Data integrity
-- Query performance for feature extraction
-- Support for time-series analysis
+- **Columnar Format**: Optimized for analytical queries and feature calculation
+- **Efficient Compression**: Reduced storage requirements
+- **Schema Evolution**: Flexibility as data formats evolve
+- **Partitioning**: Organization by season, team, or other dimensions
+- **Direct Integration**: Seamless use with Polars for data processing
 
-### Model Pipeline
+### Pipeline Architecture
 
-The model pipeline is designed with scikit-learn's pipeline API to ensure:
+Our pipeline architecture is designed for:
 
-- Consistent preprocessing steps
-- Reproducible model training
-- Proper cross-validation
-- Model persistence
+- **Incremental Processing**: Only update what has changed
+- **Dependency Management**: Calculate features in the correct order
+- **Configuration Management**: Flexible control of pipeline behavior
+- **Error Handling**: Robust recovery from failures
+- **Progress Tracking**: Visibility into long-running processes
+- **Simple CLI**: Easy execution of pipeline components
 
-### Visualization Approach
+### Data Processing
 
-The dashboard is built with Dash and Plotly to provide:
+We use Polars for all data processing, which provides:
 
-- Interactive visualizations
-- Real-time filtering and exploration
-- Shareable insights
-- Responsive design
+- **Performance**: 10-100x faster than traditional pandas for our workloads
+- **Memory Efficiency**: Better handling of large datasets
+- **Expressive API**: Clean, functional data transformation
+- **Lazy Evaluation**: Optimized execution plans
+- **Parallelism**: Automatic use of multiple cores
 
 ## Future Considerations
 
-- **Scalability**: The current architecture can handle the historical data load, but may need optimization if expanded to include more granular data.
-- **Real-time Processing**: The system is currently batch-oriented but could be extended for real-time predictions.
-- **Deployment**: The architecture supports containerization for cloud deployment. 
+- **Feature Evolution**: The architecture supports adding new basketball metrics over time
+- **Model Experimentation**: Pipeline design enables testing different modeling approaches
+- **Visualization Extensions**: The dashboard can be expanded with new views and insights
+- **Real-time Updates**: The system could be extended for real-time predictions during games
+- **Cloud Deployment**: The architecture supports containerization for cloud deployment 

@@ -17,11 +17,11 @@ This project leverages a modern Python-based technology stack, optimized for dat
 
 | Category | Technologies | Purpose |
 |----------|--------------|---------|
-| **Data Analysis** | Pandas, NumPy | Data manipulation and numerical computing |
-| **Data Storage** | SQLite (dev), PostgreSQL (optional) | Relational database storage |
-| **API Integration** | Requests | HTTP client for API communication |
+| **Data Analysis** | Polars, NumPy | Data manipulation and numerical computing |
+| **Data Storage** | Parquet | Column-oriented data storage format |
+| **API Integration** | Requests, aiohttp | HTTP clients for API communication |
 | **Data Validation** | Pydantic | Data validation and parsing |
-| **ORM** | SQLAlchemy | Database ORM and query interface |
+| **Pipeline Orchestration** | Custom pipeline modules | Data flow orchestration |
 
 ## Machine Learning Stack
 
@@ -62,18 +62,18 @@ We chose [uv](https://github.com/astral-sh/uv) as our package manager because:
 - Works seamlessly with pyproject.toml
 - Offers excellent caching with a global package cache
 
-### SQLite/PostgreSQL for Data Storage
+### Parquet and Polars for Data Storage and Processing
 
-We start with SQLite for development because:
+We chose a Parquet-first approach with Polars because:
 
-- Zero configuration setup
-- File-based for easy development
-- Transactions and ACID compliance
-
-Our design allows for migration to PostgreSQL when needed for:
-- Improved concurrent access
-- Better performance at scale
-- Advanced indexing capabilities
+- **Columnar Storage**: Parquet's columnar format is ideal for analytical workloads
+- **Compression**: Efficient storage with high compression ratios
+- **Performance**: Polars provides extremely fast data processing (10-100x faster than Pandas)
+- **Memory Efficiency**: Better memory usage for large datasets
+- **Simplicity**: Direct file-based storage without database overhead
+- **Integration**: Excellent support for Parquet files in Python data ecosystem
+- **Arrow Compatibility**: Built on Apache Arrow for interoperability
+- **Functional Pipelines**: Clean, expressive data processing with Polars
 
 ### Dash/Plotly for Visualization
 
@@ -82,7 +82,7 @@ We chose Dash and Plotly for our dashboard because:
 - Pure Python development (no JavaScript required)
 - Interactive visualizations with minimal code
 - Responsive design for various screen sizes
-- Integration with pandas data structures
+- Integration with Polars data structures
 
 ### scikit-learn for Machine Learning
 
@@ -91,4 +91,4 @@ We chose scikit-learn as our primary ML framework because:
 - Consistent API across algorithms
 - Excellent pipeline abstractions
 - Strong community and documentation
-- Seamless integration with pandas and NumPy 
+- Seamless integration with NumPy and our data pipeline 
