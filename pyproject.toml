@@ -43,6 +43,14 @@ dev = [
     
     # Type checking
     "mypy>=1.5.1",
+    
+    # Documentation
+    "mkdocs>=1.5.3",
+    "mkdocs-material>=9.4.6",
+    "mkdocstrings>=0.23.0",
+    "mkdocstrings-python>=1.7.3",
+    "mkdocs-gen-files>=0.5.0",
+    "mkdocs-literate-nav>=0.6.1",
 ]
 
 [build-system]

@@ -2,6 +2,8 @@
 
 This document tracks the key milestones for the NCAA Basketball Prediction Model project.
 
+> **Note**: Detailed milestone documentation is available in the MkDocs site. After pushing changes to the main branch, the documentation will be automatically deployed to GitHub Pages.
+
 ## Milestone 1: Data Collection and Storage
 **Status**: 🔄 In Progress
 

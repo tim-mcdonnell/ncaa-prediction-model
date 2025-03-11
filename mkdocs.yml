@@ -1,0 +1,92 @@
+site_name: NCAA Basketball Prediction Model
+site_description: Machine learning model to predict NCAA men's basketball game outcomes
+site_author: Your Name
+repo_url: https://github.com/yourusername/ncaa-prediction-model
+repo_name: NCAA Prediction Model
+
+theme:
+  name: material
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.copy
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          selection:
+            docstring_style: google
+          rendering:
+            show_source: true
+  - gen-files:
+      scripts:
+        - docs/gen_ref_pages.py
+  - literate-nav:
+      nav_file: SUMMARY.md
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - footnotes
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+nav:
+  - Home: index.md
+  - Project Overview: 
+    - Overview: overview/index.md
+    - Architecture: overview/architecture.md
+    - Tech Stack: overview/tech-stack.md
+  - Milestones:
+    - Overview: milestones/index.md
+    - Data Collection: milestones/milestone1-data-collection.md
+    - Data Validation: milestones/milestone2-data-validation.md
+    - Feature Engineering: milestones/milestone3-feature-engineering.md
+    - Model Development: milestones/milestone4-model-development.md
+    - Backtesting Framework: milestones/milestone5-backtesting.md
+    - Visualization: milestones/milestone6-visualization.md
+    - Deployment: milestones/milestone7-deployment.md
+  - Development:
+    - Setup: development/setup.md
+    - Contributing: development/contributing.md
+    - Code Standards: development/code-standards.md
+    - Templates: templates/index.md
+  - API Reference: reference/ 
