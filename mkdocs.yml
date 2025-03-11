@@ -1,7 +1,7 @@
 site_name: NCAA Basketball Prediction Model
 site_description: Machine learning model to predict NCAA men's basketball game outcomes
 site_author: Your Name
-repo_url: https://github.com/yourusername/ncaa-prediction-model
+repo_url: https://github.com/tim-mcdonnell/ncaa-prediction-model
 repo_name: NCAA Prediction Model
 
 theme:
