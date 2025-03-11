@@ -83,6 +83,9 @@ nav:
     - Backtesting Framework: milestones/milestone5-backtesting.md
     - Visualization: milestones/milestone6-visualization.md
     - Deployment: milestones/milestone7-deployment.md
+  - Data:
+    - Collection:
+      - ESPN API Integration: data/collection/espn-api-integration.md
   - Development:
     - Setup: development/setup.md
     - Contributing: development/contributing.md
