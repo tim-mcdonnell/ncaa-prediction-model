@@ -20,7 +20,7 @@
     
     
       
-        <title>ADR-002: Analytics-Focused Data Storage with DuckDB - NCAA Basketball Prediction Model</title>
+        <title>AI Coding Agent Guide - NCAA Basketball Prediction Model</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#adr-002-analytics-focused-data-storage-with-duckdb" class="md-skip">
+        <a href="#ai-coding-agent-guide" class="md-skip">
           Skip to content
         </a>
       
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              ADR-002: Analytics-Focused Data Storage with DuckDB
+              AI Coding Agent Guide
             
           </span>
         </div>
@@ -672,7 +672,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../development/setup.md" class="md-nav__link">
+      <a href="../setup.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -694,7 +694,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../development/contributing.md" class="md-nav__link">
+      <a href="../contributing.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -716,7 +716,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../development/code-standards/" class="md-nav__link">
+      <a href="../code-standards/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -838,112 +838,55 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#status" class="md-nav__link">
+  <a href="#quick-reference" class="md-nav__link">
     <span class="md-ellipsis">
-      Status
+      Quick Reference
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#date" class="md-nav__link">
+  <a href="#project-documentation" class="md-nav__link">
     <span class="md-ellipsis">
-      Date
+      Project Documentation
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#context" class="md-nav__link">
+  <a href="#architecture-overview" class="md-nav__link">
     <span class="md-ellipsis">
-      Context
+      Architecture Overview
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#decision" class="md-nav__link">
+  <a href="#development-practices" class="md-nav__link">
     <span class="md-ellipsis">
-      Decision
+      Development Practices
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Decision">
+    <nav class="md-nav" aria-label="Development Practices">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#key-components" class="md-nav__link">
+  <a href="#test-driven-development" class="md-nav__link">
     <span class="md-ellipsis">
-      Key Components:
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Key Components:">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-file-storage-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. File Storage Structure
+      Test-Driven Development
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-repository-pattern-implementation" class="md-nav__link">
+  <a href="#progressive-abstraction" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Repository Pattern Implementation
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-domain-specific-repositories" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Domain-Specific Repositories
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#consequences" class="md-nav__link">
-    <span class="md-ellipsis">
-      Consequences
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Consequences">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#benefits" class="md-nav__link">
-    <span class="md-ellipsis">
-      Benefits
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#challenges" class="md-nav__link">
-    <span class="md-ellipsis">
-      Challenges
+      Progressive Abstraction
     </span>
   </a>
   
@@ -955,37 +898,55 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#alternatives-considered" class="md-nav__link">
+  <a href="#common-mistakes-to-avoid" class="md-nav__link">
     <span class="md-ellipsis">
-      Alternatives Considered
+      Common Mistakes to Avoid
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Alternatives Considered">
+    <nav class="md-nav" aria-label="Common Mistakes to Avoid">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#postgresql" class="md-nav__link">
+  <a href="#package-management" class="md-nav__link">
     <span class="md-ellipsis">
-      PostgreSQL
+      Package Management
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#sqlite" class="md-nav__link">
+  <a href="#data-processing" class="md-nav__link">
     <span class="md-ellipsis">
-      SQLite
+      Data Processing
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#pure-parquet-files-pandas" class="md-nav__link">
+  <a href="#data-storage" class="md-nav__link">
     <span class="md-ellipsis">
-      Pure Parquet Files + Pandas
+      Data Storage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-organization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Organization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Error Handling
     </span>
   </a>
   
@@ -997,9 +958,60 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#references" class="md-nav__link">
+  <a href="#pipeline-implementation-guidelines" class="md-nav__link">
     <span class="md-ellipsis">
-      References
+      Pipeline Implementation Guidelines
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pipeline Implementation Guidelines">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-collection-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Collection Pipeline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-feature-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Feature Pipeline
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#code-contribution-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Contribution Tips
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#need-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      Need Help?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remember" class="md-nav__link">
+    <span class="md-ellipsis">
+      Remember
     </span>
   </a>
   
@@ -1024,181 +1036,183 @@
   
 
 
-<h1 id="adr-002-analytics-focused-data-storage-with-duckdb">ADR-002: Analytics-Focused Data Storage with DuckDB</h1>
-<h2 id="status">Status</h2>
-<p>Accepted</p>
-<h2 id="date">Date</h2>
-<p>2023-05-22</p>
-<h2 id="context">Context</h2>
-<p>The NCAA Basketball Prediction Model requires a data storage solution that can:</p>
-<ol>
-<li>Store raw data collected from ESPN APIs (games, teams, seasons, etc.)</li>
-<li>Support efficient analytical queries for feature engineering</li>
-<li>Integrate well with data processing and visualization components</li>
-<li>Handle the expected data volume (22+ years of NCAA basketball data)</li>
-<li>Provide good performance for complex statistical calculations</li>
-<li>Be reasonably simple to set up and maintain</li>
-</ol>
-<p>We need to consider the full lifecycle of our data pipeline from collection through feature engineering to visualization, while allowing for future extensibility.</p>
-<h2 id="decision">Decision</h2>
-<p>We will implement an analytics-focused data storage architecture with the following components:</p>
-<ol>
-<li><strong>Primary Database</strong>: DuckDB for data storage and analytical queries</li>
-<li><strong>File-Based Storage Layer</strong>: Organized storage of raw data and optimized formats</li>
-<li><strong>Repository Abstraction Layer</strong>: Database-agnostic interfaces for data access</li>
-</ol>
-<p>The architecture will use:
-- <strong>DuckDB</strong> as the primary database for storing processed data and computing features
-- <strong>Parquet files</strong> for efficient, columnar storage of larger datasets
-- <strong>Repository pattern</strong> to abstract database implementation details
-- <strong>SQLAlchemy</strong> (optionally) for more complex ORM needs</p>
-<h3 id="key-components">Key Components:</h3>
-<h4 id="1-file-storage-structure">1. File Storage Structure</h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>data/
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── raw/                  # Raw data from ESPN API
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│   ├── games/            # Game data organized by season
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│   │   ├── 2000/
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│   │   │   ├── game_123456.json
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│   │   │   └── ...
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│   │   ├── 2001/
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│   │   └── ...
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   ├── teams/            # Team data
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   └── ...               # Other raw data
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>├── processed/            # Processed data in efficient formats
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── games.parquet     # Cleaned and processed game data
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   ├── teams.parquet     # Team information
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   └── ...               # Other processed datasets
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>└── features/             # Engineered features for modeling
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    ├── team_ratings.parquet
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    ├── game_features.parquet
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    └── ...
-</code></pre></div>
-<h4 id="2-repository-pattern-implementation">2. Repository Pattern Implementation</h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># src/data/storage/repository.py</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">Repository</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base repository defining the interface.&quot;&quot;&quot;</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="nd">@abstractmethod</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">):</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Save an entity to the repository.&quot;&quot;&quot;</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        <span class="k">pass</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="nd">@abstractmethod</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">find_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">):</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Find an entity by its ID.&quot;&quot;&quot;</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        <span class="k">pass</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="nd">@abstractmethod</span>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">find_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Find all entities matching the given filters.&quot;&quot;&quot;</span>
-<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>        <span class="k">pass</span>
-<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>
-<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="c1"># Concrete implementation for DuckDB</span>
-<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="k">class</span><span class="w"> </span><span class="nc">DuckDBRepository</span><span class="p">(</span><span class="n">Repository</span><span class="p">):</span>
-<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;DuckDB implementation of repository.&quot;&quot;&quot;</span>
-<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>
-<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_path</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
-<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="n">duckdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">db_path</span><span class="p">)</span>
-<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">table_name</span> <span class="o">=</span> <span class="n">table_name</span>
-<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>
-<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">):</span>
-<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>        <span class="c1"># Implementation for DuckDB</span>
-<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>        <span class="k">pass</span>
-<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>
-<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">find_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">):</span>
-<a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>        <span class="c1"># Implementation for DuckDB</span>
-<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a>        <span class="k">pass</span>
-<a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>
-<a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">find_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>        <span class="c1"># Implementation for DuckDB</span>
-<a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>        <span class="k">pass</span>
-</code></pre></div>
-<h4 id="3-domain-specific-repositories">3. Domain-Specific Repositories</h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># src/data/storage/game_repository.py</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">GameRepository</span><span class="p">(</span><span class="n">Repository</span><span class="p">):</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Repository for game data with domain-specific methods.&quot;&quot;&quot;</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="nd">@abstractmethod</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">find_by_season</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">season</span><span class="p">):</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Find all games in a specific season.&quot;&quot;&quot;</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>        <span class="k">pass</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="nd">@abstractmethod</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">find_by_team</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">team_id</span><span class="p">,</span> <span class="n">season</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Find all games for a specific team.&quot;&quot;&quot;</span>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>        <span class="k">pass</span>
-<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
-<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    <span class="nd">@abstractmethod</span>
-<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">find_matchups</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">team1_id</span><span class="p">,</span> <span class="n">team2_id</span><span class="p">):</span>
-<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Find all games between two teams.&quot;&quot;&quot;</span>
-<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>        <span class="k">pass</span>
-<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>
-<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="c1"># Concrete implementation for DuckDB</span>
-<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="k">class</span><span class="w"> </span><span class="nc">DuckDBGameRepository</span><span class="p">(</span><span class="n">GameRepository</span><span class="p">):</span>
-<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>    <span class="c1"># Implementations of the abstract methods</span>
-<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>    <span class="k">pass</span>
-</code></pre></div>
-<h2 id="consequences">Consequences</h2>
-<h3 id="benefits">Benefits</h3>
-<ol>
-<li><strong>Analytical Performance</strong>: DuckDB is optimized for the analytical queries we'll use in feature engineering</li>
-<li><strong>Simplicity</strong>: No need to run a separate database server or manage connection pools</li>
-<li><strong>Pandas Integration</strong>: Excellent integration with Pandas for data science workflows</li>
-<li><strong>SQL Support</strong>: Full SQL support with advanced analytical functions</li>
-<li><strong>File-Based</strong>: Easy to back up, version control, and share</li>
-<li><strong>Migration Path</strong>: The repository abstraction allows for switching to PostgreSQL if needed later</li>
-</ol>
-<h3 id="challenges">Challenges</h3>
-<ol>
-<li><strong>Limited Concurrency</strong>: DuckDB has more limited concurrency than PostgreSQL</li>
-<li><strong>Maturity</strong>: DuckDB is less mature than PostgreSQL, though it's rapidly developing</li>
-<li><strong>Administration Tools</strong>: Fewer administration tools compared to PostgreSQL</li>
-<li><strong>Ecosystem</strong>: Smaller ecosystem and community compared to PostgreSQL</li>
-</ol>
-<h2 id="alternatives-considered">Alternatives Considered</h2>
-<h3 id="postgresql">PostgreSQL</h3>
-<p><strong>Benefits</strong>:
-- Mature, widely-used database with extensive tooling
-- Excellent concurrency support
-- Advanced features like full-text search and stored procedures
-- Strong ecosystem and community support</p>
-<p><strong>Drawbacks</strong>:
-- Requires running a separate database server
-- More complex to set up and maintain
-- OLTP-oriented design (although with good analytical capabilities)
-- Heavier operational burden for a data science project</p>
-<p><strong>Rejection Rationale</strong>: While PostgreSQL is an excellent database, its operational complexity is unnecessary for our current needs. The added setup and maintenance burden doesn't justify the benefits for a primarily analytical, single-user workload.</p>
-<h3 id="sqlite">SQLite</h3>
-<p><strong>Benefits</strong>:
-- Simple, file-based database
-- Zero configuration
-- Good integration with Python</p>
-<p><strong>Drawbacks</strong>:
-- Limited analytical query performance
-- Less suitable for larger datasets
-- Limited concurrency
-- Missing advanced analytical functions</p>
-<p><strong>Rejection Rationale</strong>: DuckDB offers all the simplicity benefits of SQLite but with vastly superior analytical performance and features.</p>
-<h3 id="pure-parquet-files-pandas">Pure Parquet Files + Pandas</h3>
-<p><strong>Benefits</strong>:
-- Extremely simple file-based storage
-- Direct integration with Pandas
-- No SQL knowledge required</p>
-<p><strong>Drawbacks</strong>:
-- Limited query capabilities compared to SQL
-- Potential memory issues with large datasets
-- Less structured approach to data management</p>
-<p><strong>Rejection Rationale</strong>: While this approach works for smaller projects, our complex feature engineering will benefit significantly from SQL's expressive power and DuckDB's optimized query engine.</p>
-<h2 id="references">References</h2>
+<h1 id="ai-coding-agent-guide">AI Coding Agent Guide</h1>
+<p>This guide is designed for AI coding agents working on the NCAA Basketball Prediction Model. It provides a high-level overview of the project architecture, development practices, and common pitfalls to avoid.</p>
+<h2 id="quick-reference">Quick Reference</h2>
+<table>
+<thead>
+<tr>
+<th><strong>Category</strong></th>
+<th><strong>Key Points</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Project Structure</strong></td>
+<td>Pipeline-based architecture, Parquet-first storage</td>
+</tr>
+<tr>
+<td><strong>Development Approach</strong></td>
+<td>Test-Driven Development, Progressive Abstraction</td>
+</tr>
+<tr>
+<td><strong>Package Management</strong></td>
+<td>Use <code>uv</code> (not pip) for dependency management</td>
+</tr>
+<tr>
+<td><strong>Data Processing</strong></td>
+<td>Use Polars (not pandas) for all data manipulation</td>
+</tr>
+<tr>
+<td><strong>Storage</strong></td>
+<td>Direct Parquet files (no SQL database)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="project-documentation">Project Documentation</h2>
+<p>Start by familiarizing yourself with these key documents:</p>
 <ul>
-<li><a href="https://duckdb.org/docs/">DuckDB Documentation</a></li>
-<li><a href="https://parquet.apache.org/">Parquet Format</a></li>
-<li><a href="https://martinfowler.com/eaaCatalog/repository.html">Repository Pattern</a></li>
-<li><a href="https://motherduck.com/blog/analytics-engineering-duckdb/">Analytics Engineering with DuckDB</a></li>
-<li><a href="https://motherduck.com/blog/duckdb-vs-postgres/">DuckDB vs PostgreSQL</a></li>
-<li><a href="../adr-001-modular-data-collection/">Related ADR: ADR-001 Modular Data Collection Architecture</a> </li>
+<li><strong><a href="../project-structure/">Project Structure</a></strong>: Overview of directory organization</li>
+<li><strong><a href="../pipeline-architecture/">Pipeline Architecture</a></strong>: Core data flow design</li>
+<li><strong><a href="../modularity-guidelines/">Modularity Guidelines</a></strong>: Code organization principles</li>
+<li><strong><a href="../test-strategy/">Test Strategy</a></strong>: Testing approach and practices</li>
+</ul>
+<p>For implementation, refer to:</p>
+<ul>
+<li><strong><a href="../implementation-plan/">Implementation Plan</a></strong>: Phase-by-phase development roadmap</li>
+</ul>
+<h2 id="architecture-overview">Architecture Overview</h2>
+<p>This project uses a <strong>pipeline architecture</strong> with these key components:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Collection Pipeline → Processing Pipeline → Feature Pipeline → Prediction Pipeline
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                                                      ↓
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>                                            Daily Update Pipeline
+</code></pre></div>
+<ol>
+<li><strong>Collection Pipeline</strong>: Fetches data from ESPN APIs</li>
+<li><strong>Processing Pipeline</strong>: Transforms raw data into standardized formats</li>
+<li><strong>Feature Pipeline</strong>: Calculates 60+ basketball metrics with dependency resolution</li>
+<li><strong>Prediction Pipeline</strong>: Generates predictions using the latest features and trained models</li>
+<li><strong>Daily Update Pipeline</strong>: Combines all pipelines for efficient daily updates during basketball season</li>
+</ol>
+<p><strong>Key Implementation Files</strong>:
+- <code>/src/pipelines/base_pipeline.py</code>: Base class with shared functionality
+- <code>/src/pipelines/collection_pipeline.py</code>: Data collection orchestration
+- <code>/src/pipelines/processing_pipeline.py</code>: Data transformation orchestration
+- <code>/src/pipelines/feature_pipeline.py</code>: Feature calculation orchestration
+- <code>/src/pipelines/prediction_pipeline.py</code>: Prediction orchestration
+- <code>/src/pipelines/daily_update.py</code>: Combined daily update pipeline</p>
+<h2 id="development-practices">Development Practices</h2>
+<h3 id="test-driven-development">Test-Driven Development</h3>
+<ul>
+<li><strong>Write tests first</strong>: Create tests before implementing functionality</li>
+<li><strong>Test fixtures</strong>: Use fixtures in <code>/tests/fixtures/</code> for consistent test data</li>
+<li><strong>Test structure</strong>: Match test directory structure to source code</li>
+</ul>
+<h3 id="progressive-abstraction">Progressive Abstraction</h3>
+<ul>
+<li>Start with concrete implementations and refactor to abstractions as patterns emerge</li>
+<li>Focus on functionality first, then optimize for reusability</li>
+<li>Document design decisions when introducing abstractions</li>
+</ul>
+<h2 id="common-mistakes-to-avoid">Common Mistakes to Avoid</h2>
+<h3 id="package-management">Package Management</h3>
+<p>❌ <strong>NEVER use pip directly</strong><br />
+✅ <strong>ALWAYS use uv</strong>: <code>uv pip install -e .</code></p>
+<p>Package management commands:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Install dependencies</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Add a new dependency (updates pyproject.toml automatically)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>package_name
+</code></pre></div></p>
+<h3 id="data-processing">Data Processing</h3>
+<p>❌ <strong>NEVER use pandas for data processing</strong><br />
+✅ <strong>ALWAYS use Polars</strong>: </p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Correct approach</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">df</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;path/to/file.parquet&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;column&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">))</span>
+</code></pre></div>
+<h3 id="data-storage">Data Storage</h3>
+<p>❌ <strong>NEVER create database abstractions or custom ORMs</strong><br />
+✅ <strong>ALWAYS use Parquet files directly</strong>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Correct approach - use the storage utilities</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">src.data.storage.parquet_io</span><span class="w"> </span><span class="kn">import</span> <span class="n">save_parquet</span><span class="p">,</span> <span class="n">load_parquet</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Loading data</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">df</span> <span class="o">=</span> <span class="n">load_parquet</span><span class="p">(</span><span class="n">data_category</span><span class="o">=</span><span class="s2">&quot;raw&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;games/2023/games&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># Saving data</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">save_parquet</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">data_category</span><span class="o">=</span><span class="s2">&quot;processed&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;games_unified&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="code-organization">Code Organization</h3>
+<p>❌ <strong>NEVER add code to the wrong module</strong><br />
+✅ <strong>ALWAYS follow the project structure</strong>:</p>
+<ul>
+<li>Data collection code goes in <code>src/data/collection/</code></li>
+<li>Feature calculations go in <code>src/features/</code></li>
+<li>Pipeline orchestration goes in <code>src/pipelines/</code></li>
+</ul>
+<h3 id="error-handling">Error Handling</h3>
+<p>❌ <strong>NEVER use naked try/except blocks</strong><br />
+✅ <strong>ALWAYS handle specific exceptions and use the resilience patterns</strong>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Correct approach</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">src.utils.resilience.retry</span><span class="w"> </span><span class="kn">import</span> <span class="n">retry</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="nd">@retry</span><span class="p">(</span><span class="n">max_attempts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">backoff_factor</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch_data</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="c1"># Implementation</span>
+</code></pre></div>
+<h2 id="pipeline-implementation-guidelines">Pipeline Implementation Guidelines</h2>
+<h3 id="1-collection-pipeline">1. Collection Pipeline</h3>
+<ul>
+<li>Use the ESPN client in <code>src/data/collection/espn/client.py</code></li>
+<li>Follow the incremental update pattern for efficient daily updates</li>
+<li>Store raw data in Parquet files in the <code>data/raw/</code> directory</li>
+</ul>
+<h3 id="2-feature-pipeline">2. Feature Pipeline</h3>
+<ul>
+<li>Implement features as classes that inherit from <code>src.features.base.Feature</code></li>
+<li>Specify dependencies and required data for automatic resolution</li>
+<li>Use pure functions for data transformations</li>
+<li>Register features in the feature registry</li>
+</ul>
+<p>Example feature implementation:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">src.features.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Feature</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">OffensiveEfficiencyFeature</span><span class="p">(</span><span class="n">Feature</span><span class="p">):</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="nb">id</span> <span class="o">=</span> <span class="s2">&quot;team_offensive_efficiency&quot;</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Team Offensive Efficiency&quot;</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;team_possessions&quot;</span><span class="p">]</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">required_data</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;games&quot;</span><span class="p">,</span> <span class="s2">&quot;teams&quot;</span><span class="p">]</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>        <span class="c1"># Implementation using Polars</span>
+</code></pre></div></p>
+<h2 id="code-contribution-tips">Code Contribution Tips</h2>
+<ol>
+<li><strong>Check existing implementations</strong> before creating new patterns</li>
+<li><strong>Reference the pipeline architecture documentation</strong> for flow design</li>
+<li><strong>Use functional patterns</strong> for data transformations</li>
+<li><strong>Write tests for all code</strong> following the test strategy</li>
+<li><strong>Document non-obvious design decisions</strong> in comments</li>
+</ol>
+<h2 id="need-help">Need Help?</h2>
+<p>If you encounter anything not covered in this guide:</p>
+<ol>
+<li><strong>Start with the project documentation</strong> in the <code>/docs/</code> directory</li>
+<li><strong>Refer to the code structure</strong> to understand existing patterns</li>
+<li><strong>Check test implementations</strong> for usage examples</li>
+<li><strong>Ask for clarification</strong> before implementing significant changes</li>
+</ol>
+<h2 id="remember">Remember</h2>
+<ul>
+<li>The project prioritizes <strong>simplicity</strong> and <strong>clarity</strong> over complex abstractions</li>
+<li><strong>Test everything</strong> thoroughly through both unit and integration tests</li>
+<li><strong>Document your changes</strong> to help future developers (including other AI agents)</li>
+<li><strong>Follow the Parquet-first approach</strong> and pipeline architecture for all implementations </li>
 </ul>
 
 

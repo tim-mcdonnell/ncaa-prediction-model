@@ -20,7 +20,7 @@
     
     
       
-        <title>ADR-001: Modular Data Collection Architecture - NCAA Basketball Prediction Model</title>
+        <title>Project Structure - NCAA Basketball Prediction Model</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#adr-001-modular-data-collection-architecture" class="md-skip">
+        <a href="#project-structure" class="md-skip">
           Skip to content
         </a>
       
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              ADR-001: Modular Data Collection Architecture
+              Project Structure
             
           </span>
         </div>
@@ -672,7 +672,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../development/setup.md" class="md-nav__link">
+      <a href="../setup.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -694,7 +694,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../development/contributing.md" class="md-nav__link">
+      <a href="../contributing.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -716,7 +716,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../development/code-standards/" class="md-nav__link">
+      <a href="../code-standards/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -838,64 +838,64 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#status" class="md-nav__link">
+  <a href="#root-directory" class="md-nav__link">
     <span class="md-ellipsis">
-      Status
+      Root Directory
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#date" class="md-nav__link">
+  <a href="#configuration-files" class="md-nav__link">
     <span class="md-ellipsis">
-      Date
+      Configuration Files
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#context" class="md-nav__link">
+  <a href="#src-directory" class="md-nav__link">
     <span class="md-ellipsis">
-      Context
+      src/ Directory
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#decision" class="md-nav__link">
-    <span class="md-ellipsis">
-      Decision
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#consequences" class="md-nav__link">
-    <span class="md-ellipsis">
-      Consequences
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Consequences">
+    <nav class="md-nav" aria-label="src/ Directory">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#benefits" class="md-nav__link">
+  <a href="#data-module" class="md-nav__link">
     <span class="md-ellipsis">
-      Benefits
+      Data Module
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#challenges" class="md-nav__link">
+  <a href="#features-module" class="md-nav__link">
     <span class="md-ellipsis">
-      Challenges
+      Features Module
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipelines-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pipelines Module
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utils-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      Utils Module
     </span>
   </a>
   
@@ -907,42 +907,45 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#alternatives-considered" class="md-nav__link">
+  <a href="#tests-directory" class="md-nav__link">
     <span class="md-ellipsis">
-      Alternatives Considered
+      tests/ Directory
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Alternatives Considered">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#simple-procedural-approach" class="md-nav__link">
-    <span class="md-ellipsis">
-      Simple Procedural Approach
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#framework-based-approach-scrapy" class="md-nav__link">
-    <span class="md-ellipsis">
-      Framework-Based Approach (Scrapy)
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#references" class="md-nav__link">
+  <a href="#data-directory" class="md-nav__link">
     <span class="md-ellipsis">
-      References
+      data/ Directory
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configs-directory" class="md-nav__link">
+    <span class="md-ellipsis">
+      configs/ Directory
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      Design Principles
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Notes
     </span>
   </a>
   
@@ -967,81 +970,198 @@
   
 
 
-<h1 id="adr-001-modular-data-collection-architecture">ADR-001: Modular Data Collection Architecture</h1>
-<h2 id="status">Status</h2>
-<p>Accepted</p>
-<h2 id="date">Date</h2>
-<p>2023-05-15</p>
-<h2 id="context">Context</h2>
-<p>The NCAA Basketball Prediction Model requires retrieving data from various sources, primarily from ESPN's undocumented API endpoints that return JSON data. However, the architecture should accommodate future expansion to include other data sources such as:</p>
-<ul>
-<li>Web scraping of HTML content</li>
-<li>File-based data import (CSV, Excel)</li>
-<li>Third-party APIs and services</li>
-</ul>
-<p>The system needs to support:
-- Concurrent data collection for efficiency
-- Rate limiting to avoid API throttling
-- Retries for resilience
-- A uniform interface regardless of the source</p>
-<h2 id="decision">Decision</h2>
-<p>We will implement a plugin-based, modular architecture for data collection with the following components:</p>
-<ol>
-<li><strong>Abstract base interfaces</strong>: Define consistent interfaces for all data sources</li>
-<li><strong>Pluggable data sources</strong>: Implementations of these interfaces for specific data sources</li>
-<li><strong>Specialized extractors</strong>: Handle different data formats (JSON, HTML, etc.)</li>
-<li><strong>Connection management</strong>: Handle HTTP connections, rate limiting, and retries</li>
-<li><strong>Pipeline orchestration</strong>: Coordinate the workflow of data collection</li>
-</ol>
-<p>The architecture will use:
-- <code>httpx</code> for HTTP requests with async support
-- Async/await pattern for concurrency
-- Registry pattern for source management
-- Abstract base classes for defining interfaces</p>
-<p>Key components include:
-- <code>DataSource</code> - Abstract interface for all data sources
-- <code>HttpConnector</code> - Manages HTTP connections with rate limiting
-- <code>SourceRegistry</code> - Maintains available data sources
-- <code>DataCollectionPipeline</code> - Orchestrates the collection process</p>
-<h2 id="consequences">Consequences</h2>
-<h3 id="benefits">Benefits</h3>
-<ul>
-<li><strong>Extensibility</strong>: New data sources can be added without modifying core code</li>
-<li><strong>Separation of concerns</strong>: Connection management, data extraction, and orchestration are decoupled</li>
-<li><strong>Consistency</strong>: All data sources expose the same interface</li>
-<li><strong>Resilience</strong>: Built-in error handling and retry mechanisms</li>
-<li><strong>Performance</strong>: Concurrent data fetching where appropriate</li>
-</ul>
-<h3 id="challenges">Challenges</h3>
-<ul>
-<li><strong>Complexity</strong>: More complex than a monolithic approach</li>
-<li><strong>Learning curve</strong>: Requires understanding the plugin architecture</li>
-<li><strong>Testing</strong>: Requires thorough testing of each component</li>
-</ul>
-<h2 id="alternatives-considered">Alternatives Considered</h2>
-<h3 id="simple-procedural-approach">Simple Procedural Approach</h3>
-<p>We considered a simpler approach with direct calls to <code>requests</code> or <code>httpx</code> in procedural code:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_espn_data</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;https://api.espn.com/</span><span class="si">{</span><span class="n">endpoint</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<h1 id="project-structure">Project Structure</h1>
+<p>This document provides an overview of the NCAA Basketball Prediction Model project structure, explaining the purpose and organization of each directory and key file.</p>
+<h2 id="root-directory">Root Directory</h2>
+<p>The root directory contains configuration files and top-level directories:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>ncaa-prediction-model/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── .github/                      # GitHub configuration, workflows
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── .venv/                        # Virtual environment
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── configs/                      # Configuration files
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>├── data/                         # Data storage
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├── docs/                         # Documentation
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>├── logs/                         # Log files
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>├── notebooks/                    # Jupyter notebooks
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>├── scripts/                      # Utility scripts
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>├── site/                         # Generated mkdocs site
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>├── src/                          # Source code
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>├── tests/                        # Test suite
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>├── .env.example                  # Environment variables template
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>├── .gitignore                    # Git ignore rules
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>├── .python-version               # Python version specifier
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>├── LICENSE                       # License file
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>├── mkdocs.yml                    # MkDocs configuration
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>├── pyproject.toml                # Project configuration
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>├── README.md                     # Project readme
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>└── uv.lock                       # Dependency lock file
 </code></pre></div>
-<p><strong>Rejected</strong> because:
-- Lacks extensibility for new data sources
-- Difficult to add consistent error handling and retries
-- Does not support concurrency without additional complexity</p>
-<h3 id="framework-based-approach-scrapy">Framework-Based Approach (Scrapy)</h3>
-<p>Using a dedicated web scraping framework like Scrapy was considered:</p>
-<p><strong>Rejected</strong> because:
-- Primarily designed for HTML scraping, not JSON APIs
-- Adds dependencies we don't need for the initial JSON-only phase
-- More opinionated about project structure than we need</p>
-<h2 id="references">References</h2>
+<h2 id="configuration-files">Configuration Files</h2>
+<p>Key configuration files in the root directory:</p>
 <ul>
-<li><a href="https://www.python-httpx.org/">httpx Documentation</a></li>
-<li><a href="https://docs.python.org/3/library/asyncio.html">Python asyncio Documentation</a></li>
-<li><a href="https://en.wikipedia.org/wiki/Plug-in_(computing)">Plugin Architecture Pattern</a></li>
-<li><a href="https://gist.github.com/akeaswaran/b48b02f1c94f873c6655e7129910fc3b">ESPN API endpoints</a> </li>
+<li><strong>pyproject.toml</strong>: Package definition, dependencies, and tool configuration</li>
+<li><strong>mkdocs.yml</strong>: Documentation site configuration</li>
+<li><strong>.env.example</strong>: Template for environment variables</li>
+<li><strong>.python-version</strong>: Python version specifier for tools like pyenv</li>
 </ul>
+<h2 id="src-directory"><code>src/</code> Directory</h2>
+<p>The source code has been reorganized to simplify abstractions and provide clearer boundaries:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>src/
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>├── data/                         # Data handling (ADR-001, ADR-004)
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>│   ├── collection/               # Data collection (ADR-001)
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>│   │   ├── espn/                 # ESPN implementation
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>│   │   │   ├── client.py         # HTTP client for ESPN
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>│   │   │   ├── parsers.py        # Parse ESPN responses
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>│   │   │   └── models.py         # Data models for ESPN data
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>│   │   ├── connectors/           # HTTP connectors
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>│   │   └── extractors/           # Data extractors
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>│   ├── storage/                  # Data storage (ADR-004)
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>│   │   ├── parquet_io.py         # Parquet read/write utilities
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>│   │   ├── schema.py             # Data schemas
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>│   │   └── validation.py         # Data validation
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>│   └── processing/               # Data processing
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>│       ├── transformations.py    # Data transformation functions
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>│       └── cleaning.py           # Data cleaning functions
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>├── features/                     # Feature engineering (ADR-003)
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>│   ├── base.py                   # Base feature class
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>│   ├── pipeline.py               # Feature pipeline
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>│   ├── team_performance/         # Team performance features
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>│   ├── advanced_team/            # Advanced team metrics
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>│   ├── player_stats/             # Player statistics
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>│   └── composite/                # Composite features
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>├── models/                       # Model implementations
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>│   ├── base.py                   # Base model class
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>│   ├── evaluation/               # Model evaluation
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>│   ├── training/                 # Model training
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>│   └── prediction/               # Prediction generation
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>├── pipelines/                    # Pipeline orchestration
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>│   ├── collection_pipeline.py    # Orchestrates data collection
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>│   ├── feature_pipeline.py       # Orchestrates feature engineering
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>│   └── prediction_pipeline.py    # Orchestrates model prediction
+<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>├── visualization/                # Visualization components
+<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>│   ├── dashboards/               # Dashboard components
+<a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>│   └── plots/                    # Plot generation
+<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a>└── utils/                        # Utility functions
+<a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>    ├── logging.py                # Logging setup
+<a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>    ├── config/                   # Configuration management
+<a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>    │   ├── base.py               # Base configuration handling
+<a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>    │   ├── validation.py         # Configuration validation
+<a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>    │   └── environment.py        # Environment-specific configuration
+<a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>    ├── resilience/               # Resilience patterns
+<a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a>    │   ├── retry.py              # Retry mechanisms
+<a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a>    │   ├── circuit_breaker.py    # Circuit breaker pattern
+<a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a>    │   └── fallback.py           # Fallback strategies
+<a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a>    └── validation.py             # Data validation
+</code></pre></div>
+<h3 id="data-module">Data Module</h3>
+<p>The <code>data</code> module has been simplified:</p>
+<ol>
+<li><strong>Collection</strong> (ADR-001): Simplified to start with a direct ESPN implementation, while retaining the connectors and extractors for potential future expansion</li>
+<li><strong>Storage</strong> (ADR-004): Replaced the repository pattern with direct Parquet file operations</li>
+<li><strong>Processing</strong>: Added explicit data transformation and cleaning functions</li>
+</ol>
+<p>Key components:
+- <code>ESPNClient</code>: Direct client for ESPN APIs
+- <code>parquet_io.py</code>: Utilities for reading and writing Parquet files
+- <code>transformations.py</code>: Functions for transforming data between stages</p>
+<h3 id="features-module">Features Module</h3>
+<p>The <code>features</code> module remains largely as before, implementing the feature engineering system defined in ADR-003:</p>
+<ul>
+<li><code>Feature</code>: Base class for all feature calculators</li>
+<li><code>FeaturePipeline</code>: Orchestrates feature calculation with dependency resolution</li>
+<li>Feature implementations organized by category (basic, advanced, etc.)</li>
+</ul>
+<h3 id="pipelines-module">Pipelines Module</h3>
+<p>A new <code>pipelines</code> module has been added to explicitly manage data flow between components:</p>
+<ul>
+<li><code>collection_pipeline.py</code>: Manages collection from ESPN and storage to raw Parquet</li>
+<li><code>feature_pipeline.py</code>: Manages data processing and feature engineering</li>
+<li><code>prediction_pipeline.py</code>: Manages model prediction workflows</li>
+</ul>
+<h3 id="utils-module">Utils Module</h3>
+<p>The <code>utils</code> module has been expanded with better configuration and resilience patterns:</p>
+<ul>
+<li><code>config/</code>: Enhanced configuration management</li>
+<li><code>resilience/</code>: Explicit patterns for error handling and resilience</li>
+<li><code>logging.py</code>: Centralized logging configuration</li>
+<li><code>validation.py</code>: Data validation utilities</li>
+</ul>
+<h2 id="tests-directory"><code>tests/</code> Directory</h2>
+<p>The test suite mirrors the updated structure of the source code:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>tests/
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>├── conftest.py                   # pytest configuration
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>├── data/                         # Data module tests
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>│   ├── collection/               # Collection tests
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>│   │   ├── espn/                 # ESPN client tests
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>│   │   ├── connectors/           # Connector tests
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>│   │   └── extractors/           # Extractor tests
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>│   ├── storage/                  # Storage tests
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>│   └── processing/               # Processing tests
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>├── features/                     # Feature tests
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>├── models/                       # Model tests
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>├── pipelines/                    # Pipeline tests
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>├── integration/                  # Integration tests
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>│   └── end_to_end/               # End-to-end workflow tests
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>└── fixtures/                     # Test fixtures
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    ├── espn_responses/           # Sample API responses
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    ├── sample_data/              # Sample datasets
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    └── expected_results/         # Expected test results
+</code></pre></div>
+<h2 id="data-directory"><code>data/</code> Directory</h2>
+<p>The data directory structure has been updated to match ADR-004:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>data/
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>├── raw/                          # Minimally transformed ESPN data
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>│   ├── games/
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>│   │   ├── 2022/
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>│   │   │   ├── games.parquet     # Basic game metadata 
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>│   │   │   ├── box_scores.parquet # Box score data
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>│   │   │   └── play_by_play.parquet # Play-by-play data
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>│   │   └── ...
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>│   ├── teams/
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>│   │   ├── teams.parquet         # Team information
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>│   │   └── rankings.parquet      # Team rankings
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>│   └── ...
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>├── processed/                    # Cleaned, validated, unified data
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>│   ├── games_unified.parquet     # Games with consistent schema across seasons
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>│   ├── team_seasons.parquet      # Team-season level data
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>│   └── player_games.parquet      # Player-game level data
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>└── features/                     # Engineered features
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>    ├── team_ratings.parquet      # Team performance metrics
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>    ├── game_features.parquet     # Feature matrix for game prediction
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>    └── tournament_features.parquet # Features specific to tournament play
+</code></pre></div>
+<h2 id="configs-directory"><code>configs/</code> Directory</h2>
+<p>Configuration files have been enhanced with validation schemas:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>configs/
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>├── collection/                   # Data collection configs
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>│   ├── espn_endpoints.yml        # ESPN endpoint configuration
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>│   └── connectors.yml            # HTTP connector configuration
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>├── features/                     # Feature calculation configs
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>│   └── feature_sets.yml          # Feature set definitions
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>├── model/                        # Model configs
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>│   └── model_params.yml          # Model hyperparameters
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>└── schemas/                      # Configuration validation schemas
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    ├── espn_config_schema.json   # JSON Schema for ESPN config
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>    └── feature_config_schema.json # JSON Schema for feature config
+</code></pre></div>
+<h2 id="design-principles">Design Principles</h2>
+<p>The revised structure follows these key design principles:</p>
+<ol>
+<li><strong>Progressive Abstraction</strong>: Start with simpler, concrete implementations and abstract later as needed</li>
+<li><strong>Data Flow Clarity</strong>: Make data flow between components explicit through pipelines</li>
+<li><strong>Functional Core</strong>: Prefer pure functions for data transformations</li>
+<li><strong>Resilient Design</strong>: Make error handling and resilience explicit</li>
+<li><strong>Validated Configuration</strong>: Use schema validation for configurations</li>
+<li><strong>Test-Driven Development</strong>: Maintain comprehensive test coverage</li>
+</ol>
+<h2 id="implementation-notes">Implementation Notes</h2>
+<p>The revised architecture makes the following simplifications:</p>
+<ol>
+<li><strong>Direct ESPN Client</strong>: Start with a direct ESPN client implementation instead of complex plugin system</li>
+<li><strong>Parquet-First Storage</strong>: Use Parquet files directly without a database abstraction</li>
+<li><strong>Explicit Pipelines</strong>: Make data flow between components explicit through pipeline modules</li>
+<li><strong>Configuration Validation</strong>: Add schema validation for configuration files</li>
+<li><strong>Resilience Patterns</strong>: Make error handling and resilience patterns explicit </li>
+</ol>
 
 
 

@@ -431,6 +431,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#cross-cutting-concerns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cross-Cutting Concerns
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -456,18 +465,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#model-pipeline" class="md-nav__link">
+  <a href="#pipeline-architecture" class="md-nav__link">
     <span class="md-ellipsis">
-      Model Pipeline
+      Pipeline Architecture
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#visualization-approach" class="md-nav__link">
+  <a href="#data-processing" class="md-nav__link">
     <span class="md-ellipsis">
-      Visualization Approach
+      Data Processing
     </span>
   </a>
   
@@ -1030,6 +1039,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#cross-cutting-concerns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cross-Cutting Concerns
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1055,18 +1073,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#model-pipeline" class="md-nav__link">
+  <a href="#pipeline-architecture" class="md-nav__link">
     <span class="md-ellipsis">
-      Model Pipeline
+      Pipeline Architecture
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#visualization-approach" class="md-nav__link">
+  <a href="#data-processing" class="md-nav__link">
     <span class="md-ellipsis">
-      Visualization Approach
+      Data Processing
     </span>
   </a>
   
@@ -1107,75 +1125,93 @@
 
 <h1 id="system-architecture">System Architecture</h1>
 <h2 id="high-level-architecture">High-Level Architecture</h2>
-<p>The NCAA Basketball Prediction Model is built with a modular architecture that separates concerns and allows for independent development and testing of components.</p>
+<p>The NCAA Basketball Prediction Model is built with a modular pipeline architecture that separates concerns and allows for independent development and testing of components.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>graph TD
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    subgraph Data Layer
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>        A[ESPN API Client] --&gt; B[Data Collection]
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>        B --&gt; C[Data Storage]
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        C --&gt; D[Data Validation]
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>        A[ESPN API Client] --&gt; B[Collection Pipeline]
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>        B --&gt; C[Parquet Storage]
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        C --&gt; D[Processing Pipeline]
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    end
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
 <a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    subgraph Processing Layer
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        D --&gt; E[Feature Engineering]
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        D --&gt; E[Feature Pipeline]
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        E --&gt; F[Model Training]
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        F --&gt; G[Model Evaluation]
 <a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    end
 <a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
 <a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    subgraph Application Layer
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>        G --&gt; H[Prediction Engine]
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>        G --&gt; H[Prediction Pipeline]
 <a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>        H --&gt; I[Visualization Dashboard]
 <a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>        I --&gt; J[API Endpoints]
 <a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    end
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    K[Daily Update Pipeline] --&gt; B
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    K --&gt; D
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    K --&gt; E
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    K --&gt; H
 </code></pre></div>
 <h2 id="component-breakdown">Component Breakdown</h2>
 <h3 id="data-layer">Data Layer</h3>
 <ul>
 <li><strong>ESPN API Client</strong>: Handles communication with the ESPN API, including rate limiting and error handling.</li>
-<li><strong>Data Collection</strong>: Orchestrates data retrieval and synchronization.</li>
-<li><strong>Data Storage</strong>: Manages the database schema and storage operations.</li>
-<li><strong>Data Validation</strong>: Ensures data quality and handles missing or inconsistent data.</li>
+<li><strong>Collection Pipeline</strong>: Orchestrates data retrieval and synchronization, with support for incremental updates.</li>
+<li><strong>Parquet Storage</strong>: Stores data in columnar Parquet files organized by processing stage.</li>
+<li><strong>Processing Pipeline</strong>: Cleans and transforms raw data into standardized formats.</li>
 </ul>
 <h3 id="processing-layer">Processing Layer</h3>
 <ul>
-<li><strong>Feature Engineering</strong>: Transforms raw data into features suitable for modeling.</li>
+<li><strong>Feature Pipeline</strong>: Calculates 60+ basketball metrics with automatic dependency resolution.</li>
 <li><strong>Model Training</strong>: Builds and optimizes prediction models.</li>
 <li><strong>Model Evaluation</strong>: Assesses model performance with appropriate metrics.</li>
 </ul>
 <h3 id="application-layer">Application Layer</h3>
 <ul>
-<li><strong>Prediction Engine</strong>: Generates predictions for upcoming games.</li>
+<li><strong>Prediction Pipeline</strong>: Generates predictions for upcoming games.</li>
 <li><strong>Visualization Dashboard</strong>: Provides interactive visualizations of data and predictions.</li>
 <li><strong>API Endpoints</strong>: Offers programmatic access to predictions and data.</li>
 </ul>
+<h3 id="cross-cutting-concerns">Cross-Cutting Concerns</h3>
+<ul>
+<li><strong>Daily Update Pipeline</strong>: Combines all pipelines for efficient daily updates during basketball season.</li>
+<li><strong>Configuration Management</strong>: Provides centralized configuration for all components.</li>
+<li><strong>Logging and Monitoring</strong>: Tracks pipeline execution and performance.</li>
+</ul>
 <h2 id="technical-decisions">Technical Decisions</h2>
 <h3 id="storage-strategy">Storage Strategy</h3>
-<p>We're starting with SQLite for simplicity during development but with a database abstraction layer that will allow us to migrate to PostgreSQL if needed for scaling. The schema is normalized to optimize for:</p>
+<p>We use a Parquet-first approach for data storage, which provides:</p>
 <ul>
-<li>Data integrity</li>
-<li>Query performance for feature extraction</li>
-<li>Support for time-series analysis</li>
+<li><strong>Columnar Format</strong>: Optimized for analytical queries and feature calculation</li>
+<li><strong>Efficient Compression</strong>: Reduced storage requirements</li>
+<li><strong>Schema Evolution</strong>: Flexibility as data formats evolve</li>
+<li><strong>Partitioning</strong>: Organization by season, team, or other dimensions</li>
+<li><strong>Direct Integration</strong>: Seamless use with Polars for data processing</li>
 </ul>
-<h3 id="model-pipeline">Model Pipeline</h3>
-<p>The model pipeline is designed with scikit-learn's pipeline API to ensure:</p>
+<h3 id="pipeline-architecture">Pipeline Architecture</h3>
+<p>Our pipeline architecture is designed for:</p>
 <ul>
-<li>Consistent preprocessing steps</li>
-<li>Reproducible model training</li>
-<li>Proper cross-validation</li>
-<li>Model persistence</li>
+<li><strong>Incremental Processing</strong>: Only update what has changed</li>
+<li><strong>Dependency Management</strong>: Calculate features in the correct order</li>
+<li><strong>Configuration Management</strong>: Flexible control of pipeline behavior</li>
+<li><strong>Error Handling</strong>: Robust recovery from failures</li>
+<li><strong>Progress Tracking</strong>: Visibility into long-running processes</li>
+<li><strong>Simple CLI</strong>: Easy execution of pipeline components</li>
 </ul>
-<h3 id="visualization-approach">Visualization Approach</h3>
-<p>The dashboard is built with Dash and Plotly to provide:</p>
+<h3 id="data-processing">Data Processing</h3>
+<p>We use Polars for all data processing, which provides:</p>
 <ul>
-<li>Interactive visualizations</li>
-<li>Real-time filtering and exploration</li>
-<li>Shareable insights</li>
-<li>Responsive design</li>
+<li><strong>Performance</strong>: 10-100x faster than traditional pandas for our workloads</li>
+<li><strong>Memory Efficiency</strong>: Better handling of large datasets</li>
+<li><strong>Expressive API</strong>: Clean, functional data transformation</li>
+<li><strong>Lazy Evaluation</strong>: Optimized execution plans</li>
+<li><strong>Parallelism</strong>: Automatic use of multiple cores</li>
 </ul>
 <h2 id="future-considerations">Future Considerations</h2>
 <ul>
-<li><strong>Scalability</strong>: The current architecture can handle the historical data load, but may need optimization if expanded to include more granular data.</li>
-<li><strong>Real-time Processing</strong>: The system is currently batch-oriented but could be extended for real-time predictions.</li>
-<li><strong>Deployment</strong>: The architecture supports containerization for cloud deployment. </li>
+<li><strong>Feature Evolution</strong>: The architecture supports adding new basketball metrics over time</li>
+<li><strong>Model Experimentation</strong>: Pipeline design enables testing different modeling approaches</li>
+<li><strong>Visualization Extensions</strong>: The dashboard can be expanded with new views and insights</li>
+<li><strong>Real-time Updates</strong>: The system could be extended for real-time predictions during games</li>
+<li><strong>Cloud Deployment</strong>: The architecture supports containerization for cloud deployment </li>
 </ul>
 
 

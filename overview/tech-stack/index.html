@@ -472,9 +472,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#sqlitepostgresql-for-data-storage" class="md-nav__link">
+  <a href="#parquet-and-polars-for-data-storage-and-processing" class="md-nav__link">
     <span class="md-ellipsis">
-      SQLite/PostgreSQL for Data Storage
+      Parquet and Polars for Data Storage and Processing
     </span>
   </a>
   
@@ -1043,9 +1043,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#sqlitepostgresql-for-data-storage" class="md-nav__link">
+  <a href="#parquet-and-polars-for-data-storage-and-processing" class="md-nav__link">
     <span class="md-ellipsis">
-      SQLite/PostgreSQL for Data Storage
+      Parquet and Polars for Data Storage and Processing
     </span>
   </a>
   
@@ -1149,18 +1149,18 @@
 <tbody>
 <tr>
 <td><strong>Data Analysis</strong></td>
-<td>Pandas, NumPy</td>
+<td>Polars, NumPy</td>
 <td>Data manipulation and numerical computing</td>
 </tr>
 <tr>
 <td><strong>Data Storage</strong></td>
-<td>SQLite (dev), PostgreSQL (optional)</td>
-<td>Relational database storage</td>
+<td>Parquet</td>
+<td>Column-oriented data storage format</td>
 </tr>
 <tr>
 <td><strong>API Integration</strong></td>
-<td>Requests</td>
-<td>HTTP client for API communication</td>
+<td>Requests, aiohttp</td>
+<td>HTTP clients for API communication</td>
 </tr>
 <tr>
 <td><strong>Data Validation</strong></td>
@@ -1168,9 +1168,9 @@
 <td>Data validation and parsing</td>
 </tr>
 <tr>
-<td><strong>ORM</strong></td>
-<td>SQLAlchemy</td>
-<td>Database ORM and query interface</td>
+<td><strong>Pipeline Orchestration</strong></td>
+<td>Custom pipeline modules</td>
+<td>Data flow orchestration</td>
 </tr>
 </tbody>
 </table>
@@ -1284,24 +1284,25 @@
 <li>Works seamlessly with pyproject.toml</li>
 <li>Offers excellent caching with a global package cache</li>
 </ul>
-<h3 id="sqlitepostgresql-for-data-storage">SQLite/PostgreSQL for Data Storage</h3>
-<p>We start with SQLite for development because:</p>
+<h3 id="parquet-and-polars-for-data-storage-and-processing">Parquet and Polars for Data Storage and Processing</h3>
+<p>We chose a Parquet-first approach with Polars because:</p>
 <ul>
-<li>Zero configuration setup</li>
-<li>File-based for easy development</li>
-<li>Transactions and ACID compliance</li>
+<li><strong>Columnar Storage</strong>: Parquet's columnar format is ideal for analytical workloads</li>
+<li><strong>Compression</strong>: Efficient storage with high compression ratios</li>
+<li><strong>Performance</strong>: Polars provides extremely fast data processing (10-100x faster than Pandas)</li>
+<li><strong>Memory Efficiency</strong>: Better memory usage for large datasets</li>
+<li><strong>Simplicity</strong>: Direct file-based storage without database overhead</li>
+<li><strong>Integration</strong>: Excellent support for Parquet files in Python data ecosystem</li>
+<li><strong>Arrow Compatibility</strong>: Built on Apache Arrow for interoperability</li>
+<li><strong>Functional Pipelines</strong>: Clean, expressive data processing with Polars</li>
 </ul>
-<p>Our design allows for migration to PostgreSQL when needed for:
-- Improved concurrent access
-- Better performance at scale
-- Advanced indexing capabilities</p>
 <h3 id="dashplotly-for-visualization">Dash/Plotly for Visualization</h3>
 <p>We chose Dash and Plotly for our dashboard because:</p>
 <ul>
 <li>Pure Python development (no JavaScript required)</li>
 <li>Interactive visualizations with minimal code</li>
 <li>Responsive design for various screen sizes</li>
-<li>Integration with pandas data structures</li>
+<li>Integration with Polars data structures</li>
 </ul>
 <h3 id="scikit-learn-for-machine-learning">scikit-learn for Machine Learning</h3>
 <p>We chose scikit-learn as our primary ML framework because:</p>
@@ -1309,7 +1310,7 @@
 <li>Consistent API across algorithms</li>
 <li>Excellent pipeline abstractions</li>
 <li>Strong community and documentation</li>
-<li>Seamless integration with pandas and NumPy </li>
+<li>Seamless integration with NumPy and our data pipeline </li>
 </ul>
 
 
