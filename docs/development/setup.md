@@ -64,18 +64,11 @@ ruff check .
 ruff format .
 ```
 
-### MyPy for Type Checking
-
-```bash
-# Run type checking
-mypy .
-```
-
 ### Pytest for Testing
 
 ```bash
 # Run tests
-pytest
+python -m pytest
 ```
 
 ## Working with Milestones

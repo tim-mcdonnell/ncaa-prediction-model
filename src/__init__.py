@@ -1,1 +1,1 @@
-"""NCAA Basketball Prediction Model package.""" 
+"""NCAA Basketball Prediction Model package."""

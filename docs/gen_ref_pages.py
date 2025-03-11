@@ -1,6 +1,5 @@
 """Generate the code reference pages."""
 
-import os
 from pathlib import Path
 
 import mkdocs_gen_files
@@ -24,13 +23,13 @@ for path in sorted(src_dir.rglob("*.py")):
 
     # Module path as dot notation
     module_dots = ".".join(module_path.parts)
-    
+
     # Handle __init__.py specially
     if module_path.name == "__init__":
         module_dots = ".".join(module_path.parts[:-1])
         doc_path = doc_path.with_name("index.md")
         full_doc_path = full_doc_path.with_name("index.md")
-    
+
     # Skip if the module is empty or just has docstring
     if path.stat().st_size <= 2:
         continue
@@ -42,12 +41,12 @@ for path in sorted(src_dir.rglob("*.py")):
 
     # Add to navigation
     nav_parts = list(module_path.parts)
-    
+
     if nav_parts[-1] == "__init__":
         nav_parts = nav_parts[:-1]
-        
+
     nav[nav_parts] = doc_path.as_posix()
 
 # Generate the navigation file
 with mkdocs_gen_files.open("reference/SUMMARY.md", "w") as nav_file:
-    nav_file.writelines(nav.build_literate_nav()) 
+    nav_file.writelines(nav.build_literate_nav())
