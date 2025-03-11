@@ -30,6 +30,23 @@ The project is organized into 7 key milestones:
 6. [**Visualization and Dashboard**](milestones/milestone6-visualization.md) - Creating interfaces to explore data and predictions
 7. [**Deployment and Monitoring**](milestones/milestone7-deployment.md) - Deploying and maintaining the prediction system
 
+## Documentation
+
+This documentation site provides:
+
+- Detailed project overview and architecture
+- Milestone documentation with implementation details
+- Development guides and code standards
+- API reference for the codebase
+
+### Documentation Sections
+
+- [**Project Overview**](overview/index.md) - High-level project description and goals
+- [**Architecture Documentation**](architecture/index.md) - System design and architectural decisions
+- [**Milestones**](milestones/index.md) - Detailed milestone documentation
+- [**Development Guides**](development/index.md) - Guidelines for contributing to the project
+- [**API Reference**](reference/index.md) - API documentation for the codebase
+
 ## Getting Started
 
 To get started with the project:
@@ -43,13 +60,4 @@ cd ncaa-prediction-model
 uv venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 uv pip install -e ".[dev]"
-```
-
-## Documentation
-
-This documentation site provides:
-
-- Detailed project overview and architecture
-- Milestone documentation with implementation details
-- Development guides and code standards
-- API reference for the codebase 
+``` 
