@@ -39,7 +39,6 @@ ncaa-prediction-model/
 ├── docs/                  # Documentation
 │   ├── milestones/        # Detailed milestone documentation
 │   └── templates/         # Project templates
-├── MILESTONES.md          # Project milestones and progress tracking
 ├── pyproject.toml         # Project dependencies and metadata
 └── README.md              # Project documentation
 ```
@@ -47,15 +46,28 @@ ncaa-prediction-model/
 ## Project Milestones
 The project is organized into 7 key milestones:
 
-1. **Data Collection and Storage** - Gathering and storing historical NCAA basketball data
-2. **Data Validation and Quality Control** - Ensuring data quality and completeness
-3. **Feature Engineering** - Creating meaningful features from raw data
-4. **Model Development** - Building and tuning prediction models
-5. **Backtesting Framework** - Evaluating model performance on historical data
-6. **Visualization and Dashboard** - Creating interfaces to explore data and predictions
-7. **Deployment and Monitoring** - Deploying and maintaining the prediction system
+1. **Data Collection and Storage** - 🔄 In Progress
+   - Gathering and storing historical NCAA basketball data
+   
+2. **Data Validation and Quality Control** - ⏱️ Not Started
+   - Ensuring data quality and completeness
+   
+3. **Feature Engineering** - ⏱️ Not Started
+   - Creating meaningful features from raw data
+   
+4. **Model Development** - ⏱️ Not Started
+   - Building and tuning prediction models
+   
+5. **Backtesting Framework** - ⏱️ Not Started
+   - Evaluating model performance on historical data
+   
+6. **Visualization and Dashboard** - ⏱️ Not Started
+   - Creating interfaces to explore data and predictions
+   
+7. **Deployment and Monitoring** - ⏱️ Not Started
+   - Deploying and maintaining the prediction system
 
-For detailed information on each milestone, see [MILESTONES.md](MILESTONES.md) or the comprehensive documentation in the [docs/milestones](docs/milestones) directory.
+For detailed information on each milestone, see the comprehensive documentation in the [docs/milestones](docs/milestones) directory. After pushing changes to the main branch, the documentation is automatically deployed to GitHub Pages.
 
 ## Project Templates
 To maintain consistency throughout the project, we use a set of standardized templates:
@@ -81,14 +93,14 @@ For more information on using these templates, see the [templates documentation]
    # Activate the virtual environment
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    
-   # Install dependencies in development mode
-   uv pip install -e ".[dev]"
+   # Install dependencies
+   uv pip install -e .
    ```
 
 4. Updating dependencies:
    ```bash
    # To update dependencies to their latest versions (within constraints)
-   uv pip install -e ".[dev]" --upgrade
+   uv pip install -e . --upgrade
    ```
 
 ## Usage
