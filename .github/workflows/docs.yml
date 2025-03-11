@@ -32,9 +32,11 @@ jobs:
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-      - name: Install dependencies
+      - name: Create virtual environment and install dependencies
         run: |
-          uv pip install ".[dev]"
+          uv venv .venv
+          source .venv/bin/activate
+          uv sync
 
       - name: Configure Git user
         run: |
@@ -42,4 +44,6 @@ jobs:
           git config --local user.name "github-actions[bot]"
 
       - name: Deploy documentation
-        run: mkdocs gh-deploy --force 
+        run: |
+          source .venv/bin/activate
+          mkdocs gh-deploy --force 
