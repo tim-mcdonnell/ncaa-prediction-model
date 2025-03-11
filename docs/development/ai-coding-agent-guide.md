@@ -113,6 +113,29 @@ git commit -F commit_msg.txt
 gh issue create -t "Issue Title" -F issue_description.md
 ```
 
+### Accessing Task Information
+
+When assigned a specific task by issue number, use the GitHub CLI to access the full task description:
+
+```bash
+# View issue #1
+gh issue view 1
+
+# View issue #1 with all comments
+gh issue view 1 --comments
+
+# View issue #1 in web browser
+gh issue view 1 --web
+```
+
+Always review the complete task description from the GitHub issue to understand:
+- Requirements and acceptance criteria
+- Context and background information
+- Related tasks or dependencies
+- Implementation guidance
+
+The task descriptions follow the template defined in `docs/templates/task_template.md` and should contain all necessary information to implement the task.
+
 ### Data Processing
 
 ❌ **NEVER use pandas for data processing**  
