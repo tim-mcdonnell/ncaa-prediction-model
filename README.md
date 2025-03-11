@@ -133,7 +133,7 @@ The project is organized into 7 key milestones:
 7. **Deployment and Monitoring** - ⏱️ Not Started
    - Deploying and maintaining the prediction system
 
-For detailed information on each milestone, see the comprehensive documentation in the [docs/milestones](docs/milestones) directory. After pushing changes to the main branch, the documentation is automatically deployed to GitHub Pages.
+For detailed information on each milestone, see the comprehensive documentation in the [docs/development/milestones](docs/development/milestones) directory. After pushing changes to the main branch, the documentation is automatically deployed to GitHub Pages.
 
 ## Project Templates
 To maintain consistency throughout the project, we use a set of standardized templates:

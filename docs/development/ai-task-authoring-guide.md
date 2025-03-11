@@ -196,6 +196,44 @@ For reference, see these example documents:
 - [AI Task Example](../examples/ai_task_example.md): Sample GitHub issue for an AI agent
 - [AI Milestone Example](../examples/ai_milestone_example.md): Sample milestone documentation
 
+## Organization of Tasks and Milestones
+
+Tasks and milestones are organized in a hierarchical structure:
+
+1. **Milestone Documentation**: Located in `docs/development/milestones/`
+2. **Task Documentation**: Located in `docs/development/milestones/<milestone-name>/tasks/`
+
+This structure ensures that:
+- Tasks are clearly associated with their parent milestone
+- Documentation is maintained alongside implementation
+- AI agents can easily navigate between related tasks and understand project context
+
+When creating a new task:
+1. Copy the task template from `docs/templates/task_template.md`
+2. Save it to the appropriate milestone tasks directory
+3. Add it to the task index file for that milestone
+4. Create a GitHub issue linked to the task documentation
+
+### Creating GitHub Issues from Task Descriptions
+
+When creating GitHub issues from task descriptions, AI agents should use the following approach to avoid newline character limitations in terminal commands:
+
+1. First, create a markdown file with the task content:
+   ```bash
+   # Create a markdown file for the issue
+   cat > issue.md << 'EOF'
+   # Task content goes here
+   EOF
+   ```
+
+2. Then, use the `-F` flag with `gh issue create` to use the file content:
+   ```bash
+   # Create GitHub issue from file content
+   gh issue create -t "Task Title" -F issue.md
+   ```
+
+This approach ensures that multiline content and formatting are preserved correctly when creating GitHub issues through terminal commands.
+
 ## Best Practices
 
 1. **Start Small**: Begin with well-defined, contained tasks to help the AI agent learn the codebase

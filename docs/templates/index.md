@@ -17,9 +17,9 @@ This directory contains standardized templates for project documentation and wor
 
 ### For Milestone Documentation
 
-1. Copy the `milestone_template.md` to `docs/milestones/milestoneX-name.md`
-2. Fill in all sections with relevant information
-3. Link the milestone document from the milestone index in `docs/milestones/README.md`
+1. Copy the `milestone_template.md` to `docs/development/milestones/milestoneX-name.md`
+2. Fill out the template with milestone-specific information
+3. Link the milestone document from the milestone index in `docs/development/milestones/index.md`
 4. Update the milestone status in the main `MILESTONES.md` file
 
 ### For Tasks

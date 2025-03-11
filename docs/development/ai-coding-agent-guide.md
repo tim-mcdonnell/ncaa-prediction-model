@@ -79,6 +79,40 @@ uv pip install -e .
 uv pip install package_name
 ```
 
+### Terminal Command Limitations
+
+❌ **NEVER include newline characters in terminal commands**  
+✅ **ALWAYS use a separate file for multiline content**
+
+Terminal commands with newlines will fail. This is particularly important for:
+- Git commit messages
+- GitHub issue creation
+- Complex commands with multiple lines
+
+Examples of correct approaches:
+
+```bash
+# INCORRECT - Will fail due to newlines
+git commit -m "Add feature X
+
+This implements the new feature with:
+- Component A
+- Component B"
+
+# CORRECT - Use a temp file for multiline content
+cat > commit_msg.txt << 'EOF'
+Add feature X
+
+This implements the new feature with:
+- Component A
+- Component B
+EOF
+git commit -F commit_msg.txt
+
+# CORRECT - For GitHub issues, use the -F flag
+gh issue create -t "Issue Title" -F issue_description.md
+```
+
 ### Data Processing
 
 ❌ **NEVER use pandas for data processing**  
