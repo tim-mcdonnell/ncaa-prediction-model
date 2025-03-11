@@ -1,0 +1,77 @@
+[project]
+name = "ncaa-prediction-model"
+version = "0.1.0"
+description = "Machine learning model to predict NCAA men's basketball game outcomes"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+    { name = "Your Name", email = "your.email@example.com" }
+]
+
+dependencies = [
+    # Data manipulation and analysis
+    "pandas>=2.1.1",
+    "numpy>=1.26.0",
+    
+    # Machine learning
+    "scikit-learn>=1.3.1",
+    
+    # API requests
+    "requests>=2.31.0",
+    
+    # Data visualization
+    "plotly>=5.17.0",
+    "dash>=2.13.0",
+    
+    # Utilities
+    "python-dotenv>=1.0.0",
+    "tqdm>=4.66.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    # Jupyter notebooks (for exploration)
+    "jupyter>=1.0.0",
+    "ipykernel>=6.25.2",
+    
+    # Linting and formatting
+    "ruff>=0.1.0",
+    
+    # Testing
+    "pytest>=7.4.2",
+    
+    # Type checking
+    "mypy>=1.5.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+select = ["E", "F", "B", "I"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+
+[tool.mypy]
+python_version = "3.11"
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+strict_optional = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unused_ignores = true 
