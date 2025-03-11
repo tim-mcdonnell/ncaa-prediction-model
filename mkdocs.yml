@@ -87,5 +87,18 @@ nav:
     - Setup: development/setup.md
     - Contributing: development/contributing.md
     - Code Standards: development/code-standards.md
-    - Templates: templates/index.md
+    - Project Structure: development/project-structure.md
+    - Pipeline Architecture: development/pipeline-architecture.md
+    - Modularity Guidelines: development/modularity-guidelines.md
+    - Implementation Plan: development/implementation-plan.md
+    - Test Strategy: development/test-strategy.md
+    - AI Coding Agent Guide: development/ai-coding-agent-guide.md
+    - AI Task Authoring Guide: development/ai-task-authoring-guide.md
+  - Examples:
+    - Overview: examples/index.md
+    - AI Task Example: examples/ai_task_example.md
+    - AI Milestone Example: examples/ai_milestone_example.md
+  - Templates:
+    - Overview: templates/index.md
+    - AI Task Template: templates/ai_task_template.md
   - API Reference: reference/ 
