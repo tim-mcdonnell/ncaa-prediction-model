@@ -42,9 +42,8 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          selection:
+          options:
             docstring_style: google
-          rendering:
             show_source: true
   - gen-files:
       scripts:
