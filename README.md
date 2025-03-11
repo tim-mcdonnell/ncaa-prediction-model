@@ -1,5 +1,7 @@
 # NCAA Basketball Prediction Model
 
+📚 **[View Full Documentation](https://tim-mcdonnell.github.io/ncaa-prediction-model/)**
+
 ## Overview
 This project develops a machine learning model to predict NCAA men's basketball game outcomes using 22 years of historical data. By analyzing team statistics, tournament performance, and other relevant factors, we create a data-driven approach to:
 
