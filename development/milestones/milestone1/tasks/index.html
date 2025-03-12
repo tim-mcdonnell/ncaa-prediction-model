@@ -20,7 +20,7 @@
     
     
       
-        <title>Milestone 1 Tasks: Data Collection and Storage - NCAA Basketball Prediction Model</title>
+        <title>Milestone 1 Tasks - NCAA Basketball Prediction Model</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#milestone-1-tasks-data-collection-and-storage" class="md-skip">
+        <a href="#milestone-1-tasks" class="md-skip">
           Skip to content
         </a>
       
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Milestone 1 Tasks: Data Collection and Storage
+              Milestone 1 Tasks
             
           </span>
         </div>
@@ -1317,27 +1317,60 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#tasks" class="md-nav__link">
+  <a href="#task-list" class="md-nav__link">
     <span class="md-ellipsis">
-      Tasks
+      Task List
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#task-lifecycle" class="md-nav__link">
+  <a href="#task-dependencies" class="md-nav__link">
     <span class="md-ellipsis">
-      Task Lifecycle
+      Task Dependencies
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#adding-new-tasks" class="md-nav__link">
+  <a href="#implementation-order" class="md-nav__link">
     <span class="md-ellipsis">
-      Adding New Tasks
+      Implementation Order
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#task-status-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Task Status Updates
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Task Status Updates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2023-03-11" class="md-nav__link">
+    <span class="md-ellipsis">
+      [2023-03-11]
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next Steps
     </span>
   </a>
   
@@ -1362,43 +1395,82 @@
   
 
 
-<h1 id="milestone-1-tasks-data-collection-and-storage">Milestone 1 Tasks: Data Collection and Storage</h1>
-<p>This directory contains the task descriptions for Milestone 1, which focuses on data collection and storage. Each task is documented thoroughly to provide clear guidance for implementation.</p>
-<h2 id="tasks">Tasks</h2>
+<h1 id="milestone-1-tasks">Milestone 1 Tasks</h1>
+<p>This document lists all tasks for Milestone 1: Data Collection and Storage.</p>
+<h2 id="task-list">Task List</h2>
 <table>
 <thead>
 <tr>
-<th>Task</th>
-<th>Description</th>
+<th>Task ID</th>
+<th>Task Name</th>
+<th>Priority</th>
 <th>Status</th>
+<th>Assigned To</th>
 <th>GitHub Issue</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><a href="espn_api_research_task/">ESPN API Research</a></td>
-<td>Research and document the available ESPN API endpoints for NCAA basketball data</td>
-<td>In Progress</td>
-<td><a href="https://github.com/tim-mcdonnell/ncaa-prediction-model/issues/1">#1</a></td>
+<td>1</td>
+<td><a href="api_integration/">Implement ESPN API Client</a></td>
+<td>High</td>
+<td>Not Started</td>
+<td>TBD</td>
+<td><a href="https://github.com/tim-mcdonnell/ncaa-prediction-model/issues/3">#3</a></td>
+</tr>
+<tr>
+<td>2</td>
+<td><a href="base_pipeline/">Implement Base Pipeline Component</a></td>
+<td>High</td>
+<td>Not Started</td>
+<td>TBD</td>
+<td><a href="https://github.com/tim-mcdonnell/ncaa-prediction-model/issues/4">#4</a></td>
+</tr>
+<tr>
+<td>3</td>
+<td><a href="collection_pipeline/">Implement Collection Pipeline</a></td>
+<td>High</td>
+<td>Not Started</td>
+<td>TBD</td>
+<td><a href="https://github.com/tim-mcdonnell/ncaa-prediction-model/issues/5">#5</a></td>
+</tr>
+<tr>
+<td>4</td>
+<td><a href="data_cleaning/">Implement Data Cleaning Module</a></td>
+<td>Medium</td>
+<td>Not Started</td>
+<td>TBD</td>
+<td><a href="https://github.com/tim-mcdonnell/ncaa-prediction-model/issues/6">#6</a></td>
 </tr>
 </tbody>
 </table>
-<h2 id="task-lifecycle">Task Lifecycle</h2>
+<h2 id="task-dependencies">Task Dependencies</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>graph TD
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    A[1: ESPN API Client] --&gt; C[3: Collection Pipeline]
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    B[2: Base Pipeline] --&gt; C
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    C --&gt; D[4: Data Cleaning Module]
+</code></pre></div>
+<h2 id="implementation-order">Implementation Order</h2>
+<p>The recommended implementation order is:</p>
 <ol>
-<li>Tasks are initially created in this directory as markdown files</li>
-<li>Each task is then created as a GitHub issue with a link back to the task description</li>
-<li>The status of each task is updated in this index as progress is made</li>
-<li>When a task is completed, the status is updated and any implementation notes are added to the task description</li>
+<li>Task #1: ESPN API Client and Task #2: Base Pipeline (can be worked on in parallel)</li>
+<li>Task #3: Collection Pipeline (depends on #1 and #2)</li>
+<li>Task #4: Data Cleaning Module (depends on #3)</li>
 </ol>
-<h2 id="adding-new-tasks">Adding New Tasks</h2>
-<p>To add a new task to this milestone:</p>
+<h2 id="task-status-updates">Task Status Updates</h2>
+<h3 id="2023-03-11">[2023-03-11]</h3>
+<ul>
+<li>Initial task list created</li>
+<li>All tasks are in "Not Started" status</li>
+<li>GitHub issues created and linked to tasks</li>
+</ul>
+<h2 id="next-steps">Next Steps</h2>
+<p>After all Milestone 1 tasks are completed, we will:</p>
 <ol>
-<li>Create a new markdown file in this directory using the task template</li>
-<li>Add the task to the table above</li>
-<li>Create a GitHub issue for the task</li>
-<li>Update the task description with the issue number</li>
+<li>Have a complete data collection system for NCAA basketball data</li>
+<li>Begin work on the Processing Pipeline (Milestone 2)</li>
+<li>Document the collected data structure for feature engineering </li>
 </ol>
-<p>For more information on creating tasks, see the <a href="../../../ai-task-authoring-guide/">AI Task Authoring Guide</a>. </p>
 
 
 
