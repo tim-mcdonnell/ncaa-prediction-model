@@ -12,30 +12,17 @@ description: Documentation for ESPN API endpoints used for NCAA men's basketball
 | `/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard` | Get game data, scores and schedules | dates=YYYYMMDD | Historical data from 2003 |
 | `/apis/site/v2/sports/basketball/mens-college-basketball/teams` | Get all teams information | page=n | Pagination available |
 | `/apis/site/v2/sports/basketball/mens-college-basketball/teams/{team}` | Get specific team information | team=team_id or abbreviation | - |
+| `/apis/site/v2/sports/basketball/mens-college-basketball/teams/{team}/roster` | Get detailed team roster information | team=team_id or abbreviation | Includes player details, positions, etc. |
 | `/apis/site/v2/sports/basketball/mens-college-basketball/summary` | Get detailed game information | event=game_id | - |
 | `/apis/site/v2/sports/basketball/mens-college-basketball/news` | Get latest news | - | - |
 | `/apis/site/v2/sports/basketball/mens-college-basketball/rankings` | Get team rankings | - | - |
+| `/apis/site/v2/sports/basketball/mens-college-basketball/groups` | Get conference information and teams | - | Alternative to a dedicated conferences endpoint |
 | `/apis/v2/sports/basketball/mens-college-basketball/standings` | Get conference standings | - | - |
 | `/apis/site/v2/sports/basketball/mens-college-basketball/teams/{team}/schedule` | Get team schedule | season=YYYY, seasontype=n | seasontype: 2=regular, 3=postseason |
 | `/v3/sports/basketball/mens-college-basketball/athletes` | Get all current athletes/players | limit=n | Current season only |
 | `/v3/sports/basketball/mens-college-basketball/seasons/{year}/athletes` | Get athletes for a specific season | limit=n | - |
 | `/v3/sports/basketball/mens-college-basketball/athletes/{playerID}` | Get detailed player information | - | - |
-| `/v2/sports/basketball/leagues/mens-college-basketball/tournaments/22/seasons/{season}/bracketology` | Get tournament bracket | - | Works for years up to 2021 | 
-## Endpoints Overview
-
-| Endpoint | Purpose | Parameters | Notes |
-|----------|---------|------------|-------|
-| `/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard` | Get game data, scores and schedules | dates=YYYYMMDD | Historical data from 2003 |
-| `/apis/site/v2/sports/basketball/mens-college-basketball/teams` | Get all teams information | page=n | Pagination available |
-| `/apis/site/v2/sports/basketball/mens-college-basketball/teams/{team}` | Get specific team information | team=team_id or abbreviation | - |
-| `/apis/site/v2/sports/basketball/mens-college-basketball/summary` | Get detailed game information | event=game_id | - |
-| `/apis/site/v2/sports/basketball/mens-college-basketball/news` | Get latest news | - | - |
-| `/apis/site/v2/sports/basketball/mens-college-basketball/rankings` | Get team rankings | - | - |
-| `/apis/v2/sports/basketball/mens-college-basketball/standings` | Get conference standings | - | - |
-| `/apis/site/v2/sports/basketball/mens-college-basketball/teams/{team}/schedule` | Get team schedule | season=YYYY, seasontype=n | seasontype: 2=regular, 3=postseason |
-| `/v3/sports/basketball/mens-college-basketball/athletes` | Get all current athletes/players | limit=n | Current season only |
-| `/v3/sports/basketball/mens-college-basketball/seasons/{year}/athletes` | Get athletes for a specific season | limit=n | - |
-| `/v3/sports/basketball/mens-college-basketball/athletes/{playerID}` | Get detailed player information | - | - |
+| `/v3/sports/basketball/mens-college-basketball/statistics` | Get team statistics | limit=n | Comprehensive offensive/defensive stats |
 | `/v2/sports/basketball/leagues/mens-college-basketball/tournaments/22/seasons/{season}/bracketology` | Get tournament bracket | - | Works for years up to 2021 |
 
 ## Base URLs
@@ -313,6 +300,160 @@ description: Documentation for ESPN API endpoints used for NCAA men's basketball
 }
 ```
 
+### Team Roster Endpoint
+- URL: `http://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/teams/{team}/roster`
+- Parameters:
+  - `team` - Team ID or abbreviation (e.g., "duke" or "150")
+- Response format: JSON containing detailed team roster information including player details, positions, and more
+- Example response:
+```json
+{
+  "timestamp": "2025-03-12T18:19:19Z",
+  "status": "success",
+  "season": {
+    "year": 2025,
+    "displayName": "2024-25",
+    "type": 2,
+    "name": "Regular Season"
+  },
+  "athletes": [
+    {
+      "id": "4431890",
+      "uid": "s:40~l:41~a:4431890",
+      "firstName": "Neal",
+      "lastName": "Begovich",
+      "fullName": "Neal Begovich",
+      "displayName": "Neal Begovich",
+      "shortName": "N. Begovich",
+      "weight": 230.0,
+      "displayWeight": "230 lbs",
+      "height": 81.0,
+      "displayHeight": "6' 9\"",
+      "links": [...],
+      "birthPlace": {
+        "city": "San Francisco",
+        "state": "CA",
+        "country": "USA",
+        "displayText": "San Francisco, CA"
+      },
+      "birthCountry": {
+        "alternateId": "1",
+        "abbreviation": "USA"
+      },
+      "jersey": "20",
+      "position": {
+        "id": "2",
+        "name": "Forward",
+        "displayName": "Forward",
+        "abbreviation": "F",
+        "leaf": true
+      },
+      "experience": {
+        "years": 4,
+        "displayValue": "Senior",
+        "abbreviation": "SR"
+      },
+      "status": {
+        "id": "1",
+        "name": "Active",
+        "type": "active",
+        "abbreviation": "Active"
+      }
+    },
+    // More player entries
+  ],
+  "coach": [
+    {
+      "id": "31709",
+      "firstName": "Jon",
+      "lastName": "Scheyer",
+      "experience": 0
+    }
+  ],
+  "team": {
+    "id": "150",
+    "abbreviation": "DUKE",
+    "location": "Duke",
+    "name": "Blue Devils",
+    "displayName": "Duke Blue Devils",
+    "clubhouse": "https://www.espn.com/mens-college-basketball/team/_/id/150/duke-blue-devils",
+    "color": "013088",
+    "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/150.png",
+    "recordSummary": "28-3",
+    "seasonSummary": "2024-25",
+    "standingSummary": "1st in ACC"
+  }
+}
+```
+
+### Groups (Conferences) Endpoint
+- URL: `http://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/groups`
+- Parameters: None required
+- Response format: JSON containing conference information and teams within each conference
+- Example response includes conference names, abbreviations, and complete team listings in each conference
+- Notes: This endpoint serves as the conferences endpoint, providing comprehensive team groupings by conference
+
+### Team Statistics Endpoint (v3 API)
+- URL: `https://sports.core.api.espn.com/v3/sports/basketball/mens-college-basketball/statistics`
+- Parameters:
+  - `limit=n` - Limit number of results (optional)
+- Response format: JSON containing comprehensive team statistics
+- Example response:
+```json
+{
+  "count": 571,
+  "pageIndex": 1,
+  "pageSize": 5,
+  "pageCount": 115,
+  "items": [
+    {
+      "id": "2",
+      "ids": {"team": "2"},
+      "type": "team",
+      "statistics": {
+        "general": {
+          "disqualifications": {"value": 5.0},
+          "flagrantFouls": {"value": 0.0},
+          "fouls": {"value": 577.0},
+          "ejections": {"value": 0.0},
+          "technicalFouls": {"value": 12.0},
+          "rebounds": {"value": 1158.0, "qualified": true},
+          "minutes": {"value": 6225.0, "qualified": true},
+          "avgMinutes": {"value": 200.80646},
+          "avgRebounds": {"value": 37.35484},
+          "avgFouls": {"value": 18.612904},
+          "assistTurnoverRatio": {"value": 1.8204225, "qualified": true},
+          "stealFoulRatio": {"value": 0.3778163},
+          // More general stats
+        },
+        "offensive": {
+          "assists": {"value": 517.0, "qualified": true},
+          "fieldGoalsAttempted": {"value": 1925.0},
+          "fieldGoalsMade": {"value": 934.0},
+          "fieldGoalPct": {"value": 0.4851948, "qualified": true},
+          "freeThrowPct": {"value": 0.7468944, "qualified": true},
+          "points": {"value": 2640.0, "qualified": true},
+          "turnovers": {"value": 284.0},
+          "threePointFieldGoalPct": {"value": 0.37212276, "qualified": true},
+          // More offensive stats
+        },
+        "defensive": {
+          "blocks": {"value": 198.0, "qualified": true},
+          "defensiveRebounds": {"value": 792.0},
+          "steals": {"value": 218.0, "qualified": true},
+          "turnoverPoints": {"value": 488.0},
+          "avgDefensiveRebounds": {"value": 25.548388},
+          "avgBlocks": {"value": 6.387097},
+          "avgSteals": {"value": 7.032258}
+        }
+      }
+    },
+    // More team statistics
+  ]
+}
+```
+- Notes: Provides extensive statistical categories including general, offensive, and defensive metrics
+
 ### Players Endpoint
 - URL: `https://sports.core.api.espn.com/v3/sports/basketball/mens-college-basketball/athletes`
 - Parameters:
@@ -451,6 +592,8 @@ The ESPN API supports several common parameters across endpoints:
 3. **Inconsistent structures**: Response structures can vary across endpoints and seasons
 4. **Tournament bracket endpoints**: Historical tournament bracket data may have different endpoints for different years
 5. **Player data challenges**: Getting historical player data requires individual player ID lookups
+6. **Endpoint naming conventions**: Some resources (like conferences) are available under alternative names (e.g., "groups")
+7. **Base URL variations**: Some endpoints use the v2 API path, while others use v3, requiring different base URLs
 
 ## Recommended Approach for Data Collection
 
@@ -460,6 +603,9 @@ The ESPN API supports several common parameters across endpoints:
 4. **Respect ESPN resources**: Add reasonable delays between requests (e.g., 1-2 seconds)
 5. **Data normalization**: Standardize responses as they might vary across years
 6. **Selective storage**: Only store relevant fields to minimize storage requirements
+7. **Conference data**: Use the `/groups` endpoint for conference information rather than trying to find a dedicated conferences endpoint
+8. **Team details**: Consider combining team information from both the team endpoint and the team roster endpoint
+9. **Statistics collection**: Utilize the v3 statistics endpoint for comprehensive team statistics data
 
 ## Additional Resources
 
