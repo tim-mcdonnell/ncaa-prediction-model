@@ -1,6 +1,6 @@
 # AI Coding Agent Guide
 
-This guide is designed for AI coding agents working on the NCAA Basketball Prediction Model. It provides a high-level overview of the project architecture, development practices, and common pitfalls to avoid.
+This guide provides essential information for AI coding agents working on the NCAA Basketball Prediction Model. It covers project architecture, development practices, and common pitfalls to avoid.
 
 ## Quick Reference
 
@@ -11,6 +11,8 @@ This guide is designed for AI coding agents working on the NCAA Basketball Predi
 | **Package Management** | Use `uv` (not pip) for dependency management |
 | **Data Processing** | Use Polars (not pandas) for all data manipulation |
 | **Storage** | Direct Parquet files (no SQL database) |
+| **GitHub Management** | Use GitHub API for milestones, store multiline content in `/tmp` |
+| **Terminal Commands** | Avoid newlines, use `/tmp` for multiline content |
 
 ## Project Documentation
 
@@ -82,11 +84,12 @@ uv pip install package_name
 ### Terminal Command Limitations
 
 ❌ **NEVER include newline characters in terminal commands**  
-✅ **ALWAYS use a separate file for multiline content**
+✅ **ALWAYS use a separate file in the `/tmp` directory for multiline content**
 
 Terminal commands with newlines will fail. This is particularly important for:
 - Git commit messages
-- GitHub issue creation
+- GitHub issue creation and updates
+- GitHub milestone creation and updates
 - Complex commands with multiple lines
 
 Examples of correct approaches:
@@ -99,23 +102,29 @@ This implements the new feature with:
 - Component A
 - Component B"
 
-# CORRECT - Use a temp file for multiline content
-cat > commit_msg.txt << 'EOF'
+# CORRECT - Use a temp file in /tmp for multiline content
+cat > /tmp/commit_msg.txt << 'EOF'
 Add feature X
 
 This implements the new feature with:
 - Component A
 - Component B
 EOF
-git commit -F commit_msg.txt
-
-# CORRECT - For GitHub issues, use the -F flag
-gh issue create -t "Issue Title" -F issue_description.md
+git commit -F /tmp/commit_msg.txt
+rm /tmp/commit_msg.txt
 ```
 
-### Accessing Task Information
+Always follow this pattern for multiline content:
+1. Create a temporary file in `/tmp` directory
+2. Write the multiline content to that file
+3. Reference the file in your command
+4. Delete the temporary file after use
 
-When assigned a specific task by issue number, use the GitHub CLI to access the full task description:
+### GitHub Project Management
+
+Use GitHub CLI to work with issues, milestones, and other project components:
+
+#### Accessing Issues
 
 ```bash
 # View issue #1
@@ -128,13 +137,67 @@ gh issue view 1 --comments
 gh issue view 1 --web
 ```
 
-Always review the complete task description from the GitHub issue to understand:
+#### Managing Milestones
+
+GitHub CLI doesn't have direct milestone commands, so use the GitHub API:
+
+```bash
+# Get milestone details
+gh api /repos/$(gh repo view --json nameWithOwner -q .nameWithOwner)/milestones/1 \
+  -q '.title, .description, .open_issues, .closed_issues'
+
+# List all issues in a milestone
+gh issue list --milestone 1 --state all
+
+# Create a milestone (using /tmp for multiline content)
+cat > /tmp/milestone_description.txt << 'EOF'
+Milestone description with multiple lines
+EOF
+
+gh api --method POST /repos/$(gh repo view --json nameWithOwner -q .nameWithOwner)/milestones \
+  -f title="New Milestone" \
+  -f description="$(cat /tmp/milestone_description.txt)" \
+  -f state="open" \
+  -q '.number'
+
+rm /tmp/milestone_description.txt
+
+# Edit a milestone
+cat > /tmp/updated_description.txt << 'EOF'
+Updated description
+EOF
+
+gh api --method PATCH /repos/$(gh repo view --json nameWithOwner -q .nameWithOwner)/milestones/1 \
+  -f title="Updated Title" \
+  -f description="$(cat /tmp/updated_description.txt)" \
+  -f state="open"
+
+rm /tmp/updated_description.txt
+```
+
+#### Creating and Updating Issues
+
+```bash
+# Create an issue with milestone assignment
+cat > /tmp/issue.md << 'EOF'
+Detailed description with requirements
+EOF
+
+gh issue create --title "Issue Title" --body-file /tmp/issue.md --milestone "1"
+rm /tmp/issue.md
+
+# Add existing issue to milestone
+gh api --method PATCH /repos/$(gh repo view --json nameWithOwner -q .nameWithOwner)/issues/5 \
+  -f milestone=1
+```
+
+When implementing a task, always review the complete task description to understand:
 - Requirements and acceptance criteria
 - Context and background information
-- Related tasks or dependencies
+- Related tasks and dependencies
 - Implementation guidance
 
-The task descriptions follow the template defined in `docs/templates/task_template.md` and should contain all necessary information to implement the task.
+The task descriptions follow the template in `docs/templates/task_template.md`.
 
 ### Data Processing
 
@@ -190,20 +253,12 @@ async def fetch_data(url):
 
 ## Pipeline Implementation Guidelines
 
-### 1. Collection Pipeline
+| **Pipeline** | **Key Guidelines** |
+|--------------|-------------------|
+| **Collection** | • Use ESPN client in `src/data/collection/espn/client.py`<br>• Follow incremental update pattern<br>• Store raw data in `data/raw/` directory |
+| **Feature** | • Inherit from `src.features.base.Feature`<br>• Specify dependencies and required data<br>• Use pure functions for transformations<br>• Register in feature registry |
 
-- Use the ESPN client in `src/data/collection/espn/client.py`
-- Follow the incremental update pattern for efficient daily updates
-- Store raw data in Parquet files in the `data/raw/` directory
-
-### 2. Feature Pipeline
-
-- Implement features as classes that inherit from `src.features.base.Feature`
-- Specify dependencies and required data for automatic resolution
-- Use pure functions for data transformations
-- Register features in the feature registry
-
-Example feature implementation:
+Example feature:
 ```python
 from src.features.base import Feature
 import polars as pl
@@ -235,9 +290,13 @@ If you encounter anything not covered in this guide:
 3. **Check test implementations** for usage examples
 4. **Ask for clarification** before implementing significant changes
 
-## Remember
+## Key Principles
 
-- The project prioritizes **simplicity** and **clarity** over complex abstractions
-- **Test everything** thoroughly through both unit and integration tests
-- **Document your changes** to help future developers (including other AI agents)
-- **Follow the Parquet-first approach** and pipeline architecture for all implementations 
+| **Principle** | **Description** |
+|---------------|-----------------|
+| **Simplicity** | Prefer simple solutions over complex abstractions |
+| **Testability** | Write comprehensive tests for all functionality |
+| **Documentation** | Document your changes and reasoning |
+| **Data Flow** | Follow the pipeline architecture and Parquet-first approach |
+| **Compatibility** | Ensure new code integrates with existing components |
+| **Organization** | Place code in the appropriate modules following project structure | 
