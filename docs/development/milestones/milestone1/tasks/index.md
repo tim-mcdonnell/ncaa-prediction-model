@@ -1,27 +1,44 @@
-# Milestone 1 Tasks: Data Collection and Storage
+# Milestone 1 Tasks
 
-This directory contains the task descriptions for Milestone 1, which focuses on data collection and storage. Each task is documented thoroughly to provide clear guidance for implementation.
+This document lists all tasks for Milestone 1: Data Collection and Storage.
 
-## Tasks
+## Task List
 
-| Task | Description | Status | GitHub Issue |
-|------|-------------|--------|--------------|
-| [ESPN API Research](./espn_api_research_task.md) | Research and document the available ESPN API endpoints for NCAA basketball data | In Progress | [#1](https://github.com/tim-mcdonnell/ncaa-prediction-model/issues/1) |
+| Task ID | Task Name | Priority | Status | Assigned To | GitHub Issue |
+|---------|-----------|----------|--------|------------|--------------|
+| 1 | [Implement ESPN API Client](./api_integration.md) | High | Not Started | TBD | [#3](https://github.com/tim-mcdonnell/ncaa-prediction-model/issues/3) |
+| 2 | [Implement Base Pipeline Component](./base_pipeline.md) | High | Not Started | TBD | [#4](https://github.com/tim-mcdonnell/ncaa-prediction-model/issues/4) |
+| 3 | [Implement Collection Pipeline](./collection_pipeline.md) | High | Not Started | TBD | [#5](https://github.com/tim-mcdonnell/ncaa-prediction-model/issues/5) |
+| 4 | [Implement Data Cleaning Module](./data_cleaning.md) | Medium | Not Started | TBD | [#6](https://github.com/tim-mcdonnell/ncaa-prediction-model/issues/6) |
 
-## Task Lifecycle
+## Task Dependencies
 
-1. Tasks are initially created in this directory as markdown files
-2. Each task is then created as a GitHub issue with a link back to the task description
-3. The status of each task is updated in this index as progress is made
-4. When a task is completed, the status is updated and any implementation notes are added to the task description
+```mermaid
+graph TD
+    A[1: ESPN API Client] --> C[3: Collection Pipeline]
+    B[2: Base Pipeline] --> C
+    C --> D[4: Data Cleaning Module]
+```
 
-## Adding New Tasks
+## Implementation Order
 
-To add a new task to this milestone:
+The recommended implementation order is:
 
-1. Create a new markdown file in this directory using the task template
-2. Add the task to the table above
-3. Create a GitHub issue for the task
-4. Update the task description with the issue number
+1. Task #1: ESPN API Client and Task #2: Base Pipeline (can be worked on in parallel)
+2. Task #3: Collection Pipeline (depends on #1 and #2)
+3. Task #4: Data Cleaning Module (depends on #3)
 
-For more information on creating tasks, see the [AI Task Authoring Guide](../../../ai-task-authoring-guide.md). 
+## Task Status Updates
+
+### [2023-03-11]
+- Initial task list created
+- All tasks are in "Not Started" status
+- GitHub issues created and linked to tasks
+
+## Next Steps
+
+After all Milestone 1 tasks are completed, we will:
+
+1. Have a complete data collection system for NCAA basketball data
+2. Begin work on the Processing Pipeline (Milestone 2)
+3. Document the collected data structure for feature engineering 

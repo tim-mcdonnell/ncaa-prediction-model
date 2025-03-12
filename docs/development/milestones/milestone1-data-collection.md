@@ -1,26 +1,27 @@
 # Milestone 1: Data Collection and Storage
 
 ## Overview
-This milestone focuses on building the foundation of our NCAA basketball prediction model by establishing reliable data collection and storage systems. We will create an integration with ESPN API endpoints to retrieve historical game data for NCAA men's basketball spanning from 2000 to 2023. This data will be properly structured, stored, and prepared for subsequent analysis and feature engineering.
+This milestone focuses on building the foundation of our NCAA basketball prediction model by establishing reliable data collection and storage systems. We will create an integration with ESPN API endpoints to retrieve historical game data for NCAA men's basketball spanning from 2000 to 2023. This data will be properly structured, stored as Parquet files, and prepared for subsequent analysis and feature engineering.
 
 The data collection pipeline established in this milestone will serve as the backbone for all subsequent model development and analysis, making its robustness and completeness critical to project success.
 
 ## Objectives
 - Build a reliable integration with ESPN API for retrieving historical NCAA basketball data
-- Design and implement an appropriate database schema for storing game and team statistics
+- Implement the Base Pipeline and Collection Pipeline components
 - Create efficient data loading and transformation pipelines
 - Implement data cleaning and validation routines to ensure data quality
 - Establish automated processes for incremental data updates
+- Store all collected data in Parquet file format
 
 ## Deliverables
 | Deliverable | Description | Status |
 |-------------|-------------|--------|
 | ESPN API Client | Python module to interact with ESPN API endpoints with rate limiting and error handling | 🔄 In Progress |
-| Database Schema | Normalized database design for storing teams, games, and statistics | ⏱️ Not Started |
-| Data Pipeline | ETL process to extract data from API, transform it, and load into database | ⏱️ Not Started |
+| Base Pipeline | Core pipeline class with shared functionality for all pipeline components | ⏱️ Not Started |
+| Collection Pipeline | Pipeline for extracting data from ESPN API and storing as Parquet files | ⏱️ Not Started |
 | Data Cleaning Module | Routines for identifying and cleaning inconsistent or problematic data | ⏱️ Not Started |
-| Initial Dataset | Complete dataset of NCAA basketball games from 2000-2023 | ⏱️ Not Started |
-| Documentation | Technical documentation of API integration, schema, and data dictionary | ⏱️ Not Started |
+| Initial Dataset | Complete dataset of NCAA basketball games from 2000-2023 stored as Parquet files | ⏱️ Not Started |
+| Documentation | Technical documentation of API integration, data schema, and data dictionary | ⏱️ Not Started |
 
 ## Tasks
 This section lists the specific tasks that need to be completed to achieve this milestone. Each task should later be created as a GitHub issue and linked here.
@@ -32,19 +33,18 @@ This section lists the specific tasks that need to be completed to achieve this 
 - [ ] Build error handling and retry logic (#XX)
 - [ ] Add logging for API interactions (#XX)
 
-### Database Design
-- [ ] Evaluate storage options (SQLite vs PostgreSQL) (#XX)
-- [ ] Design normalized database schema (#XX)
-- [ ] Create database migration scripts (#XX)
-- [ ] Implement database connection management (#XX)
-- [ ] Add database indexing for query optimization (#XX)
+### Base Pipeline Implementation
+- [ ] Create BasePipeline class with configuration management (#XX)
+- [ ] Implement logging and progress tracking (#XX)
+- [ ] Add error handling and resilience patterns (#XX)
+- [ ] Build test framework for pipeline components (#XX)
 
-### Data Pipeline
-- [ ] Build extraction module for API data (#XX)
-- [ ] Develop transformation logic for raw data (#XX)
-- [ ] Create loading routines for database insertion (#XX)
-- [ ] Implement incremental update logic (#XX)
-- [ ] Add pipeline monitoring and error alerts (#XX)
+### Collection Pipeline Implementation
+- [ ] Develop collection pipeline for NCAA basketball games (#XX)
+- [ ] Implement season-based collection logic (#XX)
+- [ ] Create incremental update functionality (#XX)
+- [ ] Build Parquet file storage utilities (#XX)
+- [ ] Add data validation during collection (#XX)
 
 ### Data Cleaning and Validation
 - [ ] Define data validation rules (#XX)
@@ -56,8 +56,8 @@ This section lists the specific tasks that need to be completed to achieve this 
 The milestone will be considered complete when:
 
 - [ ] API client can successfully retrieve data from all required ESPN endpoints
-- [ ] Database schema is implemented and documented
-- [ ] ETL pipeline can fully process and store data from API to database
+- [ ] Base Pipeline framework is implemented and documented
+- [ ] Collection Pipeline can fully process and store data from API to Parquet files
 - [ ] Historical data for all seasons (2000-2023) is successfully collected
 - [ ] Data cleaning routines identify and handle common data issues
 - [ ] Pipeline handles API rate limits and errors gracefully
@@ -66,21 +66,23 @@ The milestone will be considered complete when:
 
 ## Technical Details
 ### Architecture
-The data collection system will follow a modular design with clear separation of concerns:
+The data collection system will follow the pipeline architecture with clear separation of concerns:
+- Base Pipeline: Provides core functionality for all pipeline components
 - API Client Module: Responsible for communication with ESPN API
-- Data Models: Represent the structure of data from API and for database
-- ETL Pipeline: Orchestrates the flow of data from source to storage
-- Database Layer: Abstracts database operations and schema management
+- Collection Pipeline: Orchestrates the data collection and storage
+- Data Models: Represent the structure of data from API
+- Parquet Storage Utilities: Handle reading and writing Parquet files
 
 ### Implementation Approach
 We will use a combination of:
 - `requests` library for API communication
-- SQLAlchemy for database operations and ORM
+- `polars` for data manipulation (NOT pandas)
+- `pyarrow` for Parquet file operations
 - Pydantic for data validation and modeling
 - Scheduled jobs for regular data updates
 
 ### Data Models
-Key entities in our schema will include:
+Key entities in our data model will include:
 - Teams: Information about NCAA basketball teams
 - Games: Game results, scores, and basic statistics
 - Seasons: Season-specific information
@@ -91,15 +93,16 @@ Key entities in our schema will include:
 ## Resources
 ### Required Tools and Technologies
 - Python 3.11: Primary development language
-- SQLite/PostgreSQL: Database storage
-- SQLAlchemy: ORM and database operations
+- Polars: Data manipulation library (NOT pandas)
+- Pyarrow: Parquet file operations
 - Requests: HTTP client for API interactions
 - Pydantic: Data validation and modeling
 - Pytest: Testing framework
 
 ### References and Documentation
 - [ESPN API Documentation](https://www.espn.com/apis/devcenter/docs/)
-- [SQLAlchemy Documentation](https://docs.sqlalchemy.org/)
+- [Apache Parquet Format](https://parquet.apache.org/docs/)
+- [Polars Documentation](https://pola.rs/docs/)
 - [NCAA Basketball Statistics Guidelines](https://www.ncaa.org/sports/basketball-men)
 
 ## Timeline
@@ -110,8 +113,8 @@ Key entities in our schema will include:
 
 ### Key Checkpoints
 - API Integration Complete: [Date + 1 week]
-- Database Schema Finalized: [Date + 1.5 weeks]
-- Full Pipeline Implemented: [Date + 2.5 weeks]
+- Base Pipeline Implemented: [Date + 1.5 weeks]
+- Collection Pipeline Implemented: [Date + 2.5 weeks]
 - Testing and Documentation Complete: [Date + 3 weeks]
 
 ## Dependencies
@@ -128,7 +131,7 @@ Key entities in our schema will include:
 | ESPN API changes or limits | High | Medium | Implement version checking, rate limiting, and fallback mechanisms |
 | Incomplete historical data | High | Medium | Identify alternative data sources for supplementation |
 | Data format inconsistencies | Medium | High | Build robust data validation and transformation logic |
-| Database performance issues | Medium | Low | Implement proper indexing and query optimization |
+| Large Parquet files degrading performance | Medium | Low | Implement partitioning and optimization strategies |
 
 ## Status Updates
 ### [YYYY-MM-DD] - Milestone Kickoff
