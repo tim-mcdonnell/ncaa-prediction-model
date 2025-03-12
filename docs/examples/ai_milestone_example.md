@@ -1,138 +1,95 @@
 # Milestone Example: Data Collection Pipeline
 
-## Overview
+> **Note:** This document serves as the standard format for all milestone documents in this project. Use this example as a template when creating new milestones, adapting each section to the specific milestone requirements while maintaining the overall structure.
 
-This milestone focuses on implementing the data collection pipeline for retrieving NCAA basketball data from ESPN APIs. This component is foundational for the entire prediction model, providing the raw data needed for feature engineering and predictions.
+This milestone focuses on building the foundation for NCAA basketball predictions by establishing a reliable data collection system from ESPN APIs. It creates standardized data retrieval, transformation, and storage processes for historical and ongoing basketball game data.
 
 ## Objectives
+- Build a reliable integration with ESPN API for retrieving historical NCAA basketball data
+- Implement the Base Pipeline and Collection Pipeline components
+- Create efficient data loading and transformation pipelines
+- Implement data cleaning and validation routines to ensure data quality
+- Establish automated processes for incremental data updates
+- Store all collected data in Parquet file format
 
-- Build a reliable, resilient system for collecting data from ESPN APIs
-- Implement incremental update capability to efficiently retrieve only new/changed data
-- Develop parsers to standardize raw API responses into consistent formats
-- Store collected data in organized Parquet files for further processing
+## Deliverables
+| Deliverable | Description |
+|-------------|-------------|
+| ESPN API Client | Python module to interact with ESPN API endpoints with rate limiting and error handling |
+| Base Pipeline | Core pipeline class with shared functionality for all pipeline components |
+| Collection Pipeline | Pipeline for extracting data from ESPN API and storing as Parquet files |
+| Data Cleaning Module | Routines for identifying and cleaning inconsistent or problematic data |
+| Initial Dataset | Complete dataset of NCAA basketball games from 2002-present stored as Parquet files |
+| Documentation | Technical documentation of API integration, data schema, and data dictionary |
 
-## Architecture
+## Acceptance Criteria
+The milestone will be considered complete when:
 
-The collection pipeline consists of these key components:
+- [ ] API client can successfully retrieve data from all required ESPN endpoints
+- [ ] Base Pipeline framework is implemented and documented
+- [ ] Collection Pipeline can fully process and store data from API to Parquet files
+- [ ] Historical data for all seasons (2002-present) is successfully collected
+- [ ] Data cleaning routines identify and handle common data issues
+- [ ] Pipeline handles API rate limits and errors gracefully
+- [ ] Data retrieval and storage processes are fully documented
+- [ ] All tests for data collection components are passing
+
+## Technical Details
+### Architecture
+The data collection system will follow the pipeline architecture with clear separation of concerns:
 
 ```mermaid
 graph TD
-    A[ESPN API Client] --> B[Data Fetcher]
-    B --> C[Data Parser]
-    C --> D[Parquet Storage]
-    E[Collection Pipeline] --> A
-    E --> B
-    E --> C
-    E --> D
+    A[ESPN API Client] -->|Raw Data| B[Collection Pipeline]
+    B -->|Structured Data| C[Parquet Storage]
+    D[Base Pipeline] -->|Core Functionality| B
+    B -->|Issues| E[Data Cleaning Module]
+    E -->|Cleaned Data| C
 ```
 
-## Key Components
+### Components
+- **Base Pipeline**: Provides core functionality for all pipeline components
+- **API Client Module**: Responsible for communication with ESPN API
+- **Collection Pipeline**: Orchestrates the data collection and storage
+- **Data Models**: Represent the structure of data from API
+- **Parquet Storage Utilities**: Handle reading and writing Parquet files
 
-### 1. ESPN API Client
+### Data Flow
+```mermaid
+sequenceDiagram
+    participant E as ESPN API
+    participant C as Collection Pipeline
+    participant P as Parquet Storage
+    participant D as Data Cleaning
+    
+    C->>E: Request season data
+    E->>C: Return raw data
+    C->>P: Store raw data
+    C->>D: Send for cleaning
+    D->>P: Store cleaned data
+```
 
-A low-level client responsible for making HTTP requests to ESPN endpoints, managing rate limiting, and handling connection issues.
-
-**Key files:**
-- `src/data/collection/espn/client.py`
-- `tests/data/collection/espn/test_client.py`
-
-### 2. Data Parsers
-
-Transformers that convert raw ESPN API responses into standardized formats suitable for storage.
-
-**Key files:**
-- `src/data/collection/espn/parsers.py`
-- `tests/data/collection/espn/test_parsers.py`
-
-### 3. Parquet Storage
-
-Utilities for saving parsed data to Parquet files with appropriate directory structure and schema.
-
-**Key files:**
-- `src/data/storage/parquet_io.py`
-- `tests/data/storage/test_parquet_io.py`
-
-### 4. Collection Pipeline
-
-Orchestrates the entire collection process, managing incremental updates and coordinating between components.
-
-**Key files:**
-- `src/pipelines/collection_pipeline.py`
-- `tests/pipelines/test_collection_pipeline.py`
-
-## Tasks Breakdown
-
-This milestone can be broken down into the following tasks, ideal for implementation by AI coding agents:
-
-1. **Implement ESPN API Client**
-   - Create HTTP client with appropriate rate limiting
-   - Implement connection resilience (retries, circuit breakers)
-   - Support multiple ESPN endpoints (games, teams, rankings)
-
-2. **Develop Game Data Parser**
-   - Transform raw game data responses into standardized format
-   - Handle different game statuses and response structures
-   - Extract team, venue, and score information
-
-3. **Implement Team Data Parser**
-   - Transform team roster and information into standardized format
-   - Handle team rankings and statistics
-   - Normalize team identifiers across seasons
-
-4. **Create Parquet Storage Utilities**
-   - Implement save/load functions for Parquet data
-   - Create appropriate directory structure and partitioning
-   - Add schema validation for data consistency
-
-5. **Build Collection Pipeline Orchestrator**
-   - Implement pipeline coordinator class
-   - Add incremental update logic to avoid redundant fetching
-   - Create CLI interface for running collection tasks
-
-## Implementation Approach
-
-Each task should follow these principles:
-
-1. **Test-First Development**: Create comprehensive tests before implementation
-2. **Incremental Complexity**: Start with simple implementations and enhance iteratively
-3. **Clear Interfaces**: Define explicit input/output contracts between components
-4. **Error Handling**: Implement robust error handling with appropriate fallback strategies
-5. **Documentation**: Document component behavior and important design decisions
+## Resources
+### Required Tools and Technologies
+- Python 3.11+: Primary development language
+- Polars: Data manipulation library (NOT pandas)
+- Pyarrow: Parquet file operations
+- Requests: HTTP client for API interactions
+- Pydantic: Data validation and modeling
+- Pytest: Testing framework
 
 ## Dependencies
+### Prerequisite Milestones
+- None (this is the first milestone)
 
-- Python 3.11+
-- Polars for data manipulation
-- aiohttp for asynchronous HTTP requests
-- Pydantic for validation
-
-## Success Criteria
-
-This milestone will be considered complete when:
-
-1. All tests for collection components pass
-2. The collection pipeline can:
-   - Fetch complete historical seasons (2002-present)
-   - Perform incremental updates during a season
-   - Handle API errors gracefully
-   - Store data in appropriate Parquet format
-
-3. Documentation is complete and up-to-date
-4. Code follows project structure and conventions
+### External Dependencies
+- ESPN API availability and consistency
+- Sufficient historical data availability through API
 
 ## Risks and Mitigations
-
-| Risk | Mitigation |
-|------|------------|
-| ESPN API changes formats | Build flexible parsers with robust error handling |
-| Rate limiting/blocking | Implement appropriate backoff strategies and rate limiting |
-| Missing historical data | Document known gaps and handle gracefully in data processing |
-| Large data volumes | Use efficient Parquet compression and partitioning |
-
-## Timeline
-
-Estimated implementation time: 2-3 weeks
-
-- Week 1: ESPN client and parsers
-- Week 2: Storage utilities and initial pipeline
-- Week 3: Full pipeline integration and testing 
+| Risk | Impact | Likelihood | Mitigation Strategy |
+|------|--------|------------|---------------------|
+| ESPN API changes or limits | High | Medium | Implement version checking, rate limiting, and fallback mechanisms |
+| Incomplete historical data | High | Medium | Identify alternative data sources for supplementation |
+| Data format inconsistencies | Medium | High | Build robust data validation and transformation logic |
+| Large Parquet files degrading performance | Medium | Low | Implement partitioning and optimization strategies |

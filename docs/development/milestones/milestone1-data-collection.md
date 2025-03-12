@@ -137,11 +137,9 @@ Key entities in our data model will include:
 ### [YYYY-MM-DD] - Milestone Kickoff
 Initial planning complete, beginning with ESPN API exploration and integration.
 
-## Related Templates
-This milestone document works in conjunction with the following templates:
-- **Task Template**: Each task listed in this milestone should be created using the Task Template, which provides more detailed implementation guidance.
-- **Issue Template**: For tracking bugs, technical debt, or other issues encountered during milestone implementation.
-- **PR Template**: For code changes that implement tasks within this milestone.
+## Related Examples
+This milestone document works in conjunction with the following examples:
+- **AI Task Example**: Each task listed in this milestone should be created following the AI Task Example, which provides more detailed implementation guidance.
 
 ---
 

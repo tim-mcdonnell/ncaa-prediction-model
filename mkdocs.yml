@@ -74,15 +74,6 @@ nav:
     - Overview: overview/index.md
     - Architecture: overview/architecture.md
     - Tech Stack: overview/tech-stack.md
-  - Milestones:
-    - Overview: milestones/index.md
-    - Data Collection: milestones/milestone1-data-collection.md
-    - Data Validation: milestones/milestone2-data-validation.md
-    - Feature Engineering: milestones/milestone3-feature-engineering.md
-    - Model Development: milestones/milestone4-model-development.md
-    - Backtesting Framework: milestones/milestone5-backtesting.md
-    - Visualization: milestones/milestone6-visualization.md
-    - Deployment: milestones/milestone7-deployment.md
   - Data:
     - Collection:
       - ESPN API Integration: data/collection/espn-api-integration.md
@@ -97,11 +88,10 @@ nav:
     - Test Strategy: development/test-strategy.md
     - AI Coding Agent Guide: development/ai-coding-agent-guide.md
     - AI Task Authoring Guide: development/ai-task-authoring-guide.md
-  - Examples:
+  - Documentation Standards:
     - Overview: examples/index.md
+    - Milestone Example: examples/ai_milestone_example.md
     - AI Task Example: examples/ai_task_example.md
-    - AI Milestone Example: examples/ai_milestone_example.md
-  - Templates:
-    - Overview: templates/index.md
-    - AI Task Template: templates/ai_task_template.md
+    - Issue Example: examples/ai_issue_example.md
+    - PR Example: examples/ai_pr_example.md
   - API Reference: reference/ 

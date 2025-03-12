@@ -22,13 +22,15 @@ This project develops a machine learning model to predict NCAA men's basketball 
 
 The project is organized into 7 key milestones:
 
-1. [**Data Collection and Storage**](development/milestones/milestone1-data-collection.md) - Gathering and storing historical NCAA basketball data
-2. [**Data Validation and Quality Control**](development/milestones/milestone2-data-validation.md) - Ensuring data quality and completeness
-3. [**Feature Engineering**](development/milestones/milestone3-feature-engineering.md) - Creating meaningful features from raw data
-4. [**Model Development**](development/milestones/milestone4-model-development.md) - Building and tuning prediction models
-5. [**Backtesting Framework**](development/milestones/milestone5-backtesting.md) - Evaluating model performance on historical data
-6. [**Visualization and Dashboard**](development/milestones/milestone6-visualization.md) - Creating interfaces to explore data and predictions
-7. [**Deployment and Monitoring**](development/milestones/milestone7-deployment.md) - Deploying and maintaining the prediction system
+1. **Data Collection and Storage** - Gathering and storing historical NCAA basketball data
+2. **Data Validation and Quality Control** - Ensuring data quality and completeness
+3. **Feature Engineering** - Creating meaningful features from raw data
+4. **Model Development** - Building and tuning prediction models
+5. **Backtesting Framework** - Evaluating model performance on historical data
+6. **Visualization and Dashboard** - Creating interfaces to explore data and predictions
+7. **Deployment and Monitoring** - Deploying and maintaining the prediction system
+
+For detailed information on each milestone, see the [GitHub milestones page](https://github.com/tim-mcdonnell/ncaa-prediction-model/milestones).
 
 ## Documentation
 
@@ -43,7 +45,6 @@ This documentation site provides:
 
 - [**Project Overview**](overview/index.md) - High-level project description and goals
 - [**Architecture Documentation**](development/pipeline-architecture.md) - System design and architectural decisions
-- [**Milestones**](development/milestones/index.md) - Detailed milestone documentation
 - [**Development Guides**](development/index.md) - Guidelines for contributing to the project
 - [**API Reference**](reference/index.md) - API documentation for the codebase
 

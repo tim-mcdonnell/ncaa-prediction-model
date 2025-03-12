@@ -1,31 +1,54 @@
-# Examples
+# NCAA Basketball Prediction Model Documentation Standards
 
-This section contains practical examples to help you understand how to implement and use key concepts in the NCAA Basketball Prediction Model project.
+This directory contains examples that serve as the standards for project documentation. All document types follow these examples to ensure consistency, clarity, and effectiveness in our development process.
 
-## AI Development Examples
+## Documentation Approach
 
-These examples demonstrate how to structure tasks and milestones for AI coding agents to ensure successful implementation:
+We follow an **example-based approach** rather than using abstract templates. The examples demonstrate the expected structure, content, and style for different document types.
 
-- [AI Task Example](./ai_task_example.md) - A sample GitHub issue for an AI coding agent
-- [AI Milestone Example](./ai_milestone_example.md) - A sample milestone documentation
+## Available Examples
 
-## How to Use These Examples
+| Document Type | Purpose | Example Location | When to Use |
+|---------------|---------|------------------|-------------|
+| Milestone | Define project milestones | [Example](ai_milestone_example.md) | When planning a major project phase |
+| AI Task | Guide AI agents on implementation | [Example](ai_task_example.md) | When assigning tasks to AI |
+| Issue | Track bugs and improvement requests | [Example](ai_issue_example.md) | When identifying problems |
+| PR | Document code changes | [Example](ai_pr_example.md) | When submitting code for review |
 
-### For Task Creation
+## Key Documentation Principles
 
-The AI Task Example provides a template for creating GitHub issues that AI agents can effectively implement. Use it as a reference when:
+1. **Be Concise**: Focus on essential information
+2. **Be Specific**: Include concrete details, not vague descriptions
+3. **Be Actionable**: Ensure documentation leads to clear actions
+4. **Be Visual**: Use diagrams and examples where helpful
+5. **Be Consistent**: Follow established patterns
 
-- Breaking down milestone work into individual tasks
-- Assigning implementation work to AI assistants
-- Creating clear boundaries and requirements for development
+## Documentation Workflow
 
-### For Milestone Planning
+### For Milestones
+1. Use the milestone example as a reference for content and structure
+2. Create milestones directly on GitHub at https://github.com/tim-mcdonnell/ncaa-prediction-model/milestones
+3. Include all the key information from the example such as objectives, deliverables, and acceptance criteria
 
-The AI Milestone Example shows how to structure high-level milestone documentation that can be broken down into AI-friendly tasks. Use it when:
+### For AI Tasks
+1. Copy the AI task example from `docs/examples/ai_task_example.md`
+2. Update all sections to reflect the specific task
+3. Add concrete examples that show expected inputs and outputs
 
-- Planning a new feature or component
-- Defining the architecture for a subsystem
-- Preparing a roadmap for implementation
+### For Issues & PRs
+1. Refer to the examples (`ai_issue_example.md` and `ai_pr_example.md`) when creating GitHub issues and PRs
+2. Use the GitHub interface to create new issues and PRs, following the established format
+3. Include all relevant sections from the examples to ensure comprehensive documentation
+
+## Example Maintenance
+
+Our examples evolve as our project matures. If you have suggestions for improvements:
+
+1. Create an issue describing the proposed changes
+2. Implement the changes in a PR
+3. Update any related documentation
+
+Remember: The goal of documentation is to facilitate development, not create bureaucracy. Examples should be practical and demonstrate real-world usage patterns that have proven effective in our project.
 
 ## Additional Resources
 
