@@ -152,6 +152,65 @@ Documentation is tested as part of the CI/CD pipeline:
 2. Code examples are tested where possible
 3. Build errors are caught before deployment
 
+## Handling Multiline Content
+
+When working with documentation and GitHub:
+
+### 1. Creating Documentation PRs
+
+Always use temporary markdown files for PR descriptions:
+
+```python
+# Create documentation PR
+edit_file("tmp/docs_pr.md", """
+# Documentation: Update Feature Pipeline Guide
+
+Updates the feature pipeline documentation with:
+- New diagrams
+- Updated examples
+- Clarified requirements
+""")
+run_terminal_cmd("gh pr create --title 'Update Feature Pipeline Documentation' --body-file tmp/docs_pr.md")
+delete_file("tmp/docs_pr.md")
+```
+
+### 2. Documentation Issues
+
+Use the standard approach for creating documentation issues:
+
+```python
+# Create documentation issue
+edit_file("tmp/docs_issue.md", """
+# Documentation Gap: Feature Pipeline Examples
+
+## Overview
+The feature pipeline documentation lacks concrete examples...
+
+## Required Updates
+1. Add code examples for common use cases
+2. Include diagrams for complex workflows
+3. Add troubleshooting guide
+""")
+run_terminal_cmd("gh issue create --title 'Add Feature Pipeline Examples' --body-file tmp/docs_issue.md")
+delete_file("tmp/docs_issue.md")
+```
+
+### 3. Documentation Reviews
+
+When providing detailed review comments:
+
+```python
+# Create review comments
+edit_file("tmp/review.md", """
+The documentation needs the following updates:
+1. Add more concrete examples
+2. Include error handling scenarios
+3. Clarify prerequisite knowledge
+""")
+run_terminal_cmd("gh pr review 123 --body-file tmp/review.md")
+delete_file("tmp/review.md")
+```
+
 ## Documentation Deployment
 
 Documentation is automatically deployed:

@@ -89,8 +89,8 @@ nav:
     - AI Coding Agent Guide: development/ai-coding-agent-guide.md
     - Examples:
       - Overview: development/examples/index.md
-      - Milestone Example: development/examples/ai_milestone_example.md
-      - Task Example: development/examples/ai_task_example.md
-      - Issue Example: development/examples/ai_issue_example.md
-      - PR Example: development/examples/ai_pr_example.md
+      - Milestone Example: development/examples/milestone_example.md
+      - Task Example: development/examples/task_example.md
+      - Issue Example: development/examples/issue_example.md
+      - PR Example: development/examples/pr_example.md
   - API Reference: reference/ 

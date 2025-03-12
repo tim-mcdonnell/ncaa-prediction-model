@@ -196,6 +196,43 @@ Each implementation should go through:
 3. Documentation review
 4. Test coverage verification
 
+#### GitHub Workflow
+
+When creating PRs and issues:
+
+1. Use markdown files in `tmp/` for all multiline content:
+   ```python
+   # Create PR description
+   edit_file("tmp/pr_description.md", """
+   # Feature: Add ESPN API Client
+   
+   Implements the ESPN API client with rate limiting...
+   """)
+   run_terminal_cmd("gh pr create --title 'Add ESPN API Client' --body-file tmp/pr_description.md")
+   delete_file("tmp/pr_description.md")
+   ```
+
+2. Follow the standard issue template:
+   ```python
+   edit_file("tmp/issue_text.md", """
+   # Issue Title
+   
+   ## Overview
+   Brief description...
+   """)
+   run_terminal_cmd("gh issue create --title 'New Issue' --body-file tmp/issue_text.md")
+   delete_file("tmp/issue_text.md")
+   ```
+
+3. Use GitHub API for milestone management:
+   ```python
+   edit_file("tmp/milestone.md", """
+   Milestone description with implementation phases...
+   """)
+   run_terminal_cmd("gh api --method POST /repos/owner/repo/milestones -f title='Phase 1' -f description=\"$(cat tmp/milestone.md)\"")
+   delete_file("tmp/milestone.md")
+   ```
+
 ## Definition of Done
 
 A component is considered complete when:

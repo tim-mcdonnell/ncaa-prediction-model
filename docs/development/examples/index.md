@@ -8,12 +8,12 @@ We follow an **example-based approach** rather than using abstract templates. Th
 
 ## Available Examples
 
-| Document Type | Purpose | Example Location | When to Use |
-|---------------|---------|------------------|-------------|
-| Milestone | Define project milestones | [Example](ai_milestone_example.md) | When planning a major project phase |
-| AI Task | Guide AI agents on implementation | [Example](ai_task_example.md) | When assigning tasks to AI |
-| Issue | Track bugs and improvement requests | [Example](ai_issue_example.md) | When identifying problems |
-| PR | Document code changes | [Example](ai_pr_example.md) | When submitting code for review |
+| Type | Purpose | Example | When to Use |
+|------|---------|---------|-------------|
+| Milestone | Define project milestones | [Example](milestone_example.md) | When planning a major project phase |
+| Task | Guide implementation | [Example](task_example.md) | When defining development tasks |
+| Issue | Track bugs and improvement requests | [Example](issue_example.md) | When identifying problems |
+| PR | Document code changes | [Example](pr_example.md) | When submitting code for review |
 
 ## Key Documentation Principles
 
@@ -36,7 +36,7 @@ We follow an **example-based approach** rather than using abstract templates. Th
 3. Add concrete examples that show expected inputs and outputs
 
 ### For Issues & PRs
-1. Refer to the examples (`ai_issue_example.md` and `ai_pr_example.md`) when creating GitHub issues and PRs
+1. Refer to the examples (`issue_example.md` and `pr_example.md`) when creating GitHub issues and PRs
 2. Use the GitHub interface to create new issues and PRs, following the established format
 3. Include all relevant sections from the examples to ensure comprehensive documentation
 
@@ -64,4 +64,17 @@ When adding new examples to this directory:
 1. Create your example file with a clear, descriptive name (e.g., `pipeline_usage_example.md`)
 2. Add a link to your example in this index file
 3. Include sufficient context and explanation in your example
-4. Reference the example from relevant documentation 
+4. Reference the example from relevant documentation
+
+## Usage Guidelines
+
+### For Developers
+
+1. Copy the task example from `docs/examples/task_example.md`
+2. Follow the structure and formatting
+3. Include all required sections
+
+### For Project Management
+
+1. Refer to the examples (`issue_example.md` and `pr_example.md`) when creating GitHub issues and PRs
+2. Maintain consistent formatting across all documentation 

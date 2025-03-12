@@ -138,10 +138,10 @@ For detailed information on each milestone, see the [GitHub milestones page](htt
 ## Project Documentation Standards
 To maintain consistency throughout the project, we follow a set of standardized examples:
 
-- [Milestone Example](docs/examples/ai_milestone_example.md) - For documenting project milestones
-- [AI Task Example](docs/examples/ai_task_example.md) - For defining implementation tasks for AI agents
-- [Issue Example](docs/examples/ai_issue_example.md) - For tracking bugs and technical debt
-- [PR Example](docs/examples/ai_pr_example.md) - For code change submissions
+- [Milestone Example](docs/examples/milestone_example.md) - For documenting project milestones
+- [Task Example](docs/examples/task_example.md) - For defining implementation tasks
+- [Issue Example](docs/examples/issue_example.md) - For tracking bugs and technical debt
+- [PR Example](docs/examples/pr_example.md) - For code change submissions
 
 For more information on using these examples, see the [documentation standards](docs/examples/index.md).
 
