@@ -81,44 +81,49 @@ uv pip install -e .
 uv pip install package_name
 ```
 
-### Terminal Command Limitations
+## ⚠️ Critical Terminal Command Limitations ⚠️
 
-❌ **NEVER include newline characters in terminal commands**  
-✅ **ALWAYS use a separate file in the `/tmp` directory for multiline content**
+One of the most common issues AI agents encounter is with terminal commands containing newlines.
 
-Terminal commands with newlines will fail. This is particularly important for:
-- Git commit messages
-- GitHub issue creation and updates
-- GitHub milestone creation and updates
-- Complex commands with multiple lines
+### The Problem:
 
-Examples of correct approaches:
+❌ **Terminal commands with newline characters WILL FAIL** ❌
 
 ```bash
-# INCORRECT - Will fail due to newlines
-git commit -m "Add feature X
-
-This implements the new feature with:
-- Component A
-- Component B"
-
-# CORRECT - Use a temp file in /tmp for multiline content
-cat > /tmp/commit_msg.txt << 'EOF'
-Add feature X
-
-This implements the new feature with:
-- Component A
-- Component B
-EOF
-git commit -F /tmp/commit_msg.txt
-rm /tmp/commit_msg.txt
+# THIS WILL FAIL - Do not attempt this approach
+git commit -m "First line of commit message
+Second line of commit message"
 ```
 
-Always follow this pattern for multiline content:
-1. Create a temporary file in `/tmp` directory
-2. Write the multiline content to that file
-3. Reference the file in your command
-4. Delete the temporary file after use
+### The Solution:
+
+✅ **ALWAYS use a temporary file in `/tmp` for any multiline content** ✅
+
+Follow this exact pattern for all multiline content:
+
+```bash
+# 1. Create a temporary file with your content
+echo "Title of commit/PR/issue" > /tmp/message.txt
+echo "" >> /tmp/message.txt  # Add blank line
+echo "Detailed description goes here." >> /tmp/message.txt
+
+# 2. Use the file in your command
+git commit -F /tmp/message.txt
+# OR
+gh pr create --title "Title" --body-file /tmp/message.txt
+# OR
+gh issue create --title "Title" --body-file /tmp/message.txt
+
+# 3. Clean up (optional)
+rm /tmp/message.txt
+```
+
+This pattern is REQUIRED for:
+- Git commit messages
+- GitHub PR descriptions
+- GitHub issue creation
+- GitHub milestone descriptions
+- Any command with multiple lines
 
 ### GitHub Project Management
 
