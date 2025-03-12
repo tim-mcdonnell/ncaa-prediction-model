@@ -826,7 +826,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/ai_milestone_example/" class="md-nav__link">
+      <a href="../examples/milestone_example/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -848,7 +848,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/ai_task_example/" class="md-nav__link">
+      <a href="../examples/task_example/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -870,7 +870,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/ai_issue_example/" class="md-nav__link">
+      <a href="../examples/issue_example/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -892,7 +892,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/ai_pr_example/" class="md-nav__link">
+      <a href="../examples/pr_example/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1089,26 +1089,26 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#2-documentation-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Documentation Issues
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-documentation-reviews" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Documentation Reviews
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#version-control-for-documentation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Version Control for Documentation
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#documentation-testing" class="md-nav__link">
-    <span class="md-ellipsis">
-      Documentation Testing
-    </span>
-  </a>
   
 </li>
       
@@ -1259,21 +1259,72 @@
 <a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>    B --&gt; C[Feature Calculator]
 <a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>    C --&gt; D[Processed Features]
 </code></pre></div>
-```</p>
-<h2 id="version-control-for-documentation">Version Control for Documentation</h2>
-<p>Documentation should be version-controlled along with code:</p>
-<ol>
-<li>Document changes should be included in the same PR as code changes</li>
-<li>Major documentation updates should be reviewed separately</li>
-<li>Breaking changes should include updates to relevant documentation</li>
-</ol>
-<h2 id="documentation-testing">Documentation Testing</h2>
-<p>Documentation is tested as part of the CI/CD pipeline:</p>
-<ol>
-<li>Links are checked for validity</li>
-<li>Code examples are tested where possible</li>
-<li>Build errors are caught before deployment</li>
-</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>## Version Control for Documentation
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>Documentation should be version-controlled along with code:
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>1. Document changes should be included in the same PR as code changes
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>2. Major documentation updates should be reviewed separately
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>3. Breaking changes should include updates to relevant documentation
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>## Documentation Testing
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>Documentation is tested as part of the CI/CD pipeline:
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>1. Links are checked for validity
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>2. Code examples are tested where possible
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>3. Build errors are caught before deployment
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>## Handling Multiline Content
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>When working with documentation and GitHub:
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>### 1. Creating Documentation PRs
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>Always use temporary markdown files for PR descriptions:
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>```python
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a># Create documentation PR
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>edit_file(&quot;tmp/docs_pr.md&quot;, &quot;&quot;&quot;
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a># Documentation: Update Feature Pipeline Guide
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>
+<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>Updates the feature pipeline documentation with:
+<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a>- New diagrams
+<a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a>- Updated examples
+<a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a>- Clarified requirements
+<a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a>&quot;&quot;&quot;)
+<a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a>run_terminal_cmd(&quot;gh pr create --title &#39;Update Feature Pipeline Documentation&#39; --body-file tmp/docs_pr.md&quot;)
+<a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a>delete_file(&quot;tmp/docs_pr.md&quot;)
+</code></pre></div></p>
+<h3 id="2-documentation-issues">2. Documentation Issues</h3>
+<p>Use the standard approach for creating documentation issues:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Create documentation issue</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">edit_file</span><span class="p">(</span><span class="s2">&quot;tmp/docs_issue.md&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="s2"># Documentation Gap: Feature Pipeline Examples</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="s2">## Overview</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="s2">The feature pipeline documentation lacks concrete examples...</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="s2">## Required Updates</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="s2">1. Add code examples for common use cases</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="s2">2. Include diagrams for complex workflows</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="s2">3. Add troubleshooting guide</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="n">run_terminal_cmd</span><span class="p">(</span><span class="s2">&quot;gh issue create --title &#39;Add Feature Pipeline Examples&#39; --body-file tmp/docs_issue.md&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="n">delete_file</span><span class="p">(</span><span class="s2">&quot;tmp/docs_issue.md&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="3-documentation-reviews">3. Documentation Reviews</h3>
+<p>When providing detailed review comments:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Create review comments</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">edit_file</span><span class="p">(</span><span class="s2">&quot;tmp/review.md&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="s2">The documentation needs the following updates:</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="s2">1. Add more concrete examples</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="s2">2. Include error handling scenarios</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="s2">3. Clarify prerequisite knowledge</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="n">run_terminal_cmd</span><span class="p">(</span><span class="s2">&quot;gh pr review 123 --body-file tmp/review.md&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="n">delete_file</span><span class="p">(</span><span class="s2">&quot;tmp/review.md&quot;</span><span class="p">)</span>
+</code></pre></div>
 <h2 id="documentation-deployment">Documentation Deployment</h2>
 <p>Documentation is automatically deployed:</p>
 <ol>

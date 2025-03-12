@@ -906,6 +906,48 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Best Practices
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-a-github-issue" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating a GitHub Issue:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#creating-a-git-commit" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating a Git Commit:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#github-project-management" class="md-nav__link">
     <span class="md-ellipsis">
       GitHub Project Management
@@ -1102,7 +1144,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/ai_milestone_example/" class="md-nav__link">
+      <a href="../examples/milestone_example/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1124,7 +1166,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/ai_task_example/" class="md-nav__link">
+      <a href="../examples/task_example/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1146,7 +1188,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/ai_issue_example/" class="md-nav__link">
+      <a href="../examples/issue_example/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1168,7 +1210,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/ai_pr_example/" class="md-nav__link">
+      <a href="../examples/pr_example/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1408,6 +1450,48 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Best Practices
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-a-github-issue" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating a GitHub Issue:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#creating-a-git-commit" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating a Git Commit:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#github-project-management" class="md-nav__link">
     <span class="md-ellipsis">
       GitHub Project Management
@@ -1578,11 +1662,11 @@
 </tr>
 <tr>
 <td><strong>GitHub Management</strong></td>
-<td>Use GitHub API for milestones, store multiline content in <code>/tmp</code></td>
+<td>Use GitHub API for milestones, store multiline content in <code>tmp</code></td>
 </tr>
 <tr>
 <td><strong>Terminal Commands</strong></td>
-<td>Avoid newlines, use <code>/tmp</code> for multiline content</td>
+<td>Avoid newlines, use <code>tmp</code> for multiline content</td>
 </tr>
 </tbody>
 </table>
@@ -1643,122 +1727,192 @@
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>package_name
 </code></pre></div></p>
 <h2 id="critical-terminal-command-limitations">⚠️ Critical Terminal Command Limitations ⚠️</h2>
-<p>One of the most common issues AI agents encounter is with terminal commands containing newlines.</p>
+<p>One of the most common issues AI agents encounter is with terminal commands containing newlines. Here's how to handle multiline content properly:</p>
 <h3 id="the-problem">The Problem:</h3>
 <p>❌ <strong>Terminal commands with newline characters WILL FAIL</strong> ❌</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># THIS WILL FAIL - Do not attempt this approach</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># THIS WILL FAIL - Do not attempt these approaches</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;First line of commit message</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="s2">Second line of commit message&quot;</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># THIS WILL ALSO FAIL - Don&#39;t try to echo multiple lines directly</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Line 1</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="s2">Line 2</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="s2">Line 3&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>output.txt
 </code></pre></div>
 <h3 id="the-solution">The Solution:</h3>
-<p>✅ <strong>ALWAYS use a temporary file in <code>/tmp</code> for any multiline content</strong> ✅</p>
-<p>Follow this exact pattern for all multiline content:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># 1. Create a temporary file with your content</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Title of commit/PR/issue&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>/tmp/message.txt
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>/tmp/message.txt<span class="w">  </span><span class="c1"># Add blank line</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Detailed description goes here.&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>/tmp/message.txt
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="c1"># 2. Use the file in your command</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>git<span class="w"> </span>commit<span class="w"> </span>-F<span class="w"> </span>/tmp/message.txt
+<p>✅ <strong>ALWAYS use temporary markdown files in <code>tmp/</code> for multiline content</strong> ✅</p>
+<p>Follow this pattern for handling multiline content:</p>
+<ol>
+<li>Create/edit a temporary markdown file in the <code>tmp/</code> directory</li>
+<li>Use the file in your command</li>
+<li>Clean up the temporary file when done</li>
+</ol>
+<p>Example workflow:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># 1. Edit a temporary markdown file</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">edit_file</span><span class="p">(</span><span class="s2">&quot;tmp/commit_message.md&quot;</span><span class="p">,</span> <span class="s2">&quot;Add your multiline content here&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># 2. Use the file in commands</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">run_terminal_cmd</span><span class="p">(</span><span class="s2">&quot;git commit -F tmp/commit_message.md&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="c1"># OR</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">run_terminal_cmd</span><span class="p">(</span><span class="s2">&quot;gh pr create --title &#39;Title&#39; --body-file tmp/commit_message.md&quot;</span><span class="p">)</span>
 <a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="c1"># OR</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>gh<span class="w"> </span>pr<span class="w"> </span>create<span class="w"> </span>--title<span class="w"> </span><span class="s2">&quot;Title&quot;</span><span class="w"> </span>--body-file<span class="w"> </span>/tmp/message.txt
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="c1"># OR</span>
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>gh<span class="w"> </span>issue<span class="w"> </span>create<span class="w"> </span>--title<span class="w"> </span><span class="s2">&quot;Title&quot;</span><span class="w"> </span>--body-file<span class="w"> </span>/tmp/message.txt
-<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
-<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="c1"># 3. Clean up (optional)</span>
-<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>rm<span class="w"> </span>/tmp/message.txt
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">run_terminal_cmd</span><span class="p">(</span><span class="s2">&quot;gh issue create --title &#39;Title&#39; --body-file tmp/commit_message.md&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="c1"># 3. Clean up</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="n">delete_file</span><span class="p">(</span><span class="s2">&quot;tmp/commit_message.md&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>This pattern is REQUIRED for:
 - Git commit messages
 - GitHub PR descriptions
 - GitHub issue creation
 - GitHub milestone descriptions
-- Any command with multiple lines</p>
+- Any command requiring multiline content</p>
+<h3 id="best-practices">Best Practices</h3>
+<ol>
+<li><strong>File Naming</strong>:</li>
+<li>Use descriptive names: <code>issue_text.md</code>, <code>pr_description.md</code>, etc.</li>
+<li>Always use <code>.md</code> extension for proper markdown formatting</li>
+<li>
+<p>Place all temporary files in the <code>tmp/</code> directory</p>
+</li>
+<li>
+<p><strong>File Management</strong>:</p>
+</li>
+<li>Create files only when needed</li>
+<li>Delete files after use</li>
+<li>Don't reuse filenames within the same conversation</li>
+<li>
+<p>Use unique filenames to avoid conflicts</p>
+</li>
+<li>
+<p><strong>Content Creation</strong>:</p>
+</li>
+<li>Use the <code>edit_file</code> tool to create/modify content</li>
+<li>Write complete, well-formatted markdown</li>
+<li>
+<p>Include all necessary sections and formatting</p>
+</li>
+<li>
+<p><strong>Command Execution</strong>:</p>
+</li>
+<li>Use <code>--body-file</code> or <code>-F</code> flags to read from files</li>
+<li>Verify file exists before using in commands</li>
+<li>Clean up files after successful command execution</li>
+</ol>
+<h3 id="examples">Examples</h3>
+<h4 id="creating-a-github-issue">Creating a GitHub Issue:</h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># 1. Create content</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">edit_file</span><span class="p">(</span><span class="s2">&quot;tmp/issue_text.md&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;&quot;# Issue Title</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="s2">## Description</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="s2">Detailed issue description here...</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="c1"># 2. Create issue</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="n">run_terminal_cmd</span><span class="p">(</span><span class="s2">&quot;gh issue create --title &#39;New Feature&#39; --body-file tmp/issue_text.md --milestone &#39;1&#39;&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="c1"># 3. Clean up</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="n">delete_file</span><span class="p">(</span><span class="s2">&quot;tmp/issue_text.md&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="creating-a-git-commit">Creating a Git Commit:</h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># 1. Create content</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">edit_file</span><span class="p">(</span><span class="s2">&quot;tmp/commit_msg.md&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;&quot;Feature: Add new functionality</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="s2">- Add X component</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="s2">- Implement Y feature</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="s2">- Update Z documentation&quot;&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="c1"># 2. Commit</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="n">run_terminal_cmd</span><span class="p">(</span><span class="s2">&quot;git commit -F tmp/commit_msg.md&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="c1"># 3. Clean up</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="n">delete_file</span><span class="p">(</span><span class="s2">&quot;tmp/commit_msg.md&quot;</span><span class="p">)</span>
+</code></pre></div>
 <h3 id="github-project-management">GitHub Project Management</h3>
 <p>Use GitHub CLI to work with issues, milestones, and other project components:</p>
 <h4 id="accessing-issues">Accessing Issues</h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># View issue #1</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>gh<span class="w"> </span>issue<span class="w"> </span>view<span class="w"> </span><span class="m">1</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># View issue #1 with all comments</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>gh<span class="w"> </span>issue<span class="w"> </span>view<span class="w"> </span><span class="m">1</span><span class="w"> </span>--comments
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1"># View issue #1 in web browser</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>gh<span class="w"> </span>issue<span class="w"> </span>view<span class="w"> </span><span class="m">1</span><span class="w"> </span>--web
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># View issue #1</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>gh<span class="w"> </span>issue<span class="w"> </span>view<span class="w"> </span><span class="m">1</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># View issue #1 with all comments</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>gh<span class="w"> </span>issue<span class="w"> </span>view<span class="w"> </span><span class="m">1</span><span class="w"> </span>--comments
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1"># View issue #1 in web browser</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>gh<span class="w"> </span>issue<span class="w"> </span>view<span class="w"> </span><span class="m">1</span><span class="w"> </span>--web
 </code></pre></div>
 <h4 id="managing-milestones">Managing Milestones</h4>
 <p>GitHub CLI doesn't have direct milestone commands, so use the GitHub API:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Get milestone details</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>gh<span class="w"> </span>api<span class="w"> </span>/repos/<span class="k">$(</span>gh<span class="w"> </span>repo<span class="w"> </span>view<span class="w"> </span>--json<span class="w"> </span>nameWithOwner<span class="w"> </span>-q<span class="w"> </span>.nameWithOwner<span class="k">)</span>/milestones/1<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span>-q<span class="w"> </span><span class="s1">&#39;.title, .description, .open_issues, .closed_issues&#39;</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="c1"># List all issues in a milestone</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>gh<span class="w"> </span>issue<span class="w"> </span>list<span class="w"> </span>--milestone<span class="w"> </span><span class="m">1</span><span class="w"> </span>--state<span class="w"> </span>all
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="c1"># Create a milestone (using /tmp for multiline content)</span>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>cat<span class="w"> </span>&gt;<span class="w"> </span>/tmp/milestone_description.txt<span class="w"> </span><span class="s">&lt;&lt; &#39;EOF&#39;</span>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="s">Milestone description with multiple lines</span>
-<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="s">EOF</span>
-<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>
-<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>gh<span class="w"> </span>api<span class="w"> </span>--method<span class="w"> </span>POST<span class="w"> </span>/repos/<span class="k">$(</span>gh<span class="w"> </span>repo<span class="w"> </span>view<span class="w"> </span>--json<span class="w"> </span>nameWithOwner<span class="w"> </span>-q<span class="w"> </span>.nameWithOwner<span class="k">)</span>/milestones<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">  </span>-f<span class="w"> </span><span class="nv">title</span><span class="o">=</span><span class="s2">&quot;New Milestone&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">  </span>-f<span class="w"> </span><span class="nv">description</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>cat<span class="w"> </span>/tmp/milestone_description.txt<span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">  </span>-f<span class="w"> </span><span class="nv">state</span><span class="o">=</span><span class="s2">&quot;open&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">  </span>-q<span class="w"> </span><span class="s1">&#39;.number&#39;</span>
-<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>
-<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>rm<span class="w"> </span>/tmp/milestone_description.txt
-<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>
-<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="c1"># Edit a milestone</span>
-<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>cat<span class="w"> </span>&gt;<span class="w"> </span>/tmp/updated_description.txt<span class="w"> </span><span class="s">&lt;&lt; &#39;EOF&#39;</span>
-<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="s">Updated description</span>
-<a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a><span class="s">EOF</span>
-<a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>
-<a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>gh<span class="w"> </span>api<span class="w"> </span>--method<span class="w"> </span>PATCH<span class="w"> </span>/repos/<span class="k">$(</span>gh<span class="w"> </span>repo<span class="w"> </span>view<span class="w"> </span>--json<span class="w"> </span>nameWithOwner<span class="w"> </span>-q<span class="w"> </span>.nameWithOwner<span class="k">)</span>/milestones/1<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a><span class="w">  </span>-f<span class="w"> </span><span class="nv">title</span><span class="o">=</span><span class="s2">&quot;Updated Title&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a><span class="w">  </span>-f<span class="w"> </span><span class="nv">description</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>cat<span class="w"> </span>/tmp/updated_description.txt<span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a><span class="w">  </span>-f<span class="w"> </span><span class="nv">state</span><span class="o">=</span><span class="s2">&quot;open&quot;</span>
-<a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a>
-<a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a>rm<span class="w"> </span>/tmp/updated_description.txt
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Get milestone details</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>gh<span class="w"> </span>api<span class="w"> </span>/repos/<span class="k">$(</span>gh<span class="w"> </span>repo<span class="w"> </span>view<span class="w"> </span>--json<span class="w"> </span>nameWithOwner<span class="w"> </span>-q<span class="w"> </span>.nameWithOwner<span class="k">)</span>/milestones/1<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span>-q<span class="w"> </span><span class="s1">&#39;.title, .description, .open_issues, .closed_issues&#39;</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="c1"># List all issues in a milestone</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>gh<span class="w"> </span>issue<span class="w"> </span>list<span class="w"> </span>--milestone<span class="w"> </span><span class="m">1</span><span class="w"> </span>--state<span class="w"> </span>all
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="c1"># Create a milestone (using tmp for multiline content)</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>cat<span class="w"> </span>&gt;<span class="w"> </span>tmp/milestone_description.txt<span class="w"> </span><span class="s">&lt;&lt; &#39;EOF&#39;</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="s">Milestone description with multiple lines</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="s">EOF</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>gh<span class="w"> </span>api<span class="w"> </span>--method<span class="w"> </span>POST<span class="w"> </span>/repos/<span class="k">$(</span>gh<span class="w"> </span>repo<span class="w"> </span>view<span class="w"> </span>--json<span class="w"> </span>nameWithOwner<span class="w"> </span>-q<span class="w"> </span>.nameWithOwner<span class="k">)</span>/milestones<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">  </span>-f<span class="w"> </span><span class="nv">title</span><span class="o">=</span><span class="s2">&quot;New Milestone&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">  </span>-f<span class="w"> </span><span class="nv">description</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>cat<span class="w"> </span>tmp/milestone_description.txt<span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">  </span>-f<span class="w"> </span><span class="nv">state</span><span class="o">=</span><span class="s2">&quot;open&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">  </span>-q<span class="w"> </span><span class="s1">&#39;.number&#39;</span>
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>rm<span class="w"> </span>tmp/milestone_description.txt
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>
+<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span class="c1"># Edit a milestone</span>
+<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a>cat<span class="w"> </span>&gt;<span class="w"> </span>tmp/updated_description.txt<span class="w"> </span><span class="s">&lt;&lt; &#39;EOF&#39;</span>
+<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span class="s">Updated description</span>
+<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span class="s">EOF</span>
+<a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a>
+<a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a>gh<span class="w"> </span>api<span class="w"> </span>--method<span class="w"> </span>PATCH<span class="w"> </span>/repos/<span class="k">$(</span>gh<span class="w"> </span>repo<span class="w"> </span>view<span class="w"> </span>--json<span class="w"> </span>nameWithOwner<span class="w"> </span>-q<span class="w"> </span>.nameWithOwner<span class="k">)</span>/milestones/1<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a><span class="w">  </span>-f<span class="w"> </span><span class="nv">title</span><span class="o">=</span><span class="s2">&quot;Updated Title&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a><span class="w">  </span>-f<span class="w"> </span><span class="nv">description</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>cat<span class="w"> </span>tmp/updated_description.txt<span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-29" name="__codelineno-7-29" href="#__codelineno-7-29"></a><span class="w">  </span>-f<span class="w"> </span><span class="nv">state</span><span class="o">=</span><span class="s2">&quot;open&quot;</span>
+<a id="__codelineno-7-30" name="__codelineno-7-30" href="#__codelineno-7-30"></a>
+<a id="__codelineno-7-31" name="__codelineno-7-31" href="#__codelineno-7-31"></a>rm<span class="w"> </span>tmp/updated_description.txt
 </code></pre></div>
 <h4 id="creating-and-updating-issues">Creating and Updating Issues</h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Create an issue with milestone assignment</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>cat<span class="w"> </span>&gt;<span class="w"> </span>/tmp/issue.md<span class="w"> </span><span class="s">&lt;&lt; &#39;EOF&#39;</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="s">Detailed description with requirements</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="s">EOF</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>gh<span class="w"> </span>issue<span class="w"> </span>create<span class="w"> </span>--title<span class="w"> </span><span class="s2">&quot;Issue Title&quot;</span><span class="w"> </span>--body-file<span class="w"> </span>/tmp/issue.md<span class="w"> </span>--milestone<span class="w"> </span><span class="s2">&quot;1&quot;</span>
-<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>rm<span class="w"> </span>/tmp/issue.md
-<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>
-<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="c1"># Add existing issue to milestone</span>
-<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>gh<span class="w"> </span>api<span class="w"> </span>--method<span class="w"> </span>PATCH<span class="w"> </span>/repos/<span class="k">$(</span>gh<span class="w"> </span>repo<span class="w"> </span>view<span class="w"> </span>--json<span class="w"> </span>nameWithOwner<span class="w"> </span>-q<span class="w"> </span>.nameWithOwner<span class="k">)</span>/issues/5<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">  </span>-f<span class="w"> </span><span class="nv">milestone</span><span class="o">=</span><span class="m">1</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Create an issue with milestone assignment</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>cat<span class="w"> </span>&gt;<span class="w"> </span>tmp/issue.md<span class="w"> </span><span class="s">&lt;&lt; &#39;EOF&#39;</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="s">Detailed description with requirements</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="s">EOF</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>gh<span class="w"> </span>issue<span class="w"> </span>create<span class="w"> </span>--title<span class="w"> </span><span class="s2">&quot;Issue Title&quot;</span><span class="w"> </span>--body-file<span class="w"> </span>tmp/issue.md<span class="w"> </span>--milestone<span class="w"> </span><span class="s2">&quot;1&quot;</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>rm<span class="w"> </span>tmp/issue.md
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="c1"># Add existing issue to milestone</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>gh<span class="w"> </span>api<span class="w"> </span>--method<span class="w"> </span>PATCH<span class="w"> </span>/repos/<span class="k">$(</span>gh<span class="w"> </span>repo<span class="w"> </span>view<span class="w"> </span>--json<span class="w"> </span>nameWithOwner<span class="w"> </span>-q<span class="w"> </span>.nameWithOwner<span class="k">)</span>/issues/5<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">  </span>-f<span class="w"> </span><span class="nv">milestone</span><span class="o">=</span><span class="m">1</span>
 </code></pre></div>
 <p>When implementing a task, always review the complete task description to understand:
 - Requirements and acceptance criteria
 - Context and background information
 - Related tasks and dependencies
 - Implementation guidance</p>
-<p>The task descriptions follow the format in <code>docs/development/examples/ai_task_example.md</code>.</p>
+<p>The task descriptions follow the format in <code>docs/development/examples/task_example.md</code>.</p>
 <h3 id="data-processing">Data Processing</h3>
 <p>❌ <strong>NEVER use pandas for data processing</strong><br />
 ✅ <strong>ALWAYS use Polars</strong>: </p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Correct approach</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">df</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;path/to/file.parquet&quot;</span><span class="p">)</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;column&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">))</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Correct approach</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">df</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;path/to/file.parquet&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;column&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">))</span>
 </code></pre></div>
 <h3 id="data-storage">Data Storage</h3>
 <p>❌ <strong>NEVER create database abstractions or custom ORMs</strong><br />
 ✅ <strong>ALWAYS use Parquet files directly</strong>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Correct approach - use the storage utilities</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">src.data.storage.parquet_io</span><span class="w"> </span><span class="kn">import</span> <span class="n">save_parquet</span><span class="p">,</span> <span class="n">load_parquet</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Loading data</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">df</span> <span class="o">=</span> <span class="n">load_parquet</span><span class="p">(</span><span class="n">data_category</span><span class="o">=</span><span class="s2">&quot;raw&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;games/2023/games&quot;</span><span class="p">)</span>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="c1"># Saving data</span>
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="n">save_parquet</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">data_category</span><span class="o">=</span><span class="s2">&quot;processed&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;games_unified&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Correct approach - use the storage utilities</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">src.data.storage.parquet_io</span><span class="w"> </span><span class="kn">import</span> <span class="n">save_parquet</span><span class="p">,</span> <span class="n">load_parquet</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Loading data</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">df</span> <span class="o">=</span> <span class="n">load_parquet</span><span class="p">(</span><span class="n">data_category</span><span class="o">=</span><span class="s2">&quot;raw&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;games/2023/games&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="c1"># Saving data</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="n">save_parquet</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">data_category</span><span class="o">=</span><span class="s2">&quot;processed&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;games_unified&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="code-organization">Code Organization</h3>
 <p>❌ <strong>NEVER add code to the wrong module</strong><br />
@@ -1771,12 +1925,12 @@
 <h3 id="error-handling">Error Handling</h3>
 <p>❌ <strong>NEVER use naked try/except blocks</strong><br />
 ✅ <strong>ALWAYS handle specific exceptions and use the resilience patterns</strong>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Correct approach</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">src.utils.resilience.retry</span><span class="w"> </span><span class="kn">import</span> <span class="n">retry</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="nd">@retry</span><span class="p">(</span><span class="n">max_attempts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">backoff_factor</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch_data</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="c1"># Implementation</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Correct approach</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">src.utils.resilience.retry</span><span class="w"> </span><span class="kn">import</span> <span class="n">retry</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="nd">@retry</span><span class="p">(</span><span class="n">max_attempts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">backoff_factor</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch_data</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="c1"># Implementation</span>
 </code></pre></div>
 <h2 id="pipeline-implementation-guidelines">Pipeline Implementation Guidelines</h2>
 <table>
@@ -1798,17 +1952,17 @@
 </tbody>
 </table>
 <p>Example feature:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">src.features.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Feature</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">OffensiveEfficiencyFeature</span><span class="p">(</span><span class="n">Feature</span><span class="p">):</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="nb">id</span> <span class="o">=</span> <span class="s2">&quot;team_offensive_efficiency&quot;</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Team Offensive Efficiency&quot;</span>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;team_possessions&quot;</span><span class="p">]</span>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span class="n">required_data</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;games&quot;</span><span class="p">,</span> <span class="s2">&quot;teams&quot;</span><span class="p">]</span>
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>
-<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>        <span class="c1"># Implementation using Polars</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">src.features.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Feature</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">OffensiveEfficiencyFeature</span><span class="p">(</span><span class="n">Feature</span><span class="p">):</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="nb">id</span> <span class="o">=</span> <span class="s2">&quot;team_offensive_efficiency&quot;</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Team Offensive Efficiency&quot;</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;team_possessions&quot;</span><span class="p">]</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="n">required_data</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;games&quot;</span><span class="p">,</span> <span class="s2">&quot;teams&quot;</span><span class="p">]</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>        <span class="c1"># Implementation using Polars</span>
 </code></pre></div></p>
 <h2 id="code-contribution-tips">Code Contribution Tips</h2>
 <ol>
