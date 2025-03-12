@@ -11,8 +11,8 @@ This guide provides essential information for AI coding agents working on the NC
 | **Package Management** | Use `uv` (not pip) for dependency management |
 | **Data Processing** | Use Polars (not pandas) for all data manipulation |
 | **Storage** | Direct Parquet files (no SQL database) |
-| **GitHub Management** | Use GitHub API for milestones, store multiline content in `/tmp` |
-| **Terminal Commands** | Avoid newlines, use `/tmp` for multiline content |
+| **GitHub Management** | Use GitHub API for milestones, store multiline content in `tmp` |
+| **Terminal Commands** | Avoid newlines, use `tmp` for multiline content |
 
 ## Project Documentation
 
@@ -83,39 +83,48 @@ uv pip install package_name
 
 ## ⚠️ Critical Terminal Command Limitations ⚠️
 
-One of the most common issues AI agents encounter is with terminal commands containing newlines.
+One of the most common issues AI agents encounter is with terminal commands containing newlines. Here's how to handle multiline content properly:
 
 ### The Problem:
 
 ❌ **Terminal commands with newline characters WILL FAIL** ❌
 
 ```bash
-# THIS WILL FAIL - Do not attempt this approach
+# THIS WILL FAIL - Do not attempt these approaches
 git commit -m "First line of commit message
 Second line of commit message"
+
+# THIS WILL ALSO FAIL - Don't try to echo multiple lines directly
+echo "Line 1
+Line 2
+Line 3" > output.txt
 ```
 
 ### The Solution:
 
-✅ **ALWAYS use a temporary file in `/tmp` for any multiline content** ✅
+✅ **ALWAYS use temporary markdown files in `tmp/` for multiline content** ✅
 
-Follow this exact pattern for all multiline content:
+Follow this pattern for handling multiline content:
 
-```bash
-# 1. Create a temporary file with your content
-echo "Title of commit/PR/issue" > /tmp/message.txt
-echo "" >> /tmp/message.txt  # Add blank line
-echo "Detailed description goes here." >> /tmp/message.txt
+1. Create/edit a temporary markdown file in the `tmp/` directory
+2. Use the file in your command
+3. Clean up the temporary file when done
 
-# 2. Use the file in your command
-git commit -F /tmp/message.txt
+Example workflow:
+
+```python
+# 1. Edit a temporary markdown file
+edit_file("tmp/commit_message.md", "Add your multiline content here")
+
+# 2. Use the file in commands
+run_terminal_cmd("git commit -F tmp/commit_message.md")
 # OR
-gh pr create --title "Title" --body-file /tmp/message.txt
+run_terminal_cmd("gh pr create --title 'Title' --body-file tmp/commit_message.md")
 # OR
-gh issue create --title "Title" --body-file /tmp/message.txt
+run_terminal_cmd("gh issue create --title 'Title' --body-file tmp/commit_message.md")
 
-# 3. Clean up (optional)
-rm /tmp/message.txt
+# 3. Clean up
+delete_file("tmp/commit_message.md")
 ```
 
 This pattern is REQUIRED for:
@@ -123,7 +132,64 @@ This pattern is REQUIRED for:
 - GitHub PR descriptions
 - GitHub issue creation
 - GitHub milestone descriptions
-- Any command with multiple lines
+- Any command requiring multiline content
+
+### Best Practices
+
+1. **File Naming**:
+   - Use descriptive names: `issue_text.md`, `pr_description.md`, etc.
+   - Always use `.md` extension for proper markdown formatting
+   - Place all temporary files in the `tmp/` directory
+
+2. **File Management**:
+   - Create files only when needed
+   - Delete files after use
+   - Don't reuse filenames within the same conversation
+   - Use unique filenames to avoid conflicts
+
+3. **Content Creation**:
+   - Use the `edit_file` tool to create/modify content
+   - Write complete, well-formatted markdown
+   - Include all necessary sections and formatting
+
+4. **Command Execution**:
+   - Use `--body-file` or `-F` flags to read from files
+   - Verify file exists before using in commands
+   - Clean up files after successful command execution
+
+### Examples
+
+#### Creating a GitHub Issue:
+```python
+# 1. Create content
+edit_file("tmp/issue_text.md", """# Issue Title
+
+## Description
+Detailed issue description here...
+""")
+
+# 2. Create issue
+run_terminal_cmd("gh issue create --title 'New Feature' --body-file tmp/issue_text.md --milestone '1'")
+
+# 3. Clean up
+delete_file("tmp/issue_text.md")
+```
+
+#### Creating a Git Commit:
+```python
+# 1. Create content
+edit_file("tmp/commit_msg.md", """Feature: Add new functionality
+
+- Add X component
+- Implement Y feature
+- Update Z documentation""")
+
+# 2. Commit
+run_terminal_cmd("git commit -F tmp/commit_msg.md")
+
+# 3. Clean up
+delete_file("tmp/commit_msg.md")
+```
 
 ### GitHub Project Management
 
@@ -154,42 +220,42 @@ gh api /repos/$(gh repo view --json nameWithOwner -q .nameWithOwner)/milestones/
 # List all issues in a milestone
 gh issue list --milestone 1 --state all
 
-# Create a milestone (using /tmp for multiline content)
-cat > /tmp/milestone_description.txt << 'EOF'
+# Create a milestone (using tmp for multiline content)
+cat > tmp/milestone_description.txt << 'EOF'
 Milestone description with multiple lines
 EOF
 
 gh api --method POST /repos/$(gh repo view --json nameWithOwner -q .nameWithOwner)/milestones \
   -f title="New Milestone" \
-  -f description="$(cat /tmp/milestone_description.txt)" \
+  -f description="$(cat tmp/milestone_description.txt)" \
   -f state="open" \
   -q '.number'
 
-rm /tmp/milestone_description.txt
+rm tmp/milestone_description.txt
 
 # Edit a milestone
-cat > /tmp/updated_description.txt << 'EOF'
+cat > tmp/updated_description.txt << 'EOF'
 Updated description
 EOF
 
 gh api --method PATCH /repos/$(gh repo view --json nameWithOwner -q .nameWithOwner)/milestones/1 \
   -f title="Updated Title" \
-  -f description="$(cat /tmp/updated_description.txt)" \
+  -f description="$(cat tmp/updated_description.txt)" \
   -f state="open"
 
-rm /tmp/updated_description.txt
+rm tmp/updated_description.txt
 ```
 
 #### Creating and Updating Issues
 
 ```bash
 # Create an issue with milestone assignment
-cat > /tmp/issue.md << 'EOF'
+cat > tmp/issue.md << 'EOF'
 Detailed description with requirements
 EOF
 
-gh issue create --title "Issue Title" --body-file /tmp/issue.md --milestone "1"
-rm /tmp/issue.md
+gh issue create --title "Issue Title" --body-file tmp/issue.md --milestone "1"
+rm tmp/issue.md
 
 # Add existing issue to milestone
 gh api --method PATCH /repos/$(gh repo view --json nameWithOwner -q .nameWithOwner)/issues/5 \
@@ -202,7 +268,7 @@ When implementing a task, always review the complete task description to underst
 - Related tasks and dependencies
 - Implementation guidance
 
-The task descriptions follow the format in `docs/development/examples/ai_task_example.md`.
+The task descriptions follow the format in `docs/development/examples/task_example.md`.
 
 ### Data Processing
 
