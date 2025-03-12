@@ -202,7 +202,7 @@ When implementing a task, always review the complete task description to underst
 - Related tasks and dependencies
 - Implementation guidance
 
-The task descriptions follow the format in `docs/examples/ai_task_example.md`.
+The task descriptions follow the format in `docs/development/examples/ai_task_example.md`.
 
 ### Data Processing
 

@@ -87,11 +87,10 @@ nav:
     - Implementation Plan: development/implementation-plan.md
     - Test Strategy: development/test-strategy.md
     - AI Coding Agent Guide: development/ai-coding-agent-guide.md
-    - AI Task Authoring Guide: development/ai-task-authoring-guide.md
-  - Documentation Standards:
-    - Overview: examples/index.md
-    - Milestone Example: examples/ai_milestone_example.md
-    - AI Task Example: examples/ai_task_example.md
-    - Issue Example: examples/ai_issue_example.md
-    - PR Example: examples/ai_pr_example.md
+    - Examples:
+      - Overview: development/examples/index.md
+      - Milestone Example: development/examples/ai_milestone_example.md
+      - Task Example: development/examples/ai_task_example.md
+      - Issue Example: development/examples/ai_issue_example.md
+      - PR Example: development/examples/ai_pr_example.md
   - API Reference: reference/ 

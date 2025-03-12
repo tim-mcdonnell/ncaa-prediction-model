@@ -19,8 +19,7 @@ Documentation comes from multiple sources:
 
 1. **Markdown Files** - Handwritten documentation in `docs/`
 2. **Docstrings** - API documentation extracted from code docstrings
-3. **ADRs** - Architecture Decision Records in `docs/architecture/`
-4. **Examples** - Example code from `examples/` and `notebooks/`
+3. **Examples** - Example code from `examples/` and `notebooks/`
 
 ## Auto-generation
 

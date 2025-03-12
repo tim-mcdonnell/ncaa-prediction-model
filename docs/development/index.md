@@ -17,7 +17,6 @@ This section contains comprehensive documentation for developers working on the 
 
 ### AI Development Guides
 - [AI Coding Agent Guide](./ai-coding-agent-guide.md) - Guide for AI agents working on the project
-- [AI Task Authoring Guide](./ai-task-authoring-guide.md) - Guide for creating AI-friendly tasks
 
 ### Project Management
 - [GitHub Milestones](https://github.com/tim-mcdonnell/ncaa-prediction-model/milestones) - Project milestone tracking
