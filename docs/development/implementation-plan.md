@@ -25,7 +25,7 @@ This document outlines the phased implementation approach for the NCAA Basketbal
 - [ ] Create initial documentation structure
 - [ ] Document development workflows
 
-## Phase 2: Data Collection (ADR-001, Simplified)
+## Phase 2: Data Collection
 
 ### 2.1 ESPN API Client
 
@@ -55,7 +55,7 @@ This document outlines the phased implementation approach for the NCAA Basketbal
 - [ ] Build season schedule collection pipeline
 - [ ] Develop player statistics collection pipeline
 
-## Phase 3: Data Storage and Processing (ADR-004)
+## Phase 3: Data Storage and Processing
 
 ### 3.1 Parquet Storage Layer
 

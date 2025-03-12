@@ -133,17 +133,17 @@ The project is organized into 7 key milestones:
 7. **Deployment and Monitoring** - ⏱️ Not Started
    - Deploying and maintaining the prediction system
 
-For detailed information on each milestone, see the comprehensive documentation in the [docs/development/milestones](docs/development/milestones) directory. After pushing changes to the main branch, the documentation is automatically deployed to GitHub Pages.
+For detailed information on each milestone, see the [GitHub milestones page](https://github.com/tim-mcdonnell/ncaa-prediction-model/milestones).
 
-## Project Templates
-To maintain consistency throughout the project, we use a set of standardized templates:
+## Project Documentation Standards
+To maintain consistency throughout the project, we follow a set of standardized examples:
 
-- [Milestone Template](docs/templates/milestone_template.md) - For documenting project milestones
-- [Task Template](docs/templates/task_template.md) - For defining specific implementation tasks
-- [Issue Template](docs/templates/issue_template.md) - For tracking bugs and technical debt
-- [PR Template](docs/templates/pr_template.md) - For code change submissions
+- [Milestone Example](docs/examples/ai_milestone_example.md) - For documenting project milestones
+- [AI Task Example](docs/examples/ai_task_example.md) - For defining implementation tasks for AI agents
+- [Issue Example](docs/examples/ai_issue_example.md) - For tracking bugs and technical debt
+- [PR Example](docs/examples/ai_pr_example.md) - For code change submissions
 
-For more information on using these templates, see the [templates documentation](docs/templates/README.md).
+For more information on using these examples, see the [documentation standards](docs/examples/index.md).
 
 ## Setup
 1. Clone this repository

@@ -44,22 +44,22 @@ The source code has been reorganized to simplify abstractions and provide cleare
 
 ```
 src/
-├── data/                         # Data handling (ADR-001, ADR-004)
-│   ├── collection/               # Data collection (ADR-001)
+├── data/                         # Data handling
+│   ├── collection/               # Data collection
 │   │   ├── espn/                 # ESPN implementation
 │   │   │   ├── client.py         # HTTP client for ESPN
 │   │   │   ├── parsers.py        # Parse ESPN responses
 │   │   │   └── models.py         # Data models for ESPN data
 │   │   ├── connectors/           # HTTP connectors
 │   │   └── extractors/           # Data extractors
-│   ├── storage/                  # Data storage (ADR-004)
+│   ├── storage/                  # Data storage
 │   │   ├── parquet_io.py         # Parquet read/write utilities
 │   │   ├── schema.py             # Data schemas
 │   │   └── validation.py         # Data validation
 │   └── processing/               # Data processing
 │       ├── transformations.py    # Data transformation functions
 │       └── cleaning.py           # Data cleaning functions
-├── features/                     # Feature engineering (ADR-003)
+├── features/                     # Feature engineering
 │   ├── base.py                   # Base feature class
 │   ├── pipeline.py               # Feature pipeline
 │   ├── team_performance/         # Team performance features
@@ -95,8 +95,8 @@ src/
 
 The `data` module has been simplified:
 
-1. **Collection** (ADR-001): Simplified to start with a direct ESPN implementation, while retaining the connectors and extractors for potential future expansion
-2. **Storage** (ADR-004): Replaced the repository pattern with direct Parquet file operations
+1. **Collection**: Simplified to start with a direct ESPN implementation, while retaining the connectors and extractors for potential future expansion
+2. **Storage**: Replaced the repository pattern with direct Parquet file operations
 3. **Processing**: Added explicit data transformation and cleaning functions
 
 Key components:
