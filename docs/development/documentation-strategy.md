@@ -6,7 +6,7 @@ This project uses MkDocs with the Material theme for comprehensive documentation
 
 The documentation is organized into the following main sections:
 
-1. **Project Overview** - General introduction to the project
+1. **Overview** - General introduction to the project
 2. **Architecture** - Architectural decisions and system design
 3. **Development Guides** - Information for developers contributing to the project
 4. **User Guides** - Information for users of the prediction model
