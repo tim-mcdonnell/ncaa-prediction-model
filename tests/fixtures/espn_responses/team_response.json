@@ -1,0 +1,82 @@
+{
+  "team": {
+    "id": "130",
+    "uid": "s:40~l:41~t:130",
+    "location": "Michigan",
+    "name": "Wolverines",
+    "abbreviation": "MICH",
+    "displayName": "Michigan Wolverines",
+    "color": "00274C",
+    "alternateColor": "ffcb05",
+    "logos": [
+      {
+        "href": "https://a.espncdn.com/i/teamlogos/ncaa/500/130.png",
+        "width": 500,
+        "height": 500,
+        "alt": "Michigan Wolverines",
+        "rel": ["full", "default"]
+      },
+      {
+        "href": "https://a.espncdn.com/i/teamlogos/ncaa/500-dark/130.png",
+        "width": 500,
+        "height": 500,
+        "alt": "Michigan Wolverines",
+        "rel": ["full", "dark"]
+      }
+    ],
+    "record": {
+      "items": [
+        {
+          "type": "total",
+          "summary": "15-15",
+          "stats": [
+            {
+              "name": "wins",
+              "value": 15
+            },
+            {
+              "name": "losses",
+              "value": 15
+            }
+          ]
+        },
+        {
+          "type": "home",
+          "summary": "10-5",
+          "stats": [
+            {
+              "name": "wins",
+              "value": 10
+            },
+            {
+              "name": "losses",
+              "value": 5
+            }
+          ]
+        }
+      ]
+    },
+    "groups": {
+      "id": "5",
+      "name": "Big Ten",
+      "shortName": "Big Ten",
+      "isConference": true,
+      "divisions": [
+        {
+          "id": "1",
+          "name": "East",
+          "shortName": "East"
+        }
+      ]
+    },
+    "venue": {
+      "id": "2509",
+      "name": "Crisler Center",
+      "capacity": 12707,
+      "address": {
+        "city": "Ann Arbor",
+        "state": "MI"
+      }
+    }
+  }
+} 

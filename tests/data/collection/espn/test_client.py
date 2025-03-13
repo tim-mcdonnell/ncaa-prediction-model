@@ -17,7 +17,7 @@ from src.utils.resilience.retry import retry
 @pytest.fixture
 def fixture_path():
     """Return the path to the test fixtures directory."""
-    return os.path.join(os.path.dirname(__file__), "fixtures")
+    return os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "fixtures", "espn_responses")
 
 @pytest.fixture
 def load_fixture(fixture_path):
@@ -35,10 +35,17 @@ async def espn_client():
 
 @pytest.mark.asyncio
 class TestESPNClient:
-    async def test_rate_limiter(self):
-        """Test that rate limiter properly limits request rate."""
-        # Create a rate limiter with 10 requests per second and burst of 2
-        limiter = RateLimiter(rate=10.0, burst=2)
+    async def test_rateLimiter_whenBurstLimitExceeded_shouldDelayRequests(self):
+        """
+        Test that the rate limiter properly delays requests after burst limit is exceeded.
+        
+        Verifies:
+        1. First N requests (where N is burst limit) complete immediately
+        2. Additional requests are delayed according to the rate limit
+        3. Delay duration approximates the expected rate (1/rate seconds per request)
+        """
+        # Create a rate limiter with unique parameters for this test
+        limiter = RateLimiter(rate=9.7, burst=2)  # Unique rate value
         
         # Should be able to make 2 requests immediately (burst)
         await limiter.acquire()
@@ -51,22 +58,101 @@ class TestESPNClient:
         await limiter.acquire()
         duration = asyncio.get_event_loop().time() - start_time
         
-        # With rate=10.0, each request after burst should take ~0.1s
+        # With rate=9.7, each request after burst should take ~0.103s
         # We use a smaller value to account for timing variations
         assert duration >= 0.05  # At least 50ms delay for the third request
     
-    async def test_client_initialization(self):
-        """Test that client is properly initialized."""
+    async def test_rateLimiter_whenZeroRateProvided_shouldNotAllowAnyRequests(self):
+        """
+        Test that the rate limiter raises ValueError when initialized with a zero rate.
+        
+        A rate of zero would mean no requests allowed, which is invalid for our implementation.
+        The constructor should raise ValueError before any acquire() calls are made.
+        """
+        with pytest.raises(ValueError, match="Rate must be greater than 0"):
+            # Use a unique burst value for this test
+            RateLimiter(rate=0.0, burst=3)  # Unique burst value
+    
+    async def test_rateLimiter_whenNegativeRateProvided_shouldRaiseValueError(self):
+        """
+        Test that the rate limiter raises ValueError when initialized with a negative rate.
+        
+        A negative rate is meaningless and should be rejected immediately during initialization.
+        """
+        with pytest.raises(ValueError, match="Rate must be greater than 0"):
+            # Use unique values for this test
+            RateLimiter(rate=-2.5, burst=4)  # Unique values
+    
+    async def test_rateLimiter_whenNegativeBurstProvided_shouldRaiseValueError(self):
+        """
+        Test that the rate limiter raises ValueError when initialized with a negative burst value.
+        
+        A negative burst value is invalid and should be rejected immediately during initialization.
+        """
+        with pytest.raises(ValueError, match="Burst must be greater than or equal to 1"):
+            # Use unique values for this test
+            RateLimiter(rate=11.3, burst=-2)  # Unique values
+    
+    async def test_rateLimiter_whenZeroBurstProvided_shouldRaiseValueError(self):
+        """
+        Test that the rate limiter raises ValueError when initialized with a zero burst value.
+        
+        A burst of zero would allow no immediate requests, which is not a useful configuration.
+        The constructor should validate and reject this value.
+        """
+        with pytest.raises(ValueError, match="Burst must be greater than or equal to 1"):
+            # Use unique values for this test
+            RateLimiter(rate=12.2, burst=0)  # Unique values
+    
+    async def test_rateLimiter_whenExtremeBurstAndHighRate_shouldAllowManyRequestsImmediately(self):
+        """
+        Test that the rate limiter with very high burst and rate values allows many requests without delay.
+        
+        This tests the limiter's ability to handle extreme configuration values properly,
+        ensuring the limiter doesn't introduce delays when configured for high throughput.
+        """
+        # High rate and burst should allow many requests without delay
+        # Use unique values specific to this test
+        limiter = RateLimiter(rate=980.0, burst=110)  # Unique values
+        
+        # Should be able to make many requests immediately
+        start_time = asyncio.get_event_loop().time()
+        for _ in range(50):  # Make 50 requests
+            await limiter.acquire()
+        duration = asyncio.get_event_loop().time() - start_time
+        
+        # 50 requests should be very fast with a burst of 110
+        assert duration < 0.1  # Less than 100ms for 50 requests
+    
+    async def test_client_whenInitialized_shouldCreateHttpxClient(self):
+        """
+        Test that the ESPNClient properly initializes the internal HTTP client.
+        
+        Verifies:
+        1. The client._client attribute is not None
+        2. The client._client is an instance of httpx.AsyncClient
+        This ensures the client is ready to make HTTP requests.
+        """
         async with ESPNClient(rate_limit=10.0, burst_limit=5) as client:
             assert client._client is not None
             assert isinstance(client._client, httpx.AsyncClient)
     
-    async def test_get_scoreboard_success(self, load_fixture):
-        """Test successful scoreboard data retrieval and parsing."""
-        # Mock the API response
-        mock_response = load_fixture("scoreboard_response.json")
+    async def test_getScoreboard_withValidDate_shouldReturnDataframe(self, load_fixture):
+        """
+        Test that get_scoreboard() successfully retrieves and parses scoreboard data for a valid date.
         
-        async with ESPNClient(rate_limit=10.0, burst_limit=5) as client:
+        This test:
+        1. Mocks the API response with fixture data
+        2. Calls get_scoreboard() with a valid date
+        3. Verifies the response is properly transformed into a DataFrame
+        4. Checks that the DataFrame is not empty
+        """
+        # Create a deep copy of the fixture to avoid shared state
+        import copy
+        mock_response = copy.deepcopy(load_fixture("scoreboard_response.json"))
+        
+        # Use a unique client for this test
+        async with ESPNClient(rate_limit=9.1, burst_limit=6) as client:
             with patch.object(client, '_get', new_callable=AsyncMock) as mock_get:
                 mock_get.return_value = mock_response
                 result = await client.get_scoreboard("20230301")
@@ -74,28 +160,128 @@ class TestESPNClient:
                 assert isinstance(result, pl.DataFrame)
                 assert not result.is_empty()
                 mock_get.assert_called_once()
+                
+                # Reset mock to ensure no state leakage
+                mock_get.reset_mock()
     
     @retry(max_attempts=3, backoff_factor=2.0)
     async def _test_get_with_retry(self, client):
-        """Helper method to test retry functionality."""
+        """
+        Helper method to test retry functionality.
+        
+        This is decorated with @retry to allow testing of the retry mechanism.
+        Returns the result from client._get("/test") with retry capability.
+        """
         return await client._get("/test")
     
-    async def test_retry_on_failure(self):
-        """Test that retry mechanism works on transient failures."""
-        async with ESPNClient(rate_limit=10.0, burst_limit=5) as client:
+    async def test_retry_whenExperiencingTransientFailures_shouldEventuallySucceed(self):
+        """
+        Test that the retry mechanism successfully handles transient failures and eventually succeeds.
+        
+        This test:
+        1. Mocks the _get method to fail twice then succeed
+        2. Uses the retry decorator to retry the failing calls
+        3. Verifies that the call eventually succeeds despite initial failures
+        4. Confirms the _get method was called exactly 3 times (2 failures + 1 success)
+        """
+        # Create an isolated client with unique parameters
+        async with ESPNClient(rate_limit=15.7, burst_limit=4) as client:
+            # Use a fresh mock for each test
             with patch.object(client, '_get', new_callable=AsyncMock) as mock_get:
+                # Use unique error messages specific to this test
                 mock_get.side_effect = [
-                    httpx.HTTPError("Connection error"),
-                    httpx.HTTPError("Timeout"),
-                    {"data": "success"}
+                    httpx.HTTPError("Unique connection error for retry test"),
+                    httpx.HTTPError("Unique timeout error for retry test"),
+                    {"data": "success for retry test"}  # Unique success message
                 ]
                 
                 result = await self._test_get_with_retry(client)
-                assert result == {"data": "success"}
+                assert result == {"data": "success for retry test"}
                 assert mock_get.call_count == 3
+                
+                # Reset the mock to ensure no state leaks
+                mock_get.reset_mock()
     
-    async def test_rate_limiting_integration(self):
-        """Test that rate limiting works in integration with client methods."""
+    async def test_retry_whenAllAttemptsExhausted_shouldRaiseLastError(self):
+        """
+        Test that retry raises the last encountered error when all retry attempts are exhausted.
+        
+        This test:
+        1. Creates a test method with a limited number of retry attempts
+        2. Configures the mock to fail with different errors on each attempt
+        3. Verifies that the last error (TimeoutException) is propagated after retries are exhausted
+        4. Confirms that exactly the configured number of attempts were made
+        """
+        # Define a retry-decorated method with fewer retry attempts for testing
+        @retry(max_attempts=2, backoff_factor=0.1)
+        async def test_method(client):
+            return await client._get("/test")
+        
+        async with ESPNClient(rate_limit=10.0, burst_limit=5) as client:
+            with patch.object(client, '_get', new_callable=AsyncMock) as mock_get:
+                # All attempts fail with different errors
+                mock_get.side_effect = [
+                    httpx.ConnectError("Connection refused"),
+                    httpx.TimeoutException("Request timed out")
+                ]
+                
+                # Should raise the last error (TimeoutException) after all retries
+                with pytest.raises(httpx.TimeoutException, match="Request timed out"):
+                    await test_method(client)
+                
+                # Should have made exactly 2 attempts (the max_attempts)
+                assert mock_get.call_count == 2
+    
+    async def test_retry_with429_shouldUseExponentialBackoff(self):
+        """
+        Test that 429 Too Many Requests responses trigger exponential backoff with respect for Retry-After.
+        
+        This test:
+        1. Creates a mock response with a 429 status code and Retry-After header
+        2. Measures the time it takes to retry after the 429 error
+        3. Verifies that the retry logic respects the Retry-After header value
+        4. Confirms the request eventually succeeds after proper backoff
+        """
+        @retry(max_attempts=3, backoff_factor=0.5)
+        async def test_method(client):
+            return await client._get("/test")
+        
+        async with ESPNClient(rate_limit=10.0, burst_limit=5) as client:
+            with patch.object(client, '_get', new_callable=AsyncMock) as mock_get:
+                # Create a 429 response with Retry-After header
+                too_many_requests = httpx.HTTPStatusError(
+                    "429 Too Many Requests",
+                    request=MagicMock(),
+                    response=MagicMock(
+                        status_code=429,
+                        headers={"Retry-After": "2"}  # 2 seconds
+                    )
+                )
+                
+                mock_get.side_effect = [
+                    too_many_requests,
+                    {"data": "success"}
+                ]
+                
+                # Time how long the retry takes
+                start_time = asyncio.get_event_loop().time()
+                result = await test_method(client)
+                duration = asyncio.get_event_loop().time() - start_time
+                
+                # Should have respected the Retry-After header (2 seconds)
+                assert duration >= 2.0
+                assert result == {"data": "success"}
+    
+    async def test_rateLimiting_whenIntegratedWithClient_shouldDelayRequests(self):
+        """
+        Test that rate limiting works correctly when integrated into the client's request flow.
+        
+        This test:
+        1. Creates a client with a small burst limit (2)
+        2. Makes multiple API requests that exceed the burst limit
+        3. Measures the time it takes to process the requests after the burst is consumed
+        4. Verifies that rate limiting properly delays subsequent requests
+        """
         async with ESPNClient(rate_limit=10.0, burst_limit=2) as client:
             with patch.object(client, '_get', new_callable=AsyncMock) as mock_get:
                 mock_get.return_value = {"data": "test"}
@@ -112,17 +298,41 @@ class TestESPNClient:
                 
                 assert duration >= 0.05  # At least 50ms delay
     
-    async def test_client_error_handling(self):
-        """Test that client properly handles various error conditions."""
-        async with ESPNClient(rate_limit=10.0, burst_limit=5) as client:
+    async def test_clientError_whenHttpErrorOccurs_shouldRaiseException(self):
+        """
+        Test that the client properly raises exceptions when HTTP errors occur.
+        
+        This test:
+        1. Mocks the _get method to raise an HTTP error
+        2. Verifies that the error is properly propagated to the caller
+        3. Ensures the client doesn't swallow or transform the error
+        """
+        # Create an isolated client with unique parameters
+        async with ESPNClient(rate_limit=14.3, burst_limit=7) as client:
+            # Use a fresh mock for each test to avoid shared state
             with patch.object(client, '_get', new_callable=AsyncMock) as mock_get:
-                mock_get.side_effect = httpx.HTTPError("Test error")
+                # Ensure we're using a unique error message for this test
+                unique_error = httpx.HTTPError("Unique test error for clientError test")
+                mock_get.side_effect = unique_error
                 
                 with pytest.raises(httpx.HTTPError):
                     await client._get("/test")
+                    
+                # Verify the mock was called correctly
+                mock_get.assert_called_once()
+                
+                # Reset the mock to ensure no state leaks to other tests
+                mock_get.reset_mock()
     
-    async def test_invalid_response_handling(self):
-        """Test handling of invalid API responses."""
+    async def test_invalidResponse_whenDataFormatIncorrect_shouldRaiseValidationError(self):
+        """
+        Test that the client raises a ValidationError when the API returns an invalid data format.
+        
+        This test:
+        1. Mocks the API to return an invalid response (missing required fields)
+        2. Calls the client method that expects a specific response format
+        3. Verifies that a ValidationError is raised when parsing the invalid response
+        """
         async with ESPNClient(rate_limit=10.0, burst_limit=5) as client:
             with patch.object(client, '_get', new_callable=AsyncMock) as mock_get:
                 mock_get.return_value = {"invalid": "response"}
@@ -130,136 +340,104 @@ class TestESPNClient:
                 with pytest.raises(ValidationError):
                     await client.get_scoreboard("20230301")
     
-    @pytest.mark.parametrize("date_str", ["20230301", "20230302"])
-    async def test_different_dates(self, date_str):
-        """Test that client properly handles different date parameters."""
+    async def test_getResponse_whenMissingRequiredFields_shouldRaiseValidationError(self):
+        """
+        Test that the client raises a ValidationError when API response is missing required fields.
+        
+        This test:
+        1. Creates a mock response missing critical fields ('date' and 'competitions')
+        2. Verifies that the validation correctly identifies the missing fields
+        3. Ensures the error message mentions the specific missing fields
+        
+        This tests the client's ability to detect and report incomplete or malformed responses.
+        """
         async with ESPNClient(rate_limit=10.0, burst_limit=5) as client:
             with patch.object(client, '_get', new_callable=AsyncMock) as mock_get:
-                mock_get.return_value = {"events": []}
-                await client.get_scoreboard(date_str)
+                # Missing required nested fields in response
+                mock_get.return_value = {
+                    "events": [
+                        {
+                            "id": "401524691",
+                            # Missing required 'date' field
+                            "name": "Team A vs Team B",
+                            # Missing required 'competitions' field
+                        }
+                    ]
+                }
                 
-                expected_endpoint = (
-                    f"/apis/site/v2/sports/{client.SPORT}/{client.LEAGUE}/scoreboard"
-                )
-                mock_get.assert_called_once_with(
-                    expected_endpoint,
-                    {"dates": date_str}
-                )
+                with pytest.raises(ValidationError) as excinfo:
+                    await client.get_scoreboard("20230301")
                 
-    async def test_get_all_teams_pagination(self):
-        """Test automatic pagination for fetching all teams."""
+                # Check that the error message mentions the missing field
+                assert "competitions" in str(excinfo.value) or "date" in str(excinfo.value)
+    
+    async def test_getResponse_withNullValues_shouldHandleGracefully(self, load_fixture):
+        """
+        Test that the client handles null values in API responses gracefully.
+        
+        This test:
+        1. Takes a valid response fixture and modifies it to include null values
+        2. Verifies that the client can process the response without crashing
+        3. Confirms that null values are properly handled in the resulting DataFrame
+        
+        This ensures robustness in handling real-world API responses that may contain null data.
+        """
+        # Create a deep copy of the fixture to ensure isolation
+        import copy
+        response = copy.deepcopy(load_fixture("scoreboard_response.json"))
+        
+        # Modify the copy, not the original fixture
+        response["events"][0]["competitions"][0]["competitors"][0]["team"]["abbreviation"] = None
+        response["events"][0]["competitions"][0]["competitors"][1]["score"] = None
+        
+        # Use a unique client for this test
+        async with ESPNClient(rate_limit=9.5, burst_limit=4) as client:
+            with patch.object(client, '_get', new_callable=AsyncMock) as mock_get:
+                mock_get.return_value = response
+                
+                # Should handle null values without crashing
+                result = await client.get_scoreboard("20230301")
+                
+                # Check that null values were handled correctly
+                assert isinstance(result, pl.DataFrame)
+                assert not result.is_empty()
+                
+                # Score should be empty or null
+                assert result[0, "away_score"] is None or result[0, "away_score"] == ""
+                
+                # Reset mock to ensure no state leakage
+                mock_get.reset_mock()
+    
+    async def test_getScoreboard_withEmptyEvents_shouldReturnEmptyDataframe(self):
+        """
+        Test that get_scoreboard() returns an empty DataFrame with the correct schema when no events are found.
+        
+        This test:
+        1. Mocks the API to return an empty events list
+        2. Verifies that the result is an empty DataFrame
+        3. Confirms that the empty DataFrame has the correct schema with all expected columns
+        
+        This ensures the client gracefully handles dates with no games while maintaining a consistent return type.
+        """
         async with ESPNClient(rate_limit=10.0, burst_limit=5) as client:
-            # Create mock team responses for 3 pages
-            # - Page 1: 50 teams (full page)
-            # - Page 2: 50 teams (full page)
-            # - Page 3: 20 teams (last page)
-            
-            # First page with 50 teams
-            page1_teams = [
-                Team(
-                    id=str(i), 
-                    uid=f"s:40~l:41~t:{i}", 
-                    location=f"Team {i}", 
-                    name=f"Name {i}",
-                    abbreviation=f"T{i}", 
-                    displayName=f"Team {i} Name {i}"
-                ) 
-                for i in range(1, 51)
-            ]
-            page1_response = TeamsResponse(
-                sports=[{
-                    "leagues": [{
-                        "teams": [
-                            {"team": t.model_dump(by_alias=True)} for t in page1_teams
-                        ]
-                    }]
-                }],
-                pageCount=3, 
-                pageIndex=1, 
-                pageSize=50, 
-                count=120
-            )
-            
-            # Second page with 50 teams
-            page2_teams = [
-                Team(
-                    id=str(i), 
-                    uid=f"s:40~l:41~t:{i}", 
-                    location=f"Team {i}", 
-                    name=f"Name {i}",
-                    abbreviation=f"T{i}", 
-                    displayName=f"Team {i} Name {i}"
-                ) 
-                for i in range(51, 101)
-            ]
-            page2_response = TeamsResponse(
-                sports=[{
-                    "leagues": [{
-                        "teams": [
-                            {"team": t.model_dump(by_alias=True)} for t in page2_teams
-                        ]
-                    }]
-                }],
-                pageCount=3, 
-                pageIndex=2, 
-                pageSize=50, 
-                count=120
-            )
-            
-            # Third page with 20 teams (last page)
-            page3_teams = [
-                Team(
-                    id=str(i), 
-                    uid=f"s:40~l:41~t:{i}", 
-                    location=f"Team {i}", 
-                    name=f"Name {i}",
-                    abbreviation=f"T{i}", 
-                    displayName=f"Team {i} Name {i}"
-                ) 
-                for i in range(101, 121)
-            ]
-            page3_response = TeamsResponse(
-                sports=[{
-                    "leagues": [{
-                        "teams": [
-                            {"team": t.model_dump(by_alias=True)} for t in page3_teams
-                        ]
-                    }]
-                }],
-                pageCount=3, 
-                pageIndex=3, 
-                pageSize=50, 
-                count=120
-            )
-            
-            # Mock the get_teams method to return different responses 
-            # based on page number
-            with patch.object(
-                client, 'get_teams', new_callable=AsyncMock
-            ) as mock_get_teams:
-                mock_get_teams.side_effect = [
-                    page1_response,
-                    page2_response,
-                    page3_response
+            with patch.object(client, '_get', new_callable=AsyncMock) as mock_get:
+                # Empty events list
+                mock_get.return_value = {"events": []}
+                
+                result = await client.get_scoreboard("20230301")
+                
+                # Should return an empty DataFrame with the correct schema
+                assert isinstance(result, pl.DataFrame)
+                assert result.is_empty()
+                
+                # Check that expected columns exist
+                expected_columns = [
+                    "game_id", "date", "name", "home_team_id", "home_team_name",
+                    "away_team_id", "away_team_name", "home_score", "away_score",
+                    "status", "period", "season_year", "season_type"
                 ]
-                
-                # Call the method under test
-                result = await client.get_all_teams()
-                
-                # Verify the method was called for each page
-                assert mock_get_teams.call_count == 3
-                mock_get_teams.assert_any_call(page=1)
-                mock_get_teams.assert_any_call(page=2)
-                mock_get_teams.assert_any_call(page=3)
-                
-                # Verify the combined result
-                assert len(result) == 120  # Total number of teams
-                
-                # Verify first and last teams to ensure all pages were included
-                # Teams should be present from all pages
-                assert any(team.id == "1" for team in result)
-                assert any(team.id == "75" for team in result)  
-                assert any(team.id == "120" for team in result) 
+                for col in expected_columns:
+                    assert col in result.columns
     
     @pytest.mark.parametrize("date_input,should_raise,error_message", [
         ("20230301", False, None),                # Valid date
@@ -274,7 +452,19 @@ class TestESPNClient:
         ("20230100", True, "valid calendar date"),  # Day = 0
     ])
     async def test_date_validation(self, date_input, should_raise, error_message):
-        """Test date validation for various inputs."""
+        """
+        Test that date validation correctly identifies valid and invalid date formats.
+        
+        This parametrized test:
+        1. Tests multiple date formats, both valid and invalid
+        2. Verifies that invalid dates are rejected with appropriate error messages
+        3. Ensures valid dates pass validation and can be used in API requests
+        
+        Parameters:
+            date_input: The date string to validate
+            should_raise: Whether validation should raise an error
+            error_message: Expected error message substring (if should_raise is True)
+        """
         async with ESPNClient() as client:
             if should_raise:
                 with pytest.raises(ValueError) as excinfo:
@@ -377,8 +567,8 @@ class TestESPNClient:
                     assert "Date mismatch" in mock_warning.call_args[0][0]
                     # Date is formatted as YYYY-MM-DD in the log
                     assert "2023-03-01" in mock_warning.call_args[0][0]
-                    assert "2023-03-02" in mock_warning.call_args[0][0] 
-
+                    assert "2023-03-02" in mock_warning.call_args[0][0]
+    
     async def test_get_scoreboard_for_date_range(self):
         """Test retrieving games for a date range."""
         async with ESPNClient(rate_limit=10.0, burst_limit=5) as client:

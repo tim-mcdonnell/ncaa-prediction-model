@@ -27,7 +27,7 @@ from src.data.collection.espn.parsers import (
 @pytest.fixture
 def fixture_path():
     """Return the path to the test fixtures directory."""
-    return os.path.join(os.path.dirname(__file__), "fixtures")
+    return os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "fixtures", "espn_responses")
 
 @pytest.fixture
 def load_fixture(fixture_path):
@@ -38,9 +38,20 @@ def load_fixture(fixture_path):
     return _load
 
 class TestParsers:
-    def test_parse_game_summary(self, load_fixture):
-        """Test parsing game summary response."""
-        # Load and validate fixture data
+    def test_parseGameSummary_withValidResponse_shouldReturnStructuredDataframes(self, load_fixture):
+        """
+        Test that parse_game_summary correctly converts a valid game summary response into structured DataFrames.
+        
+        This test:
+        1. Creates a mock game summary response with team stats, player stats, and play-by-play data
+        2. Passes this response to the parse_game_summary function
+        3. Verifies that the result contains three separate DataFrames (team_stats, player_stats, plays)
+        4. Confirms each DataFrame has the expected schema and contains the expected data
+        
+        This ensures the parser can correctly extract and structure different types of game data.
+        """
+        # Create a fresh test data object for this specific test
+        # to ensure it doesn't share state with other tests
         data = {
             "boxscore": {
                 "teams": [
@@ -101,6 +112,7 @@ class TestParsers:
             ]
         }
         
+        # Create a fresh response model for this test
         response = GameSummaryResponse.model_validate(data)
         result = parse_game_summary(response)
         
@@ -128,8 +140,20 @@ class TestParsers:
         assert "period" in plays.columns
         assert "text" in plays.columns
     
-    def test_parse_team_data(self):
-        """Test parsing team data response."""
+    def test_parseTeamData_withValidResponse_shouldReturnDataframe(self):
+        """
+        Test that parse_team_data correctly transforms a team response into a DataFrame.
+        
+        This test:
+        1. Creates a mock team response with all necessary fields 
+        2. Passes this response to the parse_team_data function
+        3. Verifies the result is a properly structured DataFrame with one row
+        4. Confirms the DataFrame contains all expected columns
+        5. Validates that the team's data was correctly extracted into the DataFrame
+        
+        This ensures that team data is properly formatted for analysis and storage.
+        """
+        # Create a fresh test data object for this specific test
         data = {
             "team": {
                 "id": "52",
@@ -148,6 +172,7 @@ class TestParsers:
             }
         }
         
+        # Create a fresh model instance for this test
         response = TeamResponse.model_validate(data)
         result = parse_team_data(response)
         
@@ -161,8 +186,20 @@ class TestParsers:
         assert result[0, "team_name"] == "Air Force Falcons"
         assert result[0, "abbreviation"] == "AFA"
     
-    def test_parse_teams_list(self):
-        """Test parsing teams list response."""
+    def test_parseTeamsList_withValidResponse_shouldReturnDataframe(self):
+        """
+        Test that parse_teams_list correctly transforms a teams list response into a DataFrame.
+        
+        This test:
+        1. Creates a mock teams response containing multiple teams
+        2. Passes this response to the parse_teams_list function
+        3. Verifies the result is a DataFrame with the correct number of rows (one per team)
+        4. Confirms the DataFrame contains all expected columns
+        5. Validates that each team's data was correctly extracted
+        
+        This ensures the parser can handle multiple teams and create a consistent DataFrame format.
+        """
+        # Create a fresh test data object specific to this test
         data = {
             "sports": [
                 {
@@ -208,6 +245,7 @@ class TestParsers:
             "count": 250
         }
         
+        # Create a fresh model instance for this test
         response = TeamsResponse.model_validate(data)
         result = parse_teams_list(response)
         
@@ -221,8 +259,19 @@ class TestParsers:
         assert result[0, "team_name"] == "Air Force Falcons"
         assert result[1, "team_name"] == "Alabama Crimson Tide"
     
-    def test_parse_scoreboard(self):
-        """Test parsing scoreboard response."""
+    def test_parseScoreboard_withValidResponse_shouldReturnDataframe(self):
+        """
+        Test that parse_scoreboard correctly transforms a scoreboard response into a DataFrame.
+        
+        This test:
+        1. Creates a mock scoreboard response with game data
+        2. Passes this response to the parse_scoreboard function
+        3. Verifies the result is a properly structured DataFrame with one row per game
+        4. Confirms the DataFrame contains all expected columns for game analysis
+        5. Validates that game data, including teams and scores, was correctly extracted
+        
+        This ensures the scoreboard parser correctly handles the ESPN API response format.
+        """
         data = {
             "events": [
                 {
@@ -302,7 +351,17 @@ class TestParsers:
         assert result[0, "away_score"] == "79"
 
     def test_empty_scoreboard(self):
-        """Test parsing empty scoreboard response."""
+        """
+        Test that parse_scoreboard correctly handles an empty scoreboard response.
+        
+        This test:
+        1. Creates a mock scoreboard response with no events
+        2. Passes this response to the parse_scoreboard function
+        3. Verifies that the result is an empty DataFrame with the correct schema
+        4. Confirms that no errors are raised when processing an empty response
+        
+        This ensures the parser gracefully handles days with no games while maintaining a consistent return type.
+        """
         data = {"events": []}
         
         response = ScoreboardResponse.model_validate(data)
@@ -329,7 +388,20 @@ class TestParsers:
         (parse_teams_list, ["team_id", "team_name", "abbreviation"]),
     ])
     def test_parser_empty_inputs(self, parser_func, expected_columns):
-        """Test parsers handle empty inputs gracefully."""
+        """
+        Test that parsers correctly handle empty or minimal input data.
+        
+        This parametrized test:
+        1. Tests multiple parser functions with empty input data
+        2. Verifies that each parser returns an empty DataFrame rather than raising an error
+        3. Confirms that the empty DataFrames have the correct schema with all expected columns
+        
+        Parameters:
+            parser_func: The parser function to test
+            expected_columns: The columns that should be present in the returned DataFrame
+            
+        This ensures robust handling of edge cases across different parsers.
+        """
         # For some parsers, we need specific empty structures
         if parser_func == parse_game_summary:
             data = GameSummaryResponse.model_validate({
