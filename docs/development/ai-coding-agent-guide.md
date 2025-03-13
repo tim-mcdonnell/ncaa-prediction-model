@@ -1,35 +1,40 @@
 # AI Coding Agent Guide
 
-This guide provides essential information for AI coding agents working on the NCAA Basketball Prediction Model. It covers project architecture, development practices, and common pitfalls to avoid.
+This guide provides essential information for AI coding agents working on the NCAA Basketball Prediction Model.
 
 ## Quick Reference
 
 | **Category** | **Key Points** |
 |--------------|----------------|
-| **Project Structure** | Pipeline-based architecture, Parquet-first storage |
-| **Development Approach** | Test-Driven Development, Progressive Abstraction |
-| **Package Management** | Use `uv` (not pip) for dependency management |
-| **Data Processing** | Use Polars (not pandas) for all data manipulation |
-| **Storage** | Direct Parquet files (no SQL database) |
-| **GitHub Management** | Use GitHub API for milestones, store multiline content in `tmp` |
-| **Terminal Commands** | Avoid newlines, use `tmp` for multiline content |
+| **Development Approach** | Test-Driven Development (TDD): Tests first, minimal implementation, then refactor |
+| **Project Structure** | Pipeline architecture, Parquet storage, `src/` for code, `tests/` mirroring code structure |
+| **Package Management** | ✅ Use `uv` for dependencies ❌ NEVER use pip directly |
+| **Data Processing** | ✅ Use Polars for all data manipulation ❌ NEVER use pandas |
+| **Terminal Commands** | ✅ Use `tmp/` files for multiline content ❌ NEVER use newlines in commands |
 
-## Project Documentation
+## Key Documentation
 
-Start by familiarizing yourself with these key documents:
+- **[Test Strategy](./development/testing.md)**: Our TDD approach and testing practices
+- **[Documentation Guide](./development/documentation.md)**: Documentation standards
+- **[Architecture Overview](./architecture.md)**: System design and components
 
-- **[Project Structure](./project-structure.md)**: Overview of directory organization
-- **[Pipeline Architecture](./pipeline-architecture.md)**: Core data flow design
-- **[Modularity Guidelines](./modularity-guidelines.md)**: Code organization principles
-- **[Test Strategy](./test-strategy.md)**: Testing approach and practices
+## TDD Workflow
 
-For implementation, refer to:
-
-- **[Implementation Plan](./implementation-plan.md)**: Phase-by-phase development roadmap
+1. **Red Phase:**
+   - Write failing tests first
+   - Document expected behavior in test docstrings
+   
+2. **Green Phase:**
+   - Write minimal code to pass tests
+   - Include proper docstrings
+   
+3. **Refactor Phase:**
+   - Improve code without changing behavior
+   - Document design decisions in comments
 
 ## Architecture Overview
 
-This project uses a **pipeline architecture** with these key components:
+Pipeline architecture with these core components:
 
 ```
 Collection Pipeline → Processing Pipeline → Feature Pipeline → Prediction Pipeline
@@ -37,303 +42,120 @@ Collection Pipeline → Processing Pipeline → Feature Pipeline → Prediction 
                                             Daily Update Pipeline
 ```
 
-1. **Collection Pipeline**: Fetches data from ESPN APIs
-2. **Processing Pipeline**: Transforms raw data into standardized formats
-3. **Feature Pipeline**: Calculates 60+ basketball metrics with dependency resolution
-4. **Prediction Pipeline**: Generates predictions using the latest features and trained models
-5. **Daily Update Pipeline**: Combines all pipelines for efficient daily updates during basketball season
+1. **Collection Pipeline**: Fetches ESPN API data
+2. **Processing Pipeline**: Transforms raw data
+3. **Feature Pipeline**: Calculates basketball metrics
+4. **Prediction Pipeline**: Generates predictions
+5. **Daily Update Pipeline**: Orchestrates daily updates
 
-**Key Implementation Files**:
-- `/src/pipelines/base_pipeline.py`: Base class with shared functionality
-- `/src/pipelines/collection_pipeline.py`: Data collection orchestration
-- `/src/pipelines/processing_pipeline.py`: Data transformation orchestration
-- `/src/pipelines/feature_pipeline.py`: Feature calculation orchestration
-- `/src/pipelines/prediction_pipeline.py`: Prediction orchestration
-- `/src/pipelines/daily_update.py`: Combined daily update pipeline
+## Documentation Standards
 
-## Development Practices
+- Document code alongside development (in the TDD cycle)
+- Use Google-style docstrings for all public functions/classes
+- Focus on practical information over theoretical explanations
 
-### Test-Driven Development
+Example docstring:
+```python
+def collect_game_data(season: int, game_ids: List[str] = None) -> pl.DataFrame:
+    """
+    Collect NCAA basketball game data from ESPN.
+    
+    Args:
+        season: Basketball season year (e.g., 2023 for 2022-23 season)
+        game_ids: Optional list of specific game IDs to collect
+            
+    Returns:
+        DataFrame containing raw game data
+    """
+```
 
-- **Write tests first**: Create tests before implementing functionality
-- **Test fixtures**: Use fixtures in `/tests/fixtures/` for consistent test data
-- **Test structure**: Match test directory structure to source code
+## ⚠️ Critical Terminal Command Limitations ⚠️
 
-### Progressive Abstraction
+Terminal commands with newlines WILL FAIL. Always use temporary files:
 
-- Start with concrete implementations and refactor to abstractions as patterns emerge
-- Focus on functionality first, then optimize for reusability
-- Document design decisions when introducing abstractions
+```python
+# ✅ CORRECT APPROACH
+# 1. Create temporary file
+edit_file("tmp/commit_msg.md", """Feature: Add functionality
+
+- Add component
+- Implement feature""")
+
+# 2. Use in command
+run_terminal_cmd("git commit -F tmp/commit_msg.md")
+
+# 3. Clean up
+delete_file("tmp/commit_msg.md")
+
+# ❌ INCORRECT - Will fail
+# run_terminal_cmd("""git commit -m "Feature: Add functionality
+# 
+# - Add component
+# - Implement feature"""")
+```
+
+This pattern is REQUIRED for:
+- Git commit messages
+- GitHub PR descriptions and issue creation
+- Any multiline command input
 
 ## Common Mistakes to Avoid
 
 ### Package Management
 
-❌ **NEVER use pip directly**  
-✅ **ALWAYS use uv**: `uv pip install -e .`
-
-Package management commands:
-```bash
-# Install dependencies
-uv pip install -e .
-
-# Add a new dependency (updates pyproject.toml automatically)
-uv pip install package_name
-```
-
-## ⚠️ Critical Terminal Command Limitations ⚠️
-
-One of the most common issues AI agents encounter is with terminal commands containing newlines. Here's how to handle multiline content properly:
-
-### The Problem:
-
-❌ **Terminal commands with newline characters WILL FAIL** ❌
-
-```bash
-# THIS WILL FAIL - Do not attempt these approaches
-git commit -m "First line of commit message
-Second line of commit message"
-
-# THIS WILL ALSO FAIL - Don't try to echo multiple lines directly
-echo "Line 1
-Line 2
-Line 3" > output.txt
-```
-
-### The Solution:
-
-✅ **ALWAYS use temporary markdown files in `tmp/` for multiline content** ✅
-
-Follow this pattern for handling multiline content:
-
-1. Create/edit a temporary markdown file in the `tmp/` directory
-2. Use the file in your command
-3. Clean up the temporary file when done
-
-Example workflow:
-
 ```python
-# 1. Edit a temporary markdown file
-edit_file("tmp/commit_message.md", "Add your multiline content here")
+# ✅ CORRECT
+run_terminal_cmd("uv pip install -e .")
+run_terminal_cmd("uv pip install new-package")
 
-# 2. Use the file in commands
-run_terminal_cmd("git commit -F tmp/commit_message.md")
-# OR
-run_terminal_cmd("gh pr create --title 'Title' --body-file tmp/commit_message.md")
-# OR
-run_terminal_cmd("gh issue create --title 'Title' --body-file tmp/commit_message.md")
-
-# 3. Clean up
-delete_file("tmp/commit_message.md")
+# ❌ INCORRECT
+# run_terminal_cmd("pip install -e .")
 ```
-
-This pattern is REQUIRED for:
-- Git commit messages
-- GitHub PR descriptions
-- GitHub issue creation
-- GitHub milestone descriptions
-- Any command requiring multiline content
-
-### Best Practices
-
-1. **File Naming**:
-   - Use descriptive names: `issue_text.md`, `pr_description.md`, etc.
-   - Always use `.md` extension for proper markdown formatting
-   - Place all temporary files in the `tmp/` directory
-
-2. **File Management**:
-   - Create files only when needed
-   - Delete files after use
-   - Don't reuse filenames within the same conversation
-   - Use unique filenames to avoid conflicts
-
-3. **Content Creation**:
-   - Use the `edit_file` tool to create/modify content
-   - Write complete, well-formatted markdown
-   - Include all necessary sections and formatting
-
-4. **Command Execution**:
-   - Use `--body-file` or `-F` flags to read from files
-   - Verify file exists before using in commands
-   - Clean up files after successful command execution
-
-### Examples
-
-#### Creating a GitHub Issue:
-```python
-# 1. Create content
-edit_file("tmp/issue_text.md", """# Issue Title
-
-## Description
-Detailed issue description here...
-""")
-
-# 2. Create issue
-run_terminal_cmd("gh issue create --title 'New Feature' --body-file tmp/issue_text.md --milestone '1'")
-
-# 3. Clean up
-delete_file("tmp/issue_text.md")
-```
-
-#### Creating a Git Commit:
-```python
-# 1. Create content
-edit_file("tmp/commit_msg.md", """Feature: Add new functionality
-
-- Add X component
-- Implement Y feature
-- Update Z documentation""")
-
-# 2. Commit
-run_terminal_cmd("git commit -F tmp/commit_msg.md")
-
-# 3. Clean up
-delete_file("tmp/commit_msg.md")
-```
-
-### GitHub Project Management
-
-Use GitHub CLI to work with issues, milestones, and other project components:
-
-#### Accessing Issues
-
-```bash
-# View issue #1
-gh issue view 1
-
-# View issue #1 with all comments
-gh issue view 1 --comments
-
-# View issue #1 in web browser
-gh issue view 1 --web
-```
-
-#### Managing Milestones
-
-GitHub CLI doesn't have direct milestone commands, so use the GitHub API:
-
-```bash
-# Get milestone details
-gh api /repos/$(gh repo view --json nameWithOwner -q .nameWithOwner)/milestones/1 \
-  -q '.title, .description, .open_issues, .closed_issues'
-
-# List all issues in a milestone
-gh issue list --milestone 1 --state all
-
-# Create a milestone (using tmp for multiline content)
-cat > tmp/milestone_description.txt << 'EOF'
-Milestone description with multiple lines
-EOF
-
-gh api --method POST /repos/$(gh repo view --json nameWithOwner -q .nameWithOwner)/milestones \
-  -f title="New Milestone" \
-  -f description="$(cat tmp/milestone_description.txt)" \
-  -f state="open" \
-  -q '.number'
-
-rm tmp/milestone_description.txt
-
-# Edit a milestone
-cat > tmp/updated_description.txt << 'EOF'
-Updated description
-EOF
-
-gh api --method PATCH /repos/$(gh repo view --json nameWithOwner -q .nameWithOwner)/milestones/1 \
-  -f title="Updated Title" \
-  -f description="$(cat tmp/updated_description.txt)" \
-  -f state="open"
-
-rm tmp/updated_description.txt
-```
-
-#### Creating and Updating Issues
-
-```bash
-# Create an issue with milestone assignment
-cat > tmp/issue.md << 'EOF'
-Detailed description with requirements
-EOF
-
-gh issue create --title "Issue Title" --body-file tmp/issue.md --milestone "1"
-rm tmp/issue.md
-
-# Add existing issue to milestone
-gh api --method PATCH /repos/$(gh repo view --json nameWithOwner -q .nameWithOwner)/issues/5 \
-  -f milestone=1
-```
-
-When implementing a task, always review the complete task description to understand:
-- Requirements and acceptance criteria
-- Context and background information
-- Related tasks and dependencies
-- Implementation guidance
-
-The task descriptions follow the format in `docs/development/examples/task_example.md`.
 
 ### Data Processing
 
-❌ **NEVER use pandas for data processing**  
-✅ **ALWAYS use Polars**: 
-
 ```python
-# Correct approach
+# ✅ CORRECT
 import polars as pl
-
 df = pl.read_parquet("path/to/file.parquet")
-result = df.filter(pl.col("column") > 0).groupby("category").agg(pl.sum("value"))
+result = df.filter(pl.col("column") > 0)
+
+# ❌ INCORRECT
+# import pandas as pd
+# df = pd.read_parquet("path/to/file.parquet")
 ```
 
 ### Data Storage
 
-❌ **NEVER create database abstractions or custom ORMs**  
-✅ **ALWAYS use Parquet files directly**:
-
 ```python
-# Correct approach - use the storage utilities
+# ✅ CORRECT
 from src.data.storage.parquet_io import save_parquet, load_parquet
-
-# Loading data
 df = load_parquet(data_category="raw", filename="games/2023/games")
-
-# Saving data
 save_parquet(df, data_category="processed", filename="games_unified")
+
+# ❌ INCORRECT - Don't create custom database abstractions
 ```
 
-### Code Organization
+## Checkpoint Requirements
 
-❌ **NEVER add code to the wrong module**  
-✅ **ALWAYS follow the project structure**:
+Always get explicit confirmation before:
+- Git operations (commits, pushes, branch creation)
+- Adding new dependencies
+- Creating new root folders
+- Deviating from project architecture
+- Integrating with external APIs
 
-- Data collection code goes in `src/data/collection/`
-- Feature calculations go in `src/features/`
-- Pipeline orchestration goes in `src/pipelines/`
+For routine code implementation, proceed without constant check-ins.
 
-### Error Handling
-
-❌ **NEVER use naked try/except blocks**  
-✅ **ALWAYS handle specific exceptions and use the resilience patterns**:
+## Feature Implementation Example
 
 ```python
-# Correct approach
-from src.utils.resilience.retry import retry
+# Test first (Red phase)
+def test_offensive_efficiency_calculation():
+    """Test that offensive efficiency is calculated correctly as points per 100 possessions."""
+    # Test implementation...
 
-@retry(max_attempts=3, backoff_factor=1.5)
-async def fetch_data(url):
-    # Implementation
-```
-
-## Pipeline Implementation Guidelines
-
-| **Pipeline** | **Key Guidelines** |
-|--------------|-------------------|
-| **Collection** | • Use ESPN client in `src/data/collection/espn/client.py`<br>• Follow incremental update pattern<br>• Store raw data in `data/raw/` directory |
-| **Feature** | • Inherit from `src.features.base.Feature`<br>• Specify dependencies and required data<br>• Use pure functions for transformations<br>• Register in feature registry |
-
-Example feature:
-```python
-from src.features.base import Feature
-import polars as pl
-
+# Then implementation (Green phase)
 class OffensiveEfficiencyFeature(Feature):
     id = "team_offensive_efficiency"
     name = "Team Offensive Efficiency"
@@ -346,28 +168,17 @@ class OffensiveEfficiencyFeature(Feature):
 
 ## Code Contribution Tips
 
-1. **Check existing implementations** before creating new patterns
-2. **Reference the pipeline architecture documentation** for flow design
-3. **Use functional patterns** for data transformations
-4. **Write tests for all code** following the test strategy
-5. **Document non-obvious design decisions** in comments
-
-## Need Help?
-
-If you encounter anything not covered in this guide:
-
-1. **Start with the project documentation** in the `/docs/` directory
-2. **Refer to the code structure** to understand existing patterns
-3. **Check test implementations** for usage examples
-4. **Ask for clarification** before implementing significant changes
+1. **Follow TDD cycle** for all new code
+2. **Check existing patterns** before creating new ones
+3. **Document alongside development** using our standard format
+4. **Place code in correct modules** following project structure
+5. **Run tests** after each implementation step
 
 ## Key Principles
 
 | **Principle** | **Description** |
 |---------------|-----------------|
+| **Test-First** | Write tests before implementing functionality |
 | **Simplicity** | Prefer simple solutions over complex abstractions |
-| **Testability** | Write comprehensive tests for all functionality |
-| **Documentation** | Document your changes and reasoning |
+| **Documentation** | Document your changes alongside implementation |
 | **Data Flow** | Follow the pipeline architecture and Parquet-first approach |
-| **Compatibility** | Ensure new code integrates with existing components |
-| **Organization** | Place code in the appropriate modules following project structure | 
