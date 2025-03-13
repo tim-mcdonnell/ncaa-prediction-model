@@ -1,0 +1,91 @@
+{
+  "sports": [
+    {
+      "id": "40",
+      "uid": "s:40",
+      "name": "Basketball",
+      "slug": "basketball",
+      "leagues": [
+        {
+          "id": "41",
+          "uid": "s:40~l:41",
+          "name": "NCAA Men's Basketball",
+          "abbreviation": "NCAAM",
+          "shortName": "Men's College Basketball",
+          "slug": "mens-college-basketball",
+          "teams": [
+            {
+              "id": "130",
+              "uid": "s:40~l:41~t:130",
+              "slug": "michigan-wolverines",
+              "location": "Michigan",
+              "name": "Wolverines",
+              "nickname": "Michigan",
+              "abbreviation": "MICH",
+              "displayName": "Michigan Wolverines",
+              "color": "00274C",
+              "alternateColor": "ffcb05",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/ncaa/500/130.png",
+                  "width": 500,
+                  "height": 500
+                }
+              ],
+              "groups": {
+                "name": "Big Ten",
+                "division": "East"
+              }
+            },
+            {
+              "id": "275",
+              "uid": "s:40~l:41~t:275",
+              "slug": "wisconsin-badgers",
+              "location": "Wisconsin",
+              "name": "Badgers",
+              "nickname": "Wisconsin",
+              "abbreviation": "WIS",
+              "displayName": "Wisconsin Badgers",
+              "color": "c5050c",
+              "alternateColor": "f9f9f9",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/ncaa/500/275.png",
+                  "width": 500,
+                  "height": 500
+                }
+              ],
+              "groups": {
+                "name": "Big Ten",
+                "division": "West"
+              }
+            },
+            {
+              "id": "150",
+              "uid": "s:40~l:41~t:150",
+              "slug": "duke-blue-devils",
+              "location": "Duke",
+              "name": "Blue Devils",
+              "nickname": "Duke",
+              "abbreviation": "DUKE",
+              "displayName": "Duke Blue Devils",
+              "color": "001A57",
+              "alternateColor": "f1f2f3",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/ncaa/500/150.png",
+                  "width": 500,
+                  "height": 500
+                }
+              ],
+              "groups": {
+                "name": "ACC",
+                "division": null
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+} 

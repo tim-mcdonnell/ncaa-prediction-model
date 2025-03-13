@@ -1,0 +1,116 @@
+{
+  "boxscore": {
+    "teams": [
+      {
+        "team": {
+          "id": "130",
+          "displayName": "Michigan Wolverines"
+        },
+        "statistics": [
+          {"name": "points", "displayValue": "87"},
+          {"name": "rebounds", "displayValue": "35"},
+          {"name": "assists", "displayValue": "15"},
+          {"name": "steals", "displayValue": "7"},
+          {"name": "blocks", "displayValue": "4"},
+          {"name": "fieldGoalsAttempted", "displayValue": "65"},
+          {"name": "fieldGoalsMade", "displayValue": "32"},
+          {"name": "threePointFieldGoalsAttempted", "displayValue": "22"},
+          {"name": "threePointFieldGoalsMade", "displayValue": "10"}
+        ]
+      },
+      {
+        "team": {
+          "id": "275",
+          "displayName": "Wisconsin Badgers"
+        },
+        "statistics": [
+          {"name": "points", "displayValue": "79"},
+          {"name": "rebounds", "displayValue": "30"},
+          {"name": "assists", "displayValue": "12"},
+          {"name": "steals", "displayValue": "5"},
+          {"name": "blocks", "displayValue": "3"},
+          {"name": "fieldGoalsAttempted", "displayValue": "60"},
+          {"name": "fieldGoalsMade", "displayValue": "29"},
+          {"name": "threePointFieldGoalsAttempted", "displayValue": "20"},
+          {"name": "threePointFieldGoalsMade", "displayValue": "8"}
+        ]
+      }
+    ],
+    "players": [
+      {
+        "team": {"id": "130"},
+        "statistics": [
+          {
+            "athletes": [
+              {
+                "athlete": {
+                  "id": "1234",
+                  "displayName": "John Doe"
+                },
+                "stats": [
+                  {"name": "points", "displayValue": "20"},
+                  {"name": "rebounds", "displayValue": "10"},
+                  {"name": "assists", "displayValue": "5"},
+                  {"name": "steals", "displayValue": "2"},
+                  {"name": "blocks", "displayValue": "1"},
+                  {"name": "fieldGoalsAttempted", "displayValue": "15"},
+                  {"name": "fieldGoalsMade", "displayValue": "8"}
+                ]
+              },
+              {
+                "athlete": {
+                  "id": "1235",
+                  "displayName": "Jane Smith"
+                },
+                "stats": [
+                  {"name": "points", "displayValue": "18"},
+                  {"name": "rebounds", "displayValue": "8"},
+                  {"name": "assists", "displayValue": "4"},
+                  {"name": "steals", "displayValue": "1"},
+                  {"name": "blocks", "displayValue": "0"},
+                  {"name": "fieldGoalsAttempted", "displayValue": "12"},
+                  {"name": "fieldGoalsMade", "displayValue": "7"}
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "plays": [
+    {
+      "id": "401479672-1",
+      "clock": {"displayValue": "19:45"},
+      "period": {"number": 1},
+      "text": "John Doe made Three Point Jumper",
+      "scoringPlay": true,
+      "scoreValue": 3,
+      "team": {"id": "130"},
+      "coordinate": {"x": 25, "y": 15}
+    },
+    {
+      "id": "401479672-2",
+      "clock": {"displayValue": "19:15"},
+      "period": {"number": 1},
+      "text": "Jane Smith made Layup",
+      "scoringPlay": true,
+      "scoreValue": 2,
+      "team": {"id": "130"},
+      "coordinate": {"x": 5, "y": 5}
+    }
+  ],
+  "gameInfo": {
+    "venue": {
+      "name": "Crisler Center",
+      "city": "Ann Arbor",
+      "state": "MI"
+    },
+    "attendance": 12500,
+    "officials": [
+      {"displayName": "Official 1"},
+      {"displayName": "Official 2"},
+      {"displayName": "Official 3"}
+    ]
+  }
+} 

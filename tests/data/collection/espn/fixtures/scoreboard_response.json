@@ -1,0 +1,89 @@
+{
+  "events": [
+    {
+      "id": "401479672",
+      "uid": "s:40~l:41~e:401479672",
+      "date": "2023-03-01T00:00Z",
+      "name": "Wisconsin Badgers at Michigan Wolverines",
+      "shortName": "WIS @ MICH",
+      "season": {
+        "year": 2023,
+        "type": 2,
+        "slug": "regular-season"
+      },
+      "competitions": [
+        {
+          "id": "401479672",
+          "uid": "s:40~l:41~e:401479672~c:401479672",
+          "date": "2023-03-01T00:00Z",
+          "status": {
+            "clock": 0,
+            "displayClock": "0:00",
+            "period": 2,
+            "type": {
+              "id": "3",
+              "name": "STATUS_FINAL",
+              "state": "post",
+              "completed": true,
+              "description": "Final",
+              "detail": "Final",
+              "shortDetail": "Final"
+            }
+          },
+          "competitors": [
+            {
+              "id": "130",
+              "uid": "s:40~l:41~t:130",
+              "type": "team",
+              "order": 0,
+              "homeAway": "home",
+              "team": {
+                "id": "130",
+                "uid": "s:40~l:41~t:130",
+                "location": "Michigan",
+                "name": "Wolverines",
+                "abbreviation": "MICH",
+                "displayName": "Michigan Wolverines",
+                "color": "00274C",
+                "alternateColor": "ffcb05",
+                "logos": [
+                  {
+                    "href": "https://a.espncdn.com/i/teamlogos/ncaa/500/130.png",
+                    "width": 500,
+                    "height": 500
+                  }
+                ]
+              },
+              "score": "87"
+            },
+            {
+              "id": "275",
+              "uid": "s:40~l:41~t:275",
+              "type": "team",
+              "order": 1,
+              "homeAway": "away",
+              "team": {
+                "id": "275",
+                "uid": "s:40~l:41~t:275",
+                "location": "Wisconsin",
+                "name": "Badgers",
+                "abbreviation": "WIS",
+                "displayName": "Wisconsin Badgers",
+                "color": "c5050c",
+                "alternateColor": "f9f9f9",
+                "logos": [
+                  {
+                    "href": "https://a.espncdn.com/i/teamlogos/ncaa/500/275.png",
+                    "width": 500,
+                    "height": 500
+                  }
+                ]
+              },
+              "score": "79"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+} 

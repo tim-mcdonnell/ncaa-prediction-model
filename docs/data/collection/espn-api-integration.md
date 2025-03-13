@@ -503,66 +503,208 @@ description: Documentation for ESPN API endpoints used for NCAA men's basketball
 }
 ```
 
-## Data Extraction Patterns
+## ESPN API Client Implementation
 
-### How to extract game IDs from scoreboard responses
+Our project includes a robust Python client for interacting with ESPN's NCAA basketball APIs, focusing on resilience, error handling, and data parsing.
+
+### Implementation Overview
+
+The ESPN API client is implemented in `src.data.collection.espn.client`, providing a clean, async interface for accessing the most relevant endpoints. Key implementation features include:
+
+- **Asynchronous design:** Utilizes `httpx` for non-blocking HTTP requests
+- **Rate limiting:** Implements token bucket algorithm to respect API limits
+- **Automatic retries:** Uses exponential backoff with jitter for transient failures
+- **Data validation:** Leverages Pydantic models for type-safe API responses
+- **Data parsing:** Converts API responses to Polars DataFrames for efficient analysis
+- **Comprehensive logging:** Includes detailed logging for debugging and monitoring
+- **Error handling:** Robust error handling with clear error messages
+
+### Client Architecture
+
+The client consists of several key components:
+
+1. **ESPNClient:** The main client class that interacts with ESPN endpoints
+2. **RateLimiter:** Implements the token bucket algorithm for API rate limiting
+3. **Pydantic models:** Type-safe representations of API responses
+4. **Data parsers:** Convert API responses into structured DataFrames
+
+### API Methods
+
+#### `get_scoreboard(date_str: str) -> pl.DataFrame`
+
+Retrieves scoreboard data for a specific date.
+
+- **Parameters:**
+  - `date_str`: Date in YYYYMMDD format (e.g., "20230301" for March 1, 2023)
+- **Returns:** DataFrame containing game data
+- **Raises:** ValueError if the date format is invalid
+- **Example:**
+  ```python
+  games_df = await client.get_scoreboard("20230301")
+  ```
+
+#### `get_scoreboard_for_date_range(start_date_str: str, end_date_str: str) -> pl.DataFrame`
+
+Retrieves scoreboard data for a range of dates.
+
+- **Parameters:**
+  - `start_date_str`: Start date in YYYYMMDD format
+  - `end_date_str`: End date in YYYYMMDD format
+- **Returns:** DataFrame containing game data for all dates in the range
+- **Raises:** 
+  - ValueError if either date string is invalid
+  - ValueError if end_date is before start_date
+- **Example:**
+  ```python
+  games_df = await client.get_scoreboard_for_date_range("20230301", "20230307")
+  ```
+
+#### `get_game_summary(game_id: str) -> GameSummaryResponse`
+
+Retrieves detailed game summary data.
+
+- **Parameters:**
+  - `game_id`: ESPN game ID
+- **Returns:** Game summary response object
+- **Example:**
+  ```python
+  summary = await client.get_game_summary("401468461")
+  ```
+
+#### `get_team(team_id: str) -> TeamResponse`
+
+Retrieves information for a specific team.
+
+- **Parameters:**
+  - `team_id`: ESPN team ID
+- **Returns:** Team response object
+- **Example:**
+  ```python
+  team = await client.get_team("52")  # Air Force Falcons
+  ```
+
+#### `get_teams(page: int = 1) -> TeamsResponse`
+
+Retrieves a list of teams with pagination.
+
+- **Parameters:**
+  - `page`: Page number for pagination (default: 1)
+- **Returns:** Teams response object
+- **Example:**
+  ```python
+  teams_page1 = await client.get_teams(page=1)
+  ```
+
+#### `get_all_teams() -> List[Team]`
+
+Retrieves all teams across all pages, handling pagination automatically.
+
+- **Returns:** List of Team objects
+- **Example:**
+  ```python
+  all_teams = await client.get_all_teams()
+  ```
+
+### Client Configuration
+
+The `ESPNClient` constructor accepts the following parameters:
+
+- `rate_limit`: Number of requests allowed per second (default: 5.0)
+- `burst_limit`: Maximum number of requests that can be made at once (default: 10)
+- `timeout`: Default timeout for HTTP requests in seconds (default: 30.0)
+
+Example with custom configuration:
+
 ```python
-import requests
-import json
-
-# Get scoreboard data for a specific date
-date = "20240301"  # March 1, 2024
-url = f"http://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates={date}"
-response = requests.get(url)
-data = json.loads(response.text)
-
-# Extract game IDs
-game_ids = []
-for event in data.get("events", []):
-    game_ids.append(event["id"])
-
-print(f"Found {len(game_ids)} games on {date}")
-print(game_ids)
+async with ESPNClient(rate_limit=2.0, burst_limit=5, timeout=60.0) as client:
+    # Client will now make at most 2 requests per second
+    # with a burst capacity of 5 requests
+    # and a 60-second timeout
+    ...
 ```
 
-### How to extract team information
+### Date Validation
+
+The client implements strict date validation:
+
+- Dates must be in YYYYMMDD format (e.g., "20230301" for March 1, 2023)
+- Dates are validated to ensure they represent valid calendar dates
+- Invalid dates (like February 31st) will raise a ValueError
+
+The client also checks for date mismatches between requested dates and returned event dates, which helps detect when the ESPN API silently "corrects" an invalid date.
+
+### Error Handling
+
+The client provides robust error handling for various scenarios:
+
+- **Network errors:** Automatically retried with exponential backoff
+- **API errors:** HTTP status errors are raised with detailed information
+- **Invalid inputs:** Clear validation errors for invalid parameters
+- **Date validation:** Strict validation for date formats and ranges
+
+### Usage Example
+
 ```python
-import requests
-import json
+import asyncio
+import logging
+from src.data.collection.espn.client import ESPNClient
 
-# Get all teams data
-url = "http://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/teams"
-response = requests.get(url)
-data = json.loads(response.text)
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
-# Extract team information
-teams = []
-for sport in data.get("sports", []):
-    for league in sport.get("leagues", []):
-        for team in league.get("teams", []):
-            team_info = team.get("team", {})
-            teams.append({
-                "id": team_info.get("id"),
-                "name": team_info.get("displayName"),
-                "abbreviation": team_info.get("abbreviation"),
-                "color": team_info.get("color")
-            })
+async def main():
+    # Create a client with default rate limits
+    async with ESPNClient() as client:
+        # Get games for a specific date
+        games_df = await client.get_scoreboard("20230301")
+        print(f"Found {len(games_df)} games on March 1, 2023")
+        
+        # Get games for a date range
+        games_range_df = await client.get_scoreboard_for_date_range("20230301", "20230307")
+        print(f"Found {len(games_range_df)} games from March 1-7, 2023")
+        
+        # Get all NCAA basketball teams
+        teams = await client.get_all_teams()
+        print(f"Found {len(teams)} teams")
+        
+        # Get detailed game information
+        game_summary = await client.get_game_summary("401468461")
+        print(f"Game: {game_summary.header.competitions[0].competitors[0].team.name} vs "
+              f"{game_summary.header.competitions[0].competitors[1].team.name}")
 
-print(f"Found {len(teams)} teams")
+# Run the async function
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
-### Key data fields and their meanings
-- `events`: Array of game events in scoreboard response
-- `competitions`: Actual game competitions within an event
-- `competitors`: Teams participating in a competition
-- `homeAway`: Indicates if a team is "home" or "away"
-- `status.type.completed`: Boolean indicating if game is completed
-- `status.type.description`: Human-readable status (e.g., "Final", "Scheduled")
-- `season.year`: Year of the season
-- `season.type`: Season type (2 = regular season, 3 = postseason)
-- `teams`: Array of team information
-- `athletes`: Array of player information
-- `statistics`: Team or player statistics
+### Limitations and Known Issues
+
+- The ESPN API may have undocumented rate limits or change without notice
+- Some endpoints may return inconsistent data formats
+- The API sometimes returns dates in different time zones, which can cause date mismatches
+- Empty results may be returned for valid dates with no games
+- The API may silently "correct" invalid dates (e.g., February 31st might return data for February 28th)
+
+### Testing
+
+The client includes comprehensive tests covering:
+
+- Date validation
+- Rate limiting
+- Retry functionality
+- Response parsing
+- Error handling
+- Pagination logic
+
+Run the tests with:
+
+```bash
+# Run all tests
+python -m pytest tests/data/collection/espn/
+
+# Run specific test
+python -m pytest tests/data/collection/espn/test_client.py::TestESPNClient::test_get_scoreboard_for_date_range
+```
 
 ## Historical Data Availability
 
