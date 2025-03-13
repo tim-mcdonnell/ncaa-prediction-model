@@ -9,20 +9,20 @@ import polars as pl
 from src.utils.resilience.retry import retry
 
 from .models import (
+    AthleteResponse,
+    AthletesPageResponse,
     GameSummaryResponse,
+    GroupsResponse,
+    RankingsResponse,
+    RosterResponse,
+    ScheduleResponse,
     ScoreboardResponse,
+    StandingsResponse,
     Team,
     TeamResponse,
     TeamsResponse,
-    RosterResponse,
-    RankingsResponse,
-    GroupsResponse,
-    StandingsResponse,
-    ScheduleResponse,
-    AthleteResponse,
-    AthletesPageResponse,
     TeamStatisticsResponse,
-    TournamentResponse
+    TournamentResponse,
 )
 
 logger = logging.getLogger(__name__)
@@ -547,8 +547,8 @@ class ESPNClient:
                     "away_team_score": away_team.score,
                     "status": competition.status.type["name"],
                     "period": competition.status.period,
-                    "season_year": event.season["year"],
-                    "season_type": event.season["type"]
+                    "season_year": event.season.year,
+                    "season_type": event.season.type
                 }
                 records.append(record)
         
@@ -560,19 +560,24 @@ class ESPNClient:
         Get team roster information.
         
         Args:
-            team_id: ESPN team ID
+            team_id: Team ID
             
         Returns:
-            Roster response object containing team and player information
+            Roster response object
         """
         logger.info(f"Fetching roster data for team ID: {team_id}")
-        endpoint = f"/apis/site/v2/sports/{self.SPORT}/{self.LEAGUE}/teams/{team_id}/roster"
+        endpoint = (
+            f"/apis/site/v2/sports/{self.SPORT}/{self.LEAGUE}/teams/"
+            f"{team_id}/roster"
+        )
         
         data = await self._get(endpoint)
         response = RosterResponse.model_validate(data)
         
         player_count = len(response.roster) if response.roster else 0
-        logger.info(f"Retrieved roster with {player_count} players for team ID: {team_id}")
+        logger.info(
+            f"Retrieved roster with {player_count} players for team ID: {team_id}"
+        )
         return response
     
     @retry(max_attempts=3, backoff_factor=2.0)
@@ -614,7 +619,7 @@ class ESPNClient:
     @retry(max_attempts=3, backoff_factor=2.0)
     async def get_standings(self, group_id: Optional[str] = None) -> StandingsResponse:
         """
-        Get NCAA basketball conference standings.
+        Get standings for NCAA basketball.
         
         Args:
             group_id: Optional conference/group ID to filter standings
@@ -622,116 +627,136 @@ class ESPNClient:
         Returns:
             Standings response object containing team standings by conference
         """
-        logger.info(f"Fetching NCAA basketball standings{' for group: ' + group_id if group_id else ''}")
+        logger.info(
+            f"Fetching NCAA basketball standings"
+            f"{' for group: ' + group_id if group_id else ''}"
+        )
         endpoint = f"/apis/v2/sports/{self.SPORT}/{self.LEAGUE}/standings"
         params = {"group": group_id} if group_id else None
         
         data = await self._get(endpoint, params)
         response = StandingsResponse.model_validate(data)
         
-        group_count = len(response.groups) if response.groups else 0
-        logger.info(f"Retrieved standings for {group_count} conferences")
         return response
     
     @retry(max_attempts=3, backoff_factor=2.0)
     async def get_team_schedule(
-        self, team_id: str, season: Optional[int] = None, season_type: Optional[int] = None
+        self, 
+        team_id: str, 
+        season: Optional[int] = None, 
+        season_type: Optional[int] = None
     ) -> ScheduleResponse:
         """
-        Get a team's schedule.
+        Get team schedule.
         
         Args:
-            team_id: ESPN team ID
-            season: Optional season year (e.g., 2023 for 2023-2024 season)
-            season_type: Optional season type (2=regular season, 3=postseason)
+            team_id: Team ID
+            season: Season year (e.g., 2023)
+            season_type: Season type (e.g., 2 for regular season)
             
         Returns:
-            Schedule response object containing team schedule information
+            Schedule response object
         """
         logger.info(
-            f"Fetching schedule for team ID: {team_id}" + 
-            (f", season: {season}" if season else "") +
-            (f", season type: {season_type}" if season_type else "")
+            f"Fetching schedule for team ID: {team_id}" +
+            (f" (season: {season})" if season else "") +
+            (f" (type: {season_type})" if season_type else "")
         )
         
-        endpoint = f"/apis/site/v2/sports/{self.SPORT}/{self.LEAGUE}/teams/{team_id}/schedule"
+        endpoint = (
+            f"/apis/site/v2/sports/{self.SPORT}/{self.LEAGUE}/teams/"
+            f"{team_id}/schedule"
+        )
         params = {}
         
         if season:
-            params["season"] = str(season)
-        
+            params["season"] = season
         if season_type:
-            params["seasontype"] = str(season_type)
-        
-        params = params if params else None
+            params["seasontype"] = season_type
         
         data = await self._get(endpoint, params)
         response = ScheduleResponse.model_validate(data)
         
-        game_count = len(response.events) if response.events else 0
-        logger.info(f"Retrieved {game_count} games in schedule for team ID: {team_id}")
+        logger.info(
+            f"Retrieved {len(response.events)} events for team ID: {team_id}"
+        )
         return response
     
     @retry(max_attempts=3, backoff_factor=2.0)
     async def get_athlete(self, athlete_id: str) -> AthleteResponse:
         """
-        Get detailed information about a specific athlete.
+        Get detailed information for a specific athlete.
         
         Args:
-            athlete_id: ESPN athlete ID
+            athlete_id: Athlete ID
             
         Returns:
-            Athlete response object containing detailed player information
+            Athlete response object containing player details
         """
-        logger.info(f"Fetching athlete information for ID: {athlete_id}")
+        logger.info(f"Fetching data for athlete ID: {athlete_id}")
+        
         endpoint = f"/v3/sports/{self.SPORT}/{self.LEAGUE}/athletes/{athlete_id}"
         
         data = await self._get(endpoint)
         response = AthleteResponse.model_validate(data)
         
-        logger.info(f"Retrieved data for athlete: {response.athlete.display_name} (ID: {athlete_id})")
+        logger.info(
+            f"Retrieved data for athlete: {response.athlete.display_name} "
+            f"(ID: {athlete_id})"
+        )
         return response
     
     @retry(max_attempts=3, backoff_factor=2.0)
-    async def get_athletes(self, limit: int = 50, page: int = 1) -> AthletesPageResponse:
+    async def get_athletes(
+        self, 
+        limit: int = 50, 
+        page: int = 1
+    ) -> AthletesPageResponse:
         """
         Get list of athletes with pagination.
         
         Args:
-            limit: Number of athletes per page
+            limit: Maximum number of athletes per page
             page: Page number to retrieve
             
         Returns:
-            Athletes page response object containing paginated player information
+            AthletesPageResponse object containing paginated athlete data
         """
-        logger.info(f"Fetching athletes (page: {page}, limit: {limit})")
-        endpoint = f"/v3/sports/{self.SPORT}/{self.LEAGUE}/athletes"
-        params = {
-            "limit": limit,
-            "page": page
-        }
+        logger.info(f"Fetching athletes (page {page}, limit {limit})")
+        
+        endpoint = f"/apis/site/v2/sports/{self.SPORT}/{self.LEAGUE}/athletes"
+        params = {"limit": limit, "page": page}
         
         data = await self._get(endpoint, params)
         response = AthletesPageResponse.model_validate(data)
         
         athlete_count = len(response.items) if response.items else 0
-        logger.info(f"Retrieved {athlete_count} athletes (page {page} of {response.total_pages})")
+        logger.info(
+            f"Retrieved {athlete_count} athletes (page {page} "
+            f"of {response.total_pages})"
+        )
         return response
     
     @retry(max_attempts=3, backoff_factor=2.0)
-    async def get_all_athletes(self, limit_per_page: int = 50) -> List[AthleteResponse.athlete.__class__]:
+    async def get_all_athletes(
+        self, 
+        limit_per_page: int = 50, 
+        max_pages: Optional[int] = None
+    ) -> List[Dict[str, Any]]:
         """
         Get all athletes across all pages.
         
-        This method automatically handles pagination and combines results from all pages.
+        This method automatically handles pagination and combines results 
+        from all pages.
         
         Args:
             limit_per_page: Number of athletes per page
+            max_pages: Maximum number of pages to fetch (None for all pages)
             
         Returns:
-            List of Athlete objects containing all athletes
+            List of athlete data dictionaries
         """
-        logger.info(f"Fetching all athletes with pagination (limit per page: {limit_per_page})")
+        logger.info(f"Fetching all athletes with pagination (limit: {limit_per_page})")
         
         # Get the first page
         current_page = 1
@@ -741,19 +766,30 @@ class ESPNClient:
         all_athletes = list(response.items)
         
         # If only one page, return early
-        if response.total_pages <= 1:
+        if response.total_pages <= 1 or (max_pages is not None and max_pages <= 1):
             return all_athletes
         
-        # Continue fetching pages until we've retrieved all pages
-        while current_page < response.total_pages:
+        # Continue fetching pages until we've retrieved all pages or reached max_pages
+        max_page_to_fetch = (
+            response.total_pages if max_pages is None 
+            else min(max_pages, response.total_pages)
+        )
+        
+        while current_page < max_page_to_fetch:
             current_page += 1
-            logger.info(f"Fetching athletes page {current_page} of {response.total_pages}")
+            logger.info(f"Fetching athletes page {current_page} of {max_page_to_fetch}")
             
             try:
-                page_response = await self.get_athletes(limit=limit_per_page, page=current_page)
+                page_response = await self.get_athletes(
+                    limit=limit_per_page, 
+                    page=current_page
+                )
                 if page_response.items:
                     all_athletes.extend(page_response.items)
-                    logger.info(f"Added {len(page_response.items)} athletes from page {current_page}")
+                    logger.info(
+                        f"Added {len(page_response.items)} athletes "
+                        f"from page {current_page}"
+                    )
                 else:
                     logger.info(f"No athletes found on page {current_page}")
             except Exception as e:
@@ -766,50 +802,62 @@ class ESPNClient:
     @retry(max_attempts=3, backoff_factor=2.0)
     async def get_team_statistics(self, team_id: str) -> TeamStatisticsResponse:
         """
-        Get detailed statistics for a specific team.
+        Get team statistics.
         
         Args:
-            team_id: ESPN team ID
+            team_id: Team ID
             
         Returns:
             Team statistics response object containing detailed team stats
         """
         logger.info(f"Fetching statistics for team ID: {team_id}")
-        endpoint = f"/v3/sports/{self.SPORT}/{self.LEAGUE}/teams/{team_id}/statistics"
+        
+        endpoint = (
+            f"/apis/site/v2/sports/{self.SPORT}/{self.LEAGUE}/teams/"
+            f"{team_id}/statistics"
+        )
         
         data = await self._get(endpoint)
         response = TeamStatisticsResponse.model_validate(data)
         
         stat_count = len(response.statistics) if response.statistics else 0
-        logger.info(f"Retrieved {stat_count} statistics categories for team: {response.team.display_name} (ID: {team_id})")
+        logger.info(
+            f"Retrieved {stat_count} statistics categories for team: "
+            f"{response.team.display_name} (ID: {team_id})"
+        )
         return response
     
     @retry(max_attempts=3, backoff_factor=2.0)
-    async def get_tournament_bracket(self, year: Optional[int] = None) -> TournamentResponse:
+    async def get_tournament_bracket(
+        self, 
+        year: Optional[int] = None
+    ) -> TournamentResponse:
         """
         Get NCAA tournament bracket data.
         
         Args:
-            year: Tournament year (e.g., 2023 for 2023 NCAA Tournament). If None, gets the current/latest tournament.
+            year: Tournament year (e.g., 2023 for 2023 NCAA Tournament). 
+                If None, gets the current/latest tournament.
             
         Returns:
-            Tournament response object containing bracket data
+            Tournament response object
         """
-        if year:
-            logger.info(f"Fetching NCAA tournament bracket for year {year}")
-        else:
-            logger.info("Fetching current/latest NCAA tournament bracket")
-            
-        # Construct endpoint path
-        endpoint = f"/v3/sports/{self.SPORT}/{self.LEAGUE}/tournaments/ncaa"
-        if year:
-            endpoint += f"/year/{year}"
+        logger.info(f"Fetching NCAA tournament bracket{f' for {year}' if year else ''}")
         
-        data = await self._get(endpoint)
+        endpoint = (
+            f"/apis/site/v2/sports/{self.SPORT}/{self.LEAGUE}/"
+            f"tournaments/ncaa-mens"
+        )
+        params = {"year": year} if year else None
+        
+        data = await self._get(endpoint, params)
         response = TournamentResponse.model_validate(data)
         
-        tournament_name = response.tournament.display_name
+        tournament_name = response.tournament.name
         round_count = len(response.tournament.rounds)
         
-        logger.info(f"Retrieved tournament bracket for {tournament_name} with {round_count} rounds")
+        logger.info(
+            f"Retrieved tournament bracket for {tournament_name} "
+            f"with {round_count} rounds"
+        )
         return response

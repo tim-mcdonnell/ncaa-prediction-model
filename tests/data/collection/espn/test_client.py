@@ -261,30 +261,40 @@ class TestESPNClient:
                 assert any(team.id == "75" for team in result)  
                 assert any(team.id == "120" for team in result) 
     
-    async def test_date_validation(self):
-        """Test that invalid dates are rejected by the get_scoreboard method."""
-        async with ESPNClient(rate_limit=10.0, burst_limit=5) as client:
-            # Valid date should not raise an error
-            with patch.object(client, '_get', new_callable=AsyncMock) as mock_get:
-                mock_get.return_value = {"events": []}
-                await client.get_scoreboard("20230301")  # March 1, 2023 - Valid
+    @pytest.mark.parametrize("date_input,should_raise,error_message", [
+        ("20230301", False, None),                # Valid date
+        ("20230229", True, "valid calendar date"),  # Invalid (2023 not leap year)
+        ("2023-03-01", True, "Invalid date format"),  # Wrong format
+        ("", True, "Invalid date format"),        # Empty string
+        ("abcdefgh", True, "Invalid date format"),  # Non-numeric
+        ("99999999", True, "valid calendar date"),  # Out of range month
+        ("20231301", True, "valid calendar date"),  # Month > 12
+        ("20230001", True, "valid calendar date"),  # Month = 0
+        ("20230132", True, "valid calendar date"),  # Day = 32
+        ("20230100", True, "valid calendar date"),  # Day = 0
+    ])
+    async def test_date_validation(self, date_input, should_raise, error_message):
+        """Test date validation for various inputs."""
+        async with ESPNClient() as client:
+            if should_raise:
+                with pytest.raises(ValueError) as excinfo:
+                    # Don't await _validate_date_format since it's not async
+                    client._validate_date_format(date_input)
+                    await client.get_scoreboard(date_input)
                 
-            # Test various invalid dates
-            invalid_dates = [
-                "202303",     # Too short
-                "2023030101", # Too long
-                "20230231",   # February 31st doesn't exist
-                "20230431",   # April 31st doesn't exist
-                "20231301",   # Month 13 doesn't exist
-                "AAAABBCC",   # Not digits
-                "",           # Empty string
-                "20230230"    # February 30th doesn't exist in non-leap year
-            ]
-            
-            for invalid_date in invalid_dates:
-                with pytest.raises(ValueError, match="Invalid date format"):
-                    await client.get_scoreboard(invalid_date)
+                # Verify error message contains expected text
+                if error_message:
+                    assert error_message.lower() in str(excinfo.value).lower()
+            else:
+                # If it shouldn't raise, make sure it validates properly
+                assert client._validate_date_format(date_input) is True
                 
+                # For valid dates, check that the method executes without error
+                with patch.object(client, '_get', new_callable=AsyncMock) as mock_get:
+                    mock_get.return_value = {"events": []}
+                    result = await client.get_scoreboard(date_input)
+                    assert isinstance(result, pl.DataFrame)
+    
     async def test_date_mismatch_warning(self):
         """
         Test that a warning is logged if returned events don't match the requested date.
@@ -545,3 +555,184 @@ class TestESPNClient:
                 assert len(result) == 2  # Two successful dates with 1 game each
                 # Called for all three dates
                 assert mock_get_scoreboard.call_count == 3 
+
+    async def test_endpoint_urls_scoreboard(self):
+        """
+        Test that the scoreboard endpoint generates the correct URL and 
+        parameters.
+        """
+        async with ESPNClient() as client:
+            with patch.object(client, '_get', new_callable=AsyncMock) as mock_get:
+                with patch.object(client, '_validate_date_format', return_value=True):
+                    # Mock the model validation and response parsing
+                    with patch(
+                        'src.data.collection.espn.models.ScoreboardResponse.model_validate'
+                    ) as mock_validate:
+                        # Return a mock response
+                        mock_validate.return_value = MagicMock()
+                        
+                        # Call the method
+                        await client.get_scoreboard("20230301")
+                        
+        # Check that the API was called correctly
+        mock_get.assert_called_once()
+        called_url = mock_get.call_args[0][0]
+        called_params = (
+            mock_get.call_args[0][1] if len(mock_get.call_args[0]) > 1 
+            else mock_get.call_args[1].get('params')
+        )
+        
+        assert called_url == (
+            "/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard"
+        )
+        assert called_params == {"dates": "20230301"}
+
+    async def test_endpoint_urls_teams(self):
+        """Test that the teams endpoint generates the correct URL and parameters."""
+        async with ESPNClient() as client:
+            with patch.object(client, '_get', new_callable=AsyncMock) as mock_get:
+                # Mock the model validation and response parsing
+                with patch(
+                    'src.data.collection.espn.models.TeamsResponse.model_validate'
+                ) as mock_validate:
+                    # Return a mock response
+                    mock_validate.return_value = MagicMock()
+                    
+                    # Call the method
+                    await client.get_teams(page=2)
+                    
+        # Check that the API was called correctly
+        mock_get.assert_called_once()
+        called_url = mock_get.call_args[0][0]
+        called_params = (
+            mock_get.call_args[0][1] if len(mock_get.call_args[0]) > 1 
+            else mock_get.call_args[1].get('params')
+        )
+        
+        assert called_url == (
+            "/apis/site/v2/sports/basketball/mens-college-basketball/teams"
+        )
+        assert called_params == {"page": 2}
+
+    async def test_endpoint_urls_team(self):
+        """Test that the team endpoint generates the correct URL and parameters."""
+        async with ESPNClient() as client:
+            with patch.object(client, '_get', new_callable=AsyncMock) as mock_get:
+                # Mock the model validation and response parsing
+                with patch(
+                    'src.data.collection.espn.models.TeamResponse.model_validate'
+                ) as mock_validate:
+                    # Return a mock response
+                    mock_validate.return_value = MagicMock()
+                    
+                    # Call the method
+                    await client.get_team("123")
+                    
+                # Check that the API was called correctly
+                mock_get.assert_called_once()
+                called_url = mock_get.call_args[0][0]
+                
+                assert called_url == (
+                    "/apis/site/v2/sports/basketball/mens-college-basketball/teams/123"
+                )
+
+    async def test_endpoint_urls_game_summary(self):
+        """
+        Test that the game summary endpoint generates the correct URL and 
+        parameters.
+        """
+        async with ESPNClient() as client:
+            with patch.object(client, '_get', new_callable=AsyncMock) as mock_get:
+                # Mock the model validation and response parsing
+                with patch(
+                    'src.data.collection.espn.models.GameSummaryResponse.model_validate'
+                ) as mock_validate:
+                    # Return a mock response
+                    mock_validate.return_value = MagicMock()
+                    
+                    # Call the method
+                    await client.get_game_summary("401524691")
+                    
+        # Check that the API was called correctly
+        mock_get.assert_called_once()
+        called_url = mock_get.call_args[0][0]
+        called_params = (
+            mock_get.call_args[0][1] if len(mock_get.call_args[0]) > 1 
+            else mock_get.call_args[1].get('params')
+        )
+        
+        assert called_url == (
+            "/apis/site/v2/sports/basketball/mens-college-basketball/summary"
+        )
+        assert called_params == {"event": "401524691"}
+
+    async def test_resource_management(self):
+        """Test that resources are properly initialized and cleaned up."""
+        # Test proper cleanup using a custom mock client
+        mock_client = MagicMock()
+        mock_client.aclose = AsyncMock()
+        
+        # Create client and manually set the HTTP client
+        client = ESPNClient()
+        client._client = mock_client
+        
+        # Use the context manager exit
+        await client.__aexit__(None, None, None)
+        
+        # Verify aclose was called and client was reset
+        mock_client.aclose.assert_called_once()
+        assert client._client is None
+        
+        # Test that accessing client property outside context raises error
+        client = ESPNClient()
+        with pytest.raises(RuntimeError, match="Client not initialized"):
+            _ = client.client
+        
+        # Test that client is properly initialized in context
+        async with ESPNClient() as client:
+            assert client._client is not None
+            assert isinstance(client._client, httpx.AsyncClient)
+        
+        # Test that client is properly cleaned up after context
+        assert client._client is None 
+
+    @pytest.mark.integration
+    async def test_client_to_dataframe_flow(self, load_fixture, tmp_path):
+        """Test the flow from API request to DataFrame and storage."""
+        import os
+        
+        # Mock the HTTP client but use real parsing logic
+        with patch('httpx.AsyncClient.get') as mock_get:
+            # Setup mock response
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = load_fixture("scoreboard_response.json")
+            mock_response.raise_for_status = MagicMock()
+            
+            # Configure mock to return our response
+            mock_get.return_value = mock_response
+            
+            # Use the real client with mocked HTTP
+            async with ESPNClient() as client:
+                # Get data
+                result = await client.get_scoreboard("20230301")
+                
+                # Verify we got a DataFrame with expected structure
+                assert isinstance(result, pl.DataFrame)
+                assert not result.is_empty()
+                assert "game_id" in result.columns
+                assert "home_team_name" in result.columns
+                assert "away_team_name" in result.columns
+                
+                # Save to Parquet (testing data storage integration)
+                result_path = os.path.join(tmp_path, "games.parquet")
+                result.write_parquet(result_path)
+                
+                # Verify data can be read back
+                loaded = pl.read_parquet(result_path)
+                assert loaded.shape == result.shape
+                assert loaded.columns == result.columns
+                
+                # Verify the content matches
+                for col in loaded.columns:
+                    assert loaded[col].to_list() == result[col].to_list() 

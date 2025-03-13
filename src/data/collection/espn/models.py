@@ -13,6 +13,8 @@ class Team(BaseModel):
     abbreviation: str = ""
     display_name: str = Field("", alias="displayName")
     logo_url: Optional[str] = Field(None, alias="logos")
+    color: Optional[str] = None
+    alternate_color: Optional[str] = Field(None, alias="alternateColor")
     
     def __init__(self, **data):
         # Convert logo list to single URL if present
@@ -188,10 +190,13 @@ class RankedTeam(BaseModel):
             for key, value in team_data.items():
                 data[key] = value
                 
-        # Extract logo URL if present
-        logos = data.get("logos")
-        if isinstance(logos, list) and logos and "href" in logos[0]:
-            data["logo_url"] = logos[0]["href"]
+        # Handle logo URL extraction
+        if "logos" in data and isinstance(data["logos"], list) and data["logos"]:
+            data["logo_url"] = (
+                data["logos"][0].get("href") 
+                if isinstance(data["logos"][0], dict) else None
+            )
+            del data["logos"]
             
         super().__init__(**data)
 
@@ -383,7 +388,10 @@ class BracketTeam(BaseModel):
     def __init__(self, **data):
         # Handle logo URL extraction
         if "logos" in data and isinstance(data["logos"], list) and data["logos"]:
-            data["logo_url"] = data["logos"][0].get("href") if isinstance(data["logos"][0], dict) else None
+            data["logo_url"] = (
+                data["logos"][0].get("href") 
+                if isinstance(data["logos"][0], dict) else None
+            )
             del data["logos"]
         super().__init__(**data)
 

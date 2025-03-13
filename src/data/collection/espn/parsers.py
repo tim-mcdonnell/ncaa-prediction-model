@@ -3,18 +3,19 @@ from typing import Dict
 import polars as pl
 
 from .models import (
-    GameSummaryResponse,
-    TeamResponse,
-    TeamsResponse,
-    RosterResponse,
-    RankingsResponse,
-    GroupsResponse,
-    StandingsResponse,
-    ScheduleResponse,
     AthleteResponse,
     AthletesPageResponse,
+    GameSummaryResponse,
+    GroupsResponse,
+    RankingsResponse,
+    RosterResponse,
+    ScheduleResponse,
+    ScoreboardResponse,
+    StandingsResponse,
+    TeamResponse,
+    TeamsResponse,
     TeamStatisticsResponse,
-    TournamentResponse
+    TournamentResponse,
 )
 
 
@@ -73,7 +74,7 @@ def parse_game_summary(response: GameSummaryResponse) -> Dict[str, pl.DataFrame]
     if response.plays:
         for play in response.plays:
             record = {
-                "id": play["id"],
+                "play_id": play["id"],
                 "clock": play.get("clock", {}).get("displayValue"),
                 "period": play.get("period", {}).get("number"),
                 "text": play.get("text", ""),
@@ -111,14 +112,13 @@ def parse_team_data(response: TeamResponse) -> pl.DataFrame:
     """
     team = response.team
     record = {
-        "id": team.id,
-        "name": team.name,
+        "team_id": team.id,
+        "team_name": team.display_name,
         "location": team.location,
         "abbreviation": team.abbreviation,
-        "display_name": team.display_name,
         "color": team.color,
         "alternate_color": team.alternate_color,
-        "logo_url": team.logos[0]["href"] if team.logos else None
+        "logo_url": team.logo_url
     }
     return pl.DataFrame([record])
 
@@ -135,13 +135,13 @@ def parse_teams_list(response: TeamsResponse) -> pl.DataFrame:
     records = []
     for sport in response.sports:
         for league in sport["leagues"]:
-            for team in league["teams"]:
+            for team_entry in league["teams"]:
+                team = team_entry["team"]
                 record = {
-                    "id": team["id"],
-                    "name": team["name"],
+                    "team_id": team["id"],
+                    "team_name": team["displayName"],
                     "location": team["location"],
                     "abbreviation": team["abbreviation"],
-                    "display_name": team["displayName"],
                     "color": team.get("color"),
                     "alternate_color": team.get("alternateColor"),
                     "logo_url": team["logos"][0]["href"] if team.get("logos") else None,
@@ -150,7 +150,7 @@ def parse_teams_list(response: TeamsResponse) -> pl.DataFrame:
                 }
                 records.append(record)
     
-    return pl.DataFrame(records)
+    return pl.DataFrame(records) if records else pl.DataFrame()
 
 def parse_team_roster(response: RosterResponse) -> pl.DataFrame:
     """
@@ -426,14 +426,18 @@ def parse_team_schedule(response: ScheduleResponse) -> pl.DataFrame:
             if home_team:
                 competition_data.update({
                     "home_team_id": home_team.get("id", ""),
-                    "home_team_name": home_team.get("displayName", home_team.get("name", "")),
+                    "home_team_name": (
+                        home_team.get("displayName", home_team.get("name", ""))
+                    ),
                     "home_team_abbreviation": home_team.get("abbreviation", "")
                 })
             
             if away_team:
                 competition_data.update({
                     "away_team_id": away_team.get("id", ""),
-                    "away_team_name": away_team.get("displayName", away_team.get("name", "")),
+                    "away_team_name": (
+                        away_team.get("displayName", away_team.get("name", ""))
+                    ),
                     "away_team_abbreviation": away_team.get("abbreviation", "")
                 })
             
@@ -489,148 +493,58 @@ def parse_team_schedule(response: ScheduleResponse) -> pl.DataFrame:
         
     return pl.DataFrame(records)
 
-def parse_athlete(response: AthleteResponse) -> pl.DataFrame:
+def parse_athlete(response: AthleteResponse) -> dict:
     """
-    Parse an athlete response into a Polars DataFrame.
+    Parse athlete response into a dictionary.
     
     Args:
-        response: The athlete response from the ESPN API
+        response: Athlete response from ESPN API
         
     Returns:
-        A Polars DataFrame containing the athlete data
+        Dictionary containing athlete information
     """
-    if not response or not response.athlete:
-        # Return empty DataFrame with schema
-        return pl.DataFrame(schema={
-            "athlete_id": pl.Utf8,
-            "display_name": pl.Utf8,
-            "first_name": pl.Utf8,
-            "last_name": pl.Utf8,
-            "jersey": pl.Utf8,
-            "position_name": pl.Utf8,
-            "position_abbreviation": pl.Utf8,
-            "height": pl.Utf8,
-            "weight": pl.Utf8,
-            "birth_date": pl.Utf8,
-            "birth_place": pl.Utf8,
-            "college": pl.Utf8,
-            "headshot_url": pl.Utf8,
-            "team_id": pl.Utf8,
-            "team_name": pl.Utf8,
-            "active": pl.Boolean
-        })
-    
     athlete = response.athlete
-    
-    # Extract basic athlete info
-    record = {
-        "athlete_id": str(athlete.id),
-        "display_name": athlete.display_name,
+    return {
+        "id": athlete.id,
+        "name": athlete.display_name,
         "first_name": athlete.first_name,
         "last_name": athlete.last_name,
         "jersey": athlete.jersey,
         "position_name": athlete.position.name if athlete.position else None,
-        "position_abbreviation": athlete.position.abbreviation if athlete.position else None,
+        "position_abbreviation": (athlete.position.abbreviation 
+                                if athlete.position else None),
         "headshot_url": athlete.headshot_url,
         "active": athlete.active
     }
-    
-    # Extract bio information if available
-    if athlete.bio:
-        record.update({
-            "height": athlete.bio.height,
-            "weight": athlete.bio.weight,
-            "birth_date": athlete.bio.birth_date,
-            "birth_place": athlete.bio.birth_place,
-            "college": athlete.bio.college
-        })
-    else:
-        record.update({
-            "height": None,
-            "weight": None,
-            "birth_date": None,
-            "birth_place": None,
-            "college": None
-        })
-    
-    # Extract team information if available
-    if athlete.team:
-        record.update({
-            "team_id": str(athlete.team.id),
-            "team_name": athlete.team.name
-        })
-    else:
-        record.update({
-            "team_id": None,
-            "team_name": None
-        })
-    
-    # Add statistics if available
-    if athlete.statistics:
-        for stat in athlete.statistics:
-            # Create a clean column name from the stat name
-            col_name = f"stat_{stat.name.lower().replace(' ', '_').replace('-', '_')}"
-            record[col_name] = stat.value
-    
-    return pl.DataFrame([record])
 
 def parse_athletes(response: AthletesPageResponse) -> pl.DataFrame:
     """
-    Parse a paginated athletes response into a Polars DataFrame.
+    Parse athletes page response into a DataFrame.
     
     Args:
-        response: The athletes page response from the ESPN API
+        response: Athletes page response from ESPN API
         
     Returns:
-        A Polars DataFrame containing all athletes in the response
+        DataFrame containing athletes information
     """
-    if not response or not response.items:
-        # Return empty DataFrame with schema
-        return pl.DataFrame(schema={
-            "athlete_id": pl.Utf8,
-            "display_name": pl.Utf8,
-            "first_name": pl.Utf8,
-            "last_name": pl.Utf8,
-            "jersey": pl.Utf8,
-            "position_name": pl.Utf8,
-            "position_abbreviation": pl.Utf8,
-            "headshot_url": pl.Utf8,
-            "team_id": pl.Utf8,
-            "team_name": pl.Utf8,
-            "active": pl.Boolean
-        })
-    
     records = []
     
     for athlete in response.items:
-        # Extract basic athlete info
         record = {
-            "athlete_id": str(athlete.id),
-            "display_name": athlete.display_name,
+            "id": athlete.id,
+            "name": athlete.display_name,
             "first_name": athlete.first_name,
             "last_name": athlete.last_name,
             "jersey": athlete.jersey,
             "position_name": athlete.position.name if athlete.position else None,
-            "position_abbreviation": athlete.position.abbreviation if athlete.position else None,
+            "position_abbreviation": (athlete.position.abbreviation 
+                                    if athlete.position else None),
             "headshot_url": athlete.headshot_url,
             "active": athlete.active
         }
-        
-        # Extract team information if available
-        if athlete.team:
-            record.update({
-                "team_id": str(athlete.team.id),
-                "team_name": athlete.team.name
-            })
-        else:
-            record.update({
-                "team_id": None,
-                "team_name": None
-            })
-        
         records.append(record)
     
-    return pl.DataFrame(records)
+    return pl.DataFrame(records) if records else pl.DataFrame()
 
 def parse_team_statistics(response: TeamStatisticsResponse) -> pl.DataFrame:
     """
@@ -676,124 +590,98 @@ def parse_team_statistics(response: TeamStatisticsResponse) -> pl.DataFrame:
     
     return pl.DataFrame(records)
 
-def parse_tournament_bracket(response: TournamentResponse) -> Dict[str, pl.DataFrame]:
+def parse_tournament_bracket(response: TournamentResponse) -> dict:
     """
-    Parse a tournament bracket response into multiple DataFrames.
+    Parse tournament bracket response into structured DataFrames.
     
     Args:
-        response: The tournament response from the ESPN API
+        response: Tournament bracket response from ESPN API
         
     Returns:
-        A dictionary containing three DataFrames:
-        - 'tournament': Basic tournament information
-        - 'rounds': Information about each round
-        - 'games': Detailed information about each game in the bracket
+        Dictionary containing DataFrames for different aspects of the tournament:
+        - tournament: General tournament information
+        - rounds: Round information
+        - games: Game information
     """
     result = {}
     
-    if not response or not response.tournament:
-        # Return empty DataFrames with schema
-        result["tournament"] = pl.DataFrame(schema={
-            "tournament_id": pl.Utf8,
-            "name": pl.Utf8,
-            "year": pl.Int64,
-            "season_type": pl.Int64
-        })
-        
-        result["rounds"] = pl.DataFrame(schema={
-            "tournament_id": pl.Utf8,
-            "round_number": pl.Int64,
-            "round_name": pl.Utf8
-        })
-        
-        result["games"] = pl.DataFrame(schema={
-            "tournament_id": pl.Utf8,
-            "round_number": pl.Int64,
-            "game_id": pl.Utf8,
-            "game_date": pl.Datetime,
-            "team1_id": pl.Utf8,
-            "team1_name": pl.Utf8,
-            "team1_seed": pl.Int64,
-            "team1_score": pl.Utf8,
-            "team2_id": pl.Utf8,
-            "team2_name": pl.Utf8,
-            "team2_seed": pl.Int64,
-            "team2_score": pl.Utf8,
-            "winner_id": pl.Utf8,
-            "venue_name": pl.Utf8
-        })
-        
-        return result
-    
+    # Extract tournament information
     tournament = response.tournament
+    result["tournament"] = pl.DataFrame([{
+        "id": tournament.id,
+        "name": tournament.name,
+        "short_name": tournament.short_name,
+        "year": tournament.season.year
+    }])
     
-    # Tournament info DataFrame
-    tournament_record = {
-        "tournament_id": tournament.id,
-        "name": tournament.display_name,
-        "year": tournament.year,
-        "season_type": tournament.season_type
-    }
-    result["tournament"] = pl.DataFrame([tournament_record])
-    
-    # Rounds DataFrame
+    # Extract round information
     round_records = []
-    for r in tournament.rounds:
+    for round_obj in tournament.rounds:
         round_record = {
             "tournament_id": tournament.id,
-            "round_number": r.number,
-            "round_name": r.display_name
+            "round_number": round_obj.number,
+            "round_name": round_obj.name,
+            "short_name": round_obj.short_name
         }
         round_records.append(round_record)
     
-    result["rounds"] = pl.DataFrame(round_records) if round_records else pl.DataFrame(schema={
+    result["rounds"] = (pl.DataFrame(round_records) if round_records 
+                       else pl.DataFrame(schema={
         "tournament_id": pl.Utf8,
         "round_number": pl.Int64,
-        "round_name": pl.Utf8
-    })
+        "round_name": pl.Utf8,
+        "short_name": pl.Utf8
+    }))
     
-    # Games DataFrame
+    # Extract game information
     game_records = []
-    for r in tournament.rounds:
-        for competition in r.competitions:
-            if len(competition.competitors) < 2:
-                continue  # Skip games without two competitors
-                
+    for round_obj in tournament.rounds:
+        for competition in round_obj.competitions:
             # Sort competitors to ensure consistent ordering (home team first)
-            competitors = sorted(competition.competitors, key=lambda x: x.home_away == "home", reverse=True)
+            competitors = sorted(competition.competitors, 
+                               key=lambda x: x.home_away == "home", 
+                               reverse=True)
             
             # Extract venue name if available
             venue_name = None
-            if competition.venue and "fullName" in competition.venue:
-                venue_name = competition.venue["fullName"]
+            if competition.venue:
+                venue_name = competition.venue.name
             
-            # Get winner ID if available
+            # Determine winner_id if available
             winner_id = None
-            for comp in competitors:
-                if comp.winner:
-                    winner_id = comp.team.id
+            for competitor in competitors:
+                if competitor.winner:
+                    winner_id = competitor.team.id
                     break
-                    
+            
             # Create game record
             game_record = {
                 "tournament_id": tournament.id,
-                "round_number": r.number,
+                "round_number": round_obj.number,
                 "game_id": competition.id,
                 "game_date": competition.date,
                 "team1_id": competitors[0].team.id if len(competitors) > 0 else None,
-                "team1_name": competitors[0].team.display_name if len(competitors) > 0 else None,
-                "team1_seed": competitors[0].team.seed.rank if len(competitors) > 0 and competitors[0].team.seed else None,
+                "team1_name": (competitors[0].team.display_name 
+                             if len(competitors) > 0 else None),
+                "team1_seed": (competitors[0].team.seed.rank 
+                             if len(competitors) > 0 and competitors[0].team.seed 
+                             else None),
                 "team1_score": competitors[0].score if len(competitors) > 0 else None,
                 "team2_id": competitors[1].team.id if len(competitors) > 1 else None,
-                "team2_name": competitors[1].team.display_name if len(competitors) > 1 else None,
-                "team2_seed": competitors[1].team.seed.rank if len(competitors) > 1 and competitors[1].team.seed else None,
+                "team2_name": (competitors[1].team.display_name 
+                             if len(competitors) > 1 else None),
+                "team2_seed": (competitors[1].team.seed.rank 
+                             if len(competitors) > 1 and competitors[1].team.seed 
+                             else None),
                 "team2_score": competitors[1].score if len(competitors) > 1 else None,
                 "winner_id": winner_id,
-                "venue_name": venue_name
+                "venue_name": venue_name,
+                "status": competition.status.type.name
             }
             game_records.append(game_record)
     
-    result["games"] = pl.DataFrame(game_records) if game_records else pl.DataFrame(schema={
+    result["games"] = (pl.DataFrame(game_records) if game_records 
+                      else pl.DataFrame(schema={
         "tournament_id": pl.Utf8,
         "round_number": pl.Int64,
         "game_id": pl.Utf8,
@@ -807,7 +695,104 @@ def parse_tournament_bracket(response: TournamentResponse) -> Dict[str, pl.DataF
         "team2_seed": pl.Int64,
         "team2_score": pl.Utf8,
         "winner_id": pl.Utf8,
-        "venue_name": pl.Utf8
-    })
+        "venue_name": pl.Utf8,
+        "status": pl.Utf8
+    }))
     
     return result
+
+def parse_scoreboard(response: ScoreboardResponse) -> pl.DataFrame:
+    """
+    Parse scoreboard response into a DataFrame.
+    
+    Args:
+        response: Scoreboard response object
+        
+    Returns:
+        DataFrame containing game information
+    """
+    records = []
+    
+    for event in response.events:
+        for competition in event.competitions:
+            home_team = None
+            away_team = None
+            home_score = None
+            away_score = None
+            
+            for competitor in competition.competitors:
+                if competitor.home_away == "home":
+                    home_team = competitor.team
+                    home_score = competitor.score
+                elif competitor.home_away == "away":
+                    away_team = competitor.team
+                    away_score = competitor.score
+            
+            if home_team and away_team:
+                record = {
+                    "game_id": competition.id,
+                    "date": competition.date,
+                    "home_team_id": home_team.id,
+                    "home_team_name": home_team.display_name,
+                    "away_team_id": away_team.id,
+                    "away_team_name": away_team.display_name,
+                    "home_score": home_score,
+                    "away_score": away_score,
+                    "status": competition.status.type.get("state", ""),
+                    "period": competition.status.period,
+                    "season_year": event.season.year,
+                    "season_type": event.season.type
+                }
+                records.append(record)
+    
+    if records:
+        return pl.DataFrame(records)
+    else:
+        # Return empty DataFrame with correct schema
+        return pl.DataFrame(schema={
+            "game_id": pl.Utf8,
+            "date": pl.Datetime,
+            "home_team_id": pl.Utf8,
+            "home_team_name": pl.Utf8,
+            "away_team_id": pl.Utf8,
+            "away_team_name": pl.Utf8,
+            "home_score": pl.Utf8,
+            "away_score": pl.Utf8,
+            "status": pl.Utf8,
+            "period": pl.Int64,
+            "season_year": pl.Int64,
+            "season_type": pl.Int64
+        })
+
+def process_competition_data(competition_data, competition):
+    """Process competition data for standings."""
+    for competitor in competition.competitors:
+        team = competitor.team 
+        if competitor.home_away == "home":
+            home_team = {
+                "id": team.id,
+                "displayName": team.display_name,
+                "name": getattr(team, "name", ""),
+                "abbreviation": team.abbreviation
+            }
+            competition_data.update({
+                "home_team_id": home_team.get("id", ""),
+                "home_team_name": (
+                    home_team.get("displayName", home_team.get("name", ""))
+                ),
+                "home_team_abbreviation": home_team.get("abbreviation", "")
+            })
+        elif competitor.home_away == "away":
+            away_team = {
+                "id": team.id,
+                "displayName": team.display_name,
+                "name": getattr(team, "name", ""),
+                "abbreviation": team.abbreviation
+            }
+            competition_data.update({
+                "away_team_id": away_team.get("id", ""),
+                "away_team_name": (
+                    away_team.get("displayName", away_team.get("name", ""))
+                ),
+                "away_team_abbreviation": away_team.get("abbreviation", "")
+            })

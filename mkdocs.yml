@@ -76,7 +76,13 @@ nav:
     - Tech Stack: overview/tech-stack.md
   - Data:
     - Collection:
-      - ESPN API Integration: data/collection/espn-api-integration.md
+      - Overview: data/collection/index.md
+      - ESPN API:
+        - Overview: data/collection/espn/index.md
+        - Usage Guide: data/collection/espn/client-usage-guide.md
+        - Technical Reference: data/collection/espn/client-reference.md
+        - Testing Guide: data/collection/espn/testing-guide.md
+        - API Reference: data/collection/espn/api-reference.md
   - Development:
     - Setup: development/setup.md
     - Contributing: development/contributing.md
