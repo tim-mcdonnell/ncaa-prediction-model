@@ -1,6 +1,8 @@
 from datetime import datetime
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
+
 
 class Team(BaseModel):
     """Model for team information in ESPN API responses."""
@@ -74,4 +76,6 @@ class GameSummaryResponse(BaseModel):
     game_info: Optional[Dict[str, Any]] = Field(default=None, alias="gameInfo")
     plays: Optional[List[Dict[str, Any]]] = None
     leaders: Optional[List[Dict[str, Any]]] = None
-    win_probability: Optional[List[Dict[str, Any]]] = Field(default=None, alias="winprobability")
+    win_probability: Optional[List[Dict[str, Any]]] = Field(
+        default=None, alias="winprobability"
+    )

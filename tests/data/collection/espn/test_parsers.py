@@ -1,17 +1,20 @@
 import json
 import os
-import pytest
+
 import polars as pl
-from src.data.collection.espn.parsers import (
-    parse_game_summary,
-    parse_team_data,
-    parse_teams_list
-)
+import pytest
+
 from src.data.collection.espn.models import (
     GameSummaryResponse,
     TeamResponse,
-    TeamsResponse
+    TeamsResponse,
 )
+from src.data.collection.espn.parsers import (
+    parse_game_summary,
+    parse_team_data,
+    parse_teams_list,
+)
+
 
 @pytest.fixture
 def fixture_path():
@@ -98,14 +101,18 @@ class TestParsers:
         team_stats = result["team_stats"]
         assert isinstance(team_stats, pl.DataFrame)
         assert len(team_stats) == 2
-        assert all(col in team_stats.columns for col in ["team_id", "team_name", "points", "rebounds"])
+        assert all(col in team_stats.columns for col in [
+            "team_id", "team_name", "points", "rebounds"
+        ])
         
         # Test player stats DataFrame
         assert "player_stats" in result
         player_stats = result["player_stats"]
         assert isinstance(player_stats, pl.DataFrame)
         assert len(player_stats) == 1
-        assert all(col in player_stats.columns for col in ["team_id", "player_id", "player_name", "points", "rebounds"])
+        assert all(col in player_stats.columns for col in [
+            "team_id", "player_id", "player_name", "points", "rebounds"
+        ])
         
         # Test plays DataFrame
         assert "plays" in result

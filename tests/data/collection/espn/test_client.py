@@ -1,16 +1,18 @@
+import asyncio
 import json
 import os
-import pytest
-import pytest_asyncio
-import polars as pl
-import asyncio
-from datetime import datetime, date
-from unittest.mock import AsyncMock, patch, MagicMock, call
+from datetime import datetime
+from unittest.mock import AsyncMock, MagicMock, call, patch
+
 import httpx
-from src.data.collection.espn.client import ESPNClient, RateLimiter
-from src.data.collection.espn.models import ScoreboardResponse, TeamsResponse, Team
-from src.utils.resilience.retry import retry
+import polars as pl
+import pytest
 from pydantic import ValidationError
+
+from src.data.collection.espn.client import ESPNClient, RateLimiter
+from src.data.collection.espn.models import Team, TeamsResponse
+from src.utils.resilience.retry import retry
+
 
 @pytest.fixture
 def fixture_path():
@@ -136,7 +138,9 @@ class TestESPNClient:
                 mock_get.return_value = {"events": []}
                 await client.get_scoreboard(date_str)
                 
-                expected_endpoint = f"/apis/site/v2/sports/{client.SPORT}/{client.LEAGUE}/scoreboard"
+                expected_endpoint = (
+                    f"/apis/site/v2/sports/{client.SPORT}/{client.LEAGUE}/scoreboard"
+                )
                 mock_get.assert_called_once_with(
                     expected_endpoint,
                     {"dates": date_str}
@@ -151,11 +155,25 @@ class TestESPNClient:
             # - Page 3: 20 teams (last page)
             
             # First page with 50 teams
-            page1_teams = [Team(id=str(i), uid=f"s:40~l:41~t:{i}", location=f"Team {i}", name=f"Name {i}", 
-                                abbreviation=f"T{i}", displayName=f"Team {i} Name {i}") 
-                           for i in range(1, 51)]
+            page1_teams = [
+                Team(
+                    id=str(i), 
+                    uid=f"s:40~l:41~t:{i}", 
+                    location=f"Team {i}", 
+                    name=f"Name {i}",
+                    abbreviation=f"T{i}", 
+                    displayName=f"Team {i} Name {i}"
+                ) 
+                for i in range(1, 51)
+            ]
             page1_response = TeamsResponse(
-                sports=[{"leagues": [{"teams": [{"team": t.model_dump(by_alias=True)} for t in page1_teams]}]}],
+                sports=[{
+                    "leagues": [{
+                        "teams": [
+                            {"team": t.model_dump(by_alias=True)} for t in page1_teams
+                        ]
+                    }]
+                }],
                 pageCount=3, 
                 pageIndex=1, 
                 pageSize=50, 
@@ -163,11 +181,25 @@ class TestESPNClient:
             )
             
             # Second page with 50 teams
-            page2_teams = [Team(id=str(i), uid=f"s:40~l:41~t:{i}", location=f"Team {i}", name=f"Name {i}", 
-                                abbreviation=f"T{i}", displayName=f"Team {i} Name {i}") 
-                           for i in range(51, 101)]
+            page2_teams = [
+                Team(
+                    id=str(i), 
+                    uid=f"s:40~l:41~t:{i}", 
+                    location=f"Team {i}", 
+                    name=f"Name {i}",
+                    abbreviation=f"T{i}", 
+                    displayName=f"Team {i} Name {i}"
+                ) 
+                for i in range(51, 101)
+            ]
             page2_response = TeamsResponse(
-                sports=[{"leagues": [{"teams": [{"team": t.model_dump(by_alias=True)} for t in page2_teams]}]}],
+                sports=[{
+                    "leagues": [{
+                        "teams": [
+                            {"team": t.model_dump(by_alias=True)} for t in page2_teams
+                        ]
+                    }]
+                }],
                 pageCount=3, 
                 pageIndex=2, 
                 pageSize=50, 
@@ -175,19 +207,36 @@ class TestESPNClient:
             )
             
             # Third page with 20 teams (last page)
-            page3_teams = [Team(id=str(i), uid=f"s:40~l:41~t:{i}", location=f"Team {i}", name=f"Name {i}", 
-                                abbreviation=f"T{i}", displayName=f"Team {i} Name {i}") 
-                           for i in range(101, 121)]
+            page3_teams = [
+                Team(
+                    id=str(i), 
+                    uid=f"s:40~l:41~t:{i}", 
+                    location=f"Team {i}", 
+                    name=f"Name {i}",
+                    abbreviation=f"T{i}", 
+                    displayName=f"Team {i} Name {i}"
+                ) 
+                for i in range(101, 121)
+            ]
             page3_response = TeamsResponse(
-                sports=[{"leagues": [{"teams": [{"team": t.model_dump(by_alias=True)} for t in page3_teams]}]}],
+                sports=[{
+                    "leagues": [{
+                        "teams": [
+                            {"team": t.model_dump(by_alias=True)} for t in page3_teams
+                        ]
+                    }]
+                }],
                 pageCount=3, 
                 pageIndex=3, 
                 pageSize=50, 
                 count=120
             )
             
-            # Mock the get_teams method to return different responses based on page number
-            with patch.object(client, 'get_teams', new_callable=AsyncMock) as mock_get_teams:
+            # Mock the get_teams method to return different responses 
+            # based on page number
+            with patch.object(
+                client, 'get_teams', new_callable=AsyncMock
+            ) as mock_get_teams:
                 mock_get_teams.side_effect = [
                     page1_response,
                     page2_response,
@@ -237,7 +286,9 @@ class TestESPNClient:
                     await client.get_scoreboard(invalid_date)
                 
     async def test_date_mismatch_warning(self):
-        """Test that a warning is logged if returned events don't match the requested date."""
+        """
+        Test that a warning is logged if returned events don't match the requested date.
+        """
         async with ESPNClient(rate_limit=10.0, burst_limit=5) as client:
             # Create a response with an event on a different date than requested
             event_date = datetime(2023, 3, 2, 19, 0, 0)  # March 2nd
@@ -307,19 +358,25 @@ class TestESPNClient:
                 mock_get.return_value = mock_response
                 
                 # Use patch to check for warnings
-                with patch('src.data.collection.espn.client.logger.warning') as mock_warning:
+                with patch(
+                    'src.data.collection.espn.client.logger.warning'
+                ) as mock_warning:
                     await client.get_scoreboard(requested_date)
                     # Check that a warning was logged
                     mock_warning.assert_called_once()
                     assert "Date mismatch" in mock_warning.call_args[0][0]
-                    assert "2023-03-01" in mock_warning.call_args[0][0]  # Date is formatted as YYYY-MM-DD in the log
+                    # Date is formatted as YYYY-MM-DD in the log
+                    assert "2023-03-01" in mock_warning.call_args[0][0]
                     assert "2023-03-02" in mock_warning.call_args[0][0] 
 
     async def test_get_scoreboard_for_date_range(self):
         """Test retrieving games for a date range."""
         async with ESPNClient(rate_limit=10.0, burst_limit=5) as client:
-            # Mock the get_scoreboard method to return different data for different dates
-            with patch.object(client, 'get_scoreboard', new_callable=AsyncMock) as mock_get_scoreboard:
+            # Mock the get_scoreboard method to return different data 
+            # for different dates
+            with patch.object(
+                client, 'get_scoreboard', new_callable=AsyncMock
+            ) as mock_get_scoreboard:
                 # Create 3 different mock dataframes for 3 different dates
                 df1 = pl.DataFrame({
                     "game_id": ["g1", "g2"],
@@ -374,7 +431,9 @@ class TestESPNClient:
                 mock_get_scoreboard.side_effect = [df1, df2, df3]
                 
                 # Call the method under test for a 3-day range
-                result = await client.get_scoreboard_for_date_range("20230301", "20230303")
+                result = await client.get_scoreboard_for_date_range(
+                    "20230301", "20230303"
+                )
                 
                 # Verify the mock was called for each date in the range
                 assert mock_get_scoreboard.call_count == 3
@@ -393,17 +452,28 @@ class TestESPNClient:
         async with ESPNClient(rate_limit=10.0, burst_limit=5) as client:
             # Test invalid date formats
             with pytest.raises(ValueError, match="Invalid date format"):
-                await client.get_scoreboard_for_date_range("2023-03-01", "20230305")  # Wrong format for start date
+                # Wrong format for start date
+                await client.get_scoreboard_for_date_range(
+                    "2023-03-01", "20230305"
+                )
                 
             with pytest.raises(ValueError, match="Invalid date format"):
-                await client.get_scoreboard_for_date_range("20230301", "2023-03-05")  # Wrong format for end date
+                # Wrong format for end date
+                await client.get_scoreboard_for_date_range(
+                    "20230301", "2023-03-05"
+                )
                 
             # Test end date before start date
             with pytest.raises(ValueError, match="Invalid date range"):
-                await client.get_scoreboard_for_date_range("20230305", "20230301")  # End date before start date
+                # End date before start date
+                await client.get_scoreboard_for_date_range(
+                    "20230305", "20230301"
+                )
                 
             # Test with mock to verify empty result handling
-            with patch.object(client, 'get_scoreboard', new_callable=AsyncMock) as mock_get_scoreboard:
+            with patch.object(
+                client, 'get_scoreboard', new_callable=AsyncMock
+            ) as mock_get_scoreboard:
                 # Empty dataframe for all dates
                 empty_df = pl.DataFrame(schema={
                     "game_id": pl.Utf8,
@@ -424,16 +494,21 @@ class TestESPNClient:
                 mock_get_scoreboard.return_value = empty_df
                 
                 # Should return empty DataFrame with correct schema when no games found
-                result = await client.get_scoreboard_for_date_range("20230301", "20230302")
+                result = await client.get_scoreboard_for_date_range(
+                    "20230301", "20230302"
+                )
                 assert result.is_empty()
                 assert result.schema == empty_df.schema
                 assert mock_get_scoreboard.call_count == 2  # Called for both dates
                 
-    async def test_date_range_error_handling(self):
+    async def test_error_handling_in_date_range(self):
         """Test error handling in date range fetching."""
         async with ESPNClient(rate_limit=10.0, burst_limit=5) as client:
-            with patch.object(client, 'get_scoreboard', new_callable=AsyncMock) as mock_get_scoreboard:
-                # Set up the mock to raise an exception for one date but return data for others
+            with patch.object(
+                client, 'get_scoreboard', new_callable=AsyncMock
+            ) as mock_get_scoreboard:
+                # Set up the mock to raise an exception for one date 
+                # but return data for others
                 df1 = pl.DataFrame({
                     "game_id": ["g1"],
                     "date": [datetime(2023, 3, 1, 19, 0)],
@@ -462,8 +537,11 @@ class TestESPNClient:
                 ]
                 
                 # Should handle the error and continue with other dates
-                result = await client.get_scoreboard_for_date_range("20230301", "20230303")
+                result = await client.get_scoreboard_for_date_range(
+                    "20230301", "20230303"
+                )
                 
                 # Verify we still get results from successful dates
                 assert len(result) == 2  # Two successful dates with 1 game each
-                assert mock_get_scoreboard.call_count == 3  # Called for all three dates 
+                # Called for all three dates
+                assert mock_get_scoreboard.call_count == 3 

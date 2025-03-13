@@ -1,17 +1,19 @@
 import asyncio
 import logging
-from datetime import datetime, date, timedelta
-from typing import Optional, Dict, Any, List, Union
+from datetime import date, datetime, timedelta
+from typing import Any, Dict, List, Optional
+
 import httpx
 import polars as pl
+
 from src.utils.resilience.retry import retry
+
 from .models import (
+    GameSummaryResponse,
     ScoreboardResponse,
+    Team,
     TeamResponse,
     TeamsResponse,
-    GameSummaryResponse,
-    Event,
-    Team
 )
 
 logger = logging.getLogger(__name__)
@@ -77,7 +79,10 @@ class ESPNClient:
         self.timeout = timeout
         self._client: Optional[httpx.AsyncClient] = None
         
-        logger.info(f"Initialized ESPN client with rate_limit={rate_limit}, burst_limit={burst_limit}")
+        logger.info(
+            f"Initialized ESPN client with rate_limit={rate_limit}, "
+            f"burst_limit={burst_limit}"
+        )
     
     async def __aenter__(self) -> 'ESPNClient':
         """Async context manager entry."""
@@ -97,10 +102,14 @@ class ESPNClient:
         """Get the HTTP client, raising an error if not initialized."""
         if self._client is None:
             logger.error("Attempted to use HTTP client before initialization")
-            raise RuntimeError("Client not initialized. Use async with ESPNClient() as client: ...")
+            raise RuntimeError(
+                "Client not initialized. Use async with ESPNClient() as client: ..."
+            )
         return self._client
     
-    async def _get(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def _get(
+        self, endpoint: str, params: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """
         Make a rate-limited GET request to the ESPN API.
         
@@ -120,7 +129,10 @@ class ESPNClient:
         response = await self.client.get(url, params=params)
         duration = asyncio.get_event_loop().time() - start_time
         
-        logger.debug(f"Received response from {url} in {duration:.2f}s (status: {response.status_code})")
+        logger.debug(
+            f"Received response from {url} in {duration:.2f}s "
+            f"(status: {response.status_code})"
+        )
         
         try:
             response.raise_for_status()
@@ -132,7 +144,8 @@ class ESPNClient:
     
     def _validate_date_format(self, date_str: str) -> bool:
         """
-        Validate that the date string is in the correct format (YYYYMMDD) and represents a valid date.
+        Validate that the date string is in the correct format (YYYYMMDD) and 
+        represents a valid date.
         
         Args:
             date_str: Date string in YYYYMMDD format
@@ -174,7 +187,10 @@ class ESPNClient:
             ValueError: If the date string is invalid
         """
         if not self._validate_date_format(date_str):
-            raise ValueError(f"Invalid date format: {date_str}. Expected format is YYYYMMDD with a valid calendar date.")
+            raise ValueError(
+                f"Invalid date format: {date_str}. "
+                f"Expected format is YYYYMMDD with a valid calendar date."
+            )
             
         year = int(date_str[0:4])
         month = int(date_str[4:6])
@@ -211,7 +227,10 @@ class ESPNClient:
         # Validate the date format before making the API call
         if not self._validate_date_format(date_str):
             logger.error(f"Invalid date format provided: {date_str}")
-            raise ValueError(f"Invalid date format: {date_str}. Expected format is YYYYMMDD with a valid calendar date.")
+            raise ValueError(
+                f"Invalid date format: {date_str}. "
+                f"Expected format is YYYYMMDD with a valid calendar date."
+            )
         
         logger.info(f"Fetching scoreboard data for date: {date_str}")
         endpoint = f"/apis/site/v2/sports/{self.SPORT}/{self.LEAGUE}/scoreboard"
@@ -220,8 +239,9 @@ class ESPNClient:
         data = await self._get(endpoint, params)
         response = ScoreboardResponse.model_validate(data)
         
-        # Additional validation: if we have events, check that they match the requested date
-        # (This is to catch ESPN API's silent "correction" of invalid dates)
+        # Additional validation: if we have events, check that they match the 
+        # requested date (This is to catch ESPN API's silent "correction" of 
+        # invalid dates)
         if response.events:
             # Parse the requested date
             req_year = int(date_str[0:4])
@@ -234,11 +254,13 @@ class ESPNClient:
                 event_date = event.date.date()
                 if event_date != requested_date:
                     logger.warning(
-                        f"Date mismatch: Requested games for {requested_date}, but received game on {event_date}. "
+                        f"Date mismatch: Requested games for {requested_date}, "
+                        f"but received game on {event_date}. "
                         f"ESPN API may have silently corrected an invalid date."
                     )
-                    # Since we already validated the date is correct, this should rarely happen
-                    # It could happen if ESPN's API has different timezone handling
+                    # Since we already validated the date is correct, this should 
+                    # rarely happen. It could happen if ESPN's API has different 
+                    # timezone handling
                     break
         
         result_df = self._process_scoreboard_data(response)
@@ -246,12 +268,15 @@ class ESPNClient:
         return result_df
     
     @retry(max_attempts=3, backoff_factor=2.0)
-    async def get_scoreboard_for_date_range(self, start_date_str: str, end_date_str: str) -> pl.DataFrame:
+    async def get_scoreboard_for_date_range(
+        self, start_date_str: str, end_date_str: str
+    ) -> pl.DataFrame:
         """
         Get scoreboard data for a range of dates.
         
-        This method fetches game data for all dates in the inclusive range from start_date to end_date.
-        Results from all dates are combined into a single DataFrame.
+        This method fetches game data for all dates in the inclusive range from 
+        start_date to end_date. Results from all dates are combined into a single 
+        DataFrame.
         
         Args:
             start_date_str: Start date in YYYYMMDD format
@@ -261,7 +286,8 @@ class ESPNClient:
             DataFrame containing game data for all dates in the range
             
         Raises:
-            ValueError: If either date string is invalid or if end_date is before start_date
+            ValueError: If either date string is invalid or if end_date is before 
+                start_date
         """
         # Parse and validate dates
         start_date = self._parse_date_str(start_date_str)
@@ -269,11 +295,20 @@ class ESPNClient:
         
         # Validate date range
         if end_date < start_date:
-            logger.error(f"Invalid date range: end date {end_date} is before start date {start_date}")
-            raise ValueError(f"Invalid date range: end date {end_date_str} is before start date {start_date_str}")
+            logger.error(
+                f"Invalid date range: end date {end_date} is before start date "
+                f"{start_date}"
+            )
+            raise ValueError(
+                f"Invalid date range: end date {end_date_str} is before "
+                f"start date {start_date_str}"
+            )
         
         date_diff = (end_date - start_date).days
-        logger.info(f"Fetching scoreboard data for date range {start_date_str} to {end_date_str} ({date_diff + 1} days)")
+        logger.info(
+            f"Fetching scoreboard data for date range {start_date_str} to "
+            f"{end_date_str} ({date_diff + 1} days)"
+        )
         
         # List to store DataFrames for each date
         all_frames = []
@@ -298,7 +333,9 @@ class ESPNClient:
         
         # Combine all dataframes
         if not all_frames:
-            logger.warning(f"No games found for date range {start_date_str} to {end_date_str}")
+            logger.warning(
+                f"No games found for date range {start_date_str} to {end_date_str}"
+            )
             # Return empty DataFrame with correct schema
             return pl.DataFrame(schema={
                 "game_id": pl.Utf8,
@@ -317,7 +354,10 @@ class ESPNClient:
             })
         
         combined_df = pl.concat(all_frames)
-        logger.info(f"Successfully retrieved {len(combined_df)} total games for date range {start_date_str} to {end_date_str}")
+        logger.info(
+            f"Successfully retrieved {len(combined_df)} total games for date range "
+            f"{start_date_str} to {end_date_str}"
+        )
         return combined_df
     
     @retry(max_attempts=3, backoff_factor=2.0)
@@ -355,7 +395,9 @@ class ESPNClient:
         endpoint = f"/apis/site/v2/sports/{self.SPORT}/{self.LEAGUE}/teams/{team_id}"
         data = await self._get(endpoint)
         response = TeamResponse.model_validate(data)
-        logger.info(f"Retrieved team data for {response.team.display_name} (ID: {team_id})")
+        logger.info(
+            f"Retrieved team data for {response.team.display_name} (ID: {team_id})"
+        )
         return response
     
     @retry(max_attempts=3, backoff_factor=2.0)
@@ -391,10 +433,10 @@ class ESPNClient:
         """
         Get all teams across all pages.
         
-        This method automatically handles pagination and combines results from all pages.
-        ESPN's API typically returns 50 teams per page, and this method will continue
-        fetching pages until it reaches a page with fewer than 50 teams or no teams,
-        indicating it has retrieved all teams.
+        This method automatically handles pagination and combines results from all 
+        pages. ESPN's API typically returns 50 teams per page, and this method will 
+        continue fetching pages until it reaches a page with fewer than 50 teams or 
+        no teams, indicating it has retrieved all teams.
         
         Returns:
             List of Team objects containing all teams
@@ -423,8 +465,8 @@ class ESPNClient:
             logger.warning("No teams found in the first page")
             return all_teams
             
-        # Continue fetching pages until we get a page with fewer items than the page size
-        # (indicating it's the last page)
+        # Continue fetching pages until we get a page with fewer items than the 
+        # page size (indicating it's the last page)
         while True:
             current_page += 1
             logger.info(f"Fetching teams page {current_page}")
@@ -443,18 +485,24 @@ class ESPNClient:
                                 team = Team.model_validate(team_data)
                                 page_teams.append(team)
             
-            # If we got no teams or fewer teams than the page size, we've reached the last page
+            # If we got no teams or fewer teams than the page size, we've reached the 
+            # last page
             if not page_teams or len(page_teams) < page_size:
                 if page_teams:
                     all_teams.extend(page_teams)
-                    logger.info(f"Reached final page {current_page} with {len(page_teams)} teams")
+                    logger.info(
+                        f"Reached final page {current_page} with "
+                        f"{len(page_teams)} teams"
+                    )
                 else:
                     logger.info(f"Reached empty page {current_page}")
                 break
                 
             all_teams.extend(page_teams)
             
-        logger.info(f"Fetched a total of {len(all_teams)} teams across {current_page} pages")
+        logger.info(
+            f"Fetched a total of {len(all_teams)} teams across {current_page} pages"
+        )
         return all_teams
     
     def _process_scoreboard_data(self, response: ScoreboardResponse) -> pl.DataFrame:
@@ -471,8 +519,12 @@ class ESPNClient:
         
         for event in response.events:
             for competition in event.competitions:
-                home_team = next(c for c in competition.competitors if c.home_away == "home")
-                away_team = next(c for c in competition.competitors if c.home_away == "away")
+                home_team = next(
+                    c for c in competition.competitors if c.home_away == "home"
+                )
+                away_team = next(
+                    c for c in competition.competitors if c.home_away == "away"
+                )
                 
                 record = {
                     "game_id": event.id,

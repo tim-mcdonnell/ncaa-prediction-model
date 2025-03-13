@@ -1,12 +1,9 @@
+from typing import Dict
+
 import polars as pl
-from typing import Dict, Any, List
-from datetime import datetime
-from .models import (
-    GameSummaryResponse,
-    ScoreboardResponse,
-    TeamResponse,
-    TeamsResponse
-)
+
+from .models import GameSummaryResponse, TeamResponse, TeamsResponse
+
 
 def parse_game_summary(response: GameSummaryResponse) -> Dict[str, pl.DataFrame]:
     """
@@ -54,7 +51,9 @@ def parse_game_summary(response: GameSummaryResponse) -> Dict[str, pl.DataFrame]
                     }
                     player_stats_records.append(record)
     
-    player_stats_df = pl.DataFrame(player_stats_records) if player_stats_records else None
+    player_stats_df = (
+        pl.DataFrame(player_stats_records) if player_stats_records else None
+    )
     
     # Parse play-by-play data if available
     play_records = []
@@ -68,8 +67,14 @@ def parse_game_summary(response: GameSummaryResponse) -> Dict[str, pl.DataFrame]
                 "scoring_play": play.get("scoringPlay", False),
                 "score_value": play.get("scoreValue", 0),
                 "team_id": play.get("team", {}).get("id") if play.get("team") else None,
-                "coordinate_x": play.get("coordinate", {}).get("x") if play.get("coordinate") else None,
-                "coordinate_y": play.get("coordinate", {}).get("y") if play.get("coordinate") else None,
+                "coordinate_x": (
+                    play.get("coordinate", {}).get("x") 
+                    if play.get("coordinate") else None
+                ),
+                "coordinate_y": (
+                    play.get("coordinate", {}).get("y") 
+                    if play.get("coordinate") else None
+                ),
             }
             play_records.append(record)
     

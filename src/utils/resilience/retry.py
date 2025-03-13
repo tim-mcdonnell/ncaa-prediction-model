@@ -2,7 +2,7 @@ import asyncio
 import functools
 import logging
 import random
-from typing import TypeVar, Callable, Any, Optional, Type, Union, Tuple
+from typing import Any, Callable, Optional, Tuple, Type, TypeVar, Union
 
 T = TypeVar("T")
 
@@ -38,7 +38,8 @@ def retry(
                     last_exception = e
                     if attempt == max_attempts - 1:
                         logger.error(
-                            f"Final retry attempt {attempt + 1}/{max_attempts} failed for {func.__name__}",
+                            f"Final retry attempt {attempt + 1}/{max_attempts} "
+                            f"failed for {func.__name__}",
                             exc_info=True
                         )
                         raise
@@ -49,8 +50,8 @@ def retry(
                     total_delay = delay + jitter_amount
                     
                     logger.warning(
-                        f"Retry attempt {attempt + 1}/{max_attempts} for {func.__name__} "
-                        f"failed. Retrying in {total_delay:.2f}s"
+                        f"Retry attempt {attempt + 1}/{max_attempts} "
+                        f"for {func.__name__} failed. Retrying in {total_delay:.2f}s"
                     )
                     
                     await asyncio.sleep(total_delay)

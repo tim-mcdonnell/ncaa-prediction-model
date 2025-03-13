@@ -1,8 +1,11 @@
 import json
 import os
+
 import pytest
 import pytest_asyncio
+
 from src.data.collection.espn.client import ESPNClient
+
 
 @pytest.fixture
 def fixture_path():
