@@ -44,11 +44,11 @@ def generate_reference_docs():
             continue
 
         # Module path as dot notation
-        module_dots = ".".join(module_path.parts)
+        module_dots = "src." + ".".join(module_path.parts)
 
         # Handle __init__.py specially
         if module_path.name == "__init__":
-            module_dots = ".".join(module_path.parts[:-1])
+            module_dots = "src." + ".".join(module_path.parts[:-1])
             doc_path = doc_path.with_name("index.md")
             full_doc_path = full_doc_path.with_name("index.md")
 
