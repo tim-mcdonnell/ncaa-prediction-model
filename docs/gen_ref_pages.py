@@ -16,6 +16,7 @@ from pathlib import Path
 
 import mkdocs_gen_files
 
+
 def generate_reference_docs():
     """
     Generate reference documentation from source code.
@@ -61,7 +62,7 @@ def generate_reference_docs():
             fd.write(f"# {module_dots}\n\n")
             
             # Add a description of the module's purpose if available
-            fd.write(f"## Module Overview\n\n")
+            fd.write("## Module Overview\n\n")
             fd.write(f"This page documents the API for the `{module_dots}` module.\n\n")
             
             # Include the module's docstring and class/function definitions
