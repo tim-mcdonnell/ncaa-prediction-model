@@ -19,7 +19,7 @@ This project leverages a modern Python-based technology stack, optimized for dat
 |----------|--------------|---------|
 | **Data Analysis** | Polars, NumPy | Data manipulation and numerical computing |
 | **Data Storage** | Parquet | Column-oriented data storage format |
-| **API Integration** | Requests, aiohttp | HTTP clients for API communication |
+| **API Integration** | httpx | HTTP client for API communication |
 | **Data Validation** | Pydantic | Data validation and parsing |
 | **Pipeline Orchestration** | Custom pipeline modules | Data flow orchestration |
 

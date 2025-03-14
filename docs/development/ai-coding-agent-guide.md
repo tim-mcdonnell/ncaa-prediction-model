@@ -6,7 +6,7 @@ This guide provides essential information for AI coding agents working on the NC
 
 | **Category** | **Key Points** |
 |--------------|----------------|
-| **Development Approach** | Test-Driven Development (TDD): Tests first, minimal implementation, then refactor |
+| **Development Approach** | Test-Driven Development (TDD): Tests first, minimal implementation, then refactor with documentation in each phase |
 | **Project Structure** | Pipeline architecture, Parquet storage, `src/` for code, `tests/` mirroring code structure |
 | **Package Management** | ✅ Use `uv` for dependencies ❌ NEVER use pip directly |
 | **Data Processing** | ✅ Use Polars for all data manipulation ❌ NEVER use pandas |
@@ -14,23 +14,30 @@ This guide provides essential information for AI coding agents working on the NC
 
 ## Key Documentation
 
-- **[Test Strategy](./development/testing.md)**: Our TDD approach and testing practices
-- **[Documentation Guide](./development/documentation.md)**: Documentation standards
-- **[Architecture Overview](./architecture.md)**: System design and components
+- **[Architecture Overview](../architecture.md)**: System design and components
+- **[Test Strategy](./testing.md)**: Our TDD approach and testing practices
+- **[Documentation Guide](./documentation.md)**: Documentation standards
+- **[Development Workflow](./workflow.md)**: The complete development process
+- **[Development Setup](./setup.md)**: Environment setup instructions
 
-## TDD Workflow
+## TDD Workflow with Documentation
+
+Documentation is an essential part of the TDD cycle, not an afterthought:
 
 1. **Red Phase:**
    - Write failing tests first
    - Document expected behavior in test docstrings
+   - Define the interface and expected outcomes
    
 2. **Green Phase:**
    - Write minimal code to pass tests
-   - Include proper docstrings
+   - Include proper docstrings as you implement
+   - Focus on clear parameter and return type documentation
    
 3. **Refactor Phase:**
    - Improve code without changing behavior
-   - Document design decisions in comments
+   - Enhance docstrings with examples and notes
+   - Update component documentation if necessary
 
 ## Architecture Overview
 
@@ -47,6 +54,8 @@ Collection Pipeline → Processing Pipeline → Feature Pipeline → Prediction 
 3. **Feature Pipeline**: Calculates basketball metrics
 4. **Prediction Pipeline**: Generates predictions
 5. **Daily Update Pipeline**: Orchestrates daily updates
+
+For detailed component information, see the [architecture documentation](../architecture.md) and specific component docs in the `docs/components/` directory.
 
 ## Documentation Standards
 
@@ -68,6 +77,17 @@ def collect_game_data(season: int, game_ids: List[str] = None) -> pl.DataFrame:
         DataFrame containing raw game data
     """
 ```
+
+## Adding New Features
+
+The feature pipeline is a central part of our system. When adding new features:
+
+1. Start with a test that defines the expected behavior
+2. Implement the feature calculator class
+3. Register the feature in the feature registry
+4. Document the feature in code and component documentation
+
+For detailed instructions, see [Adding Features Guide](../guides/adding_features.md).
 
 ## ⚠️ Critical Terminal Command Limitations ⚠️
 
@@ -147,6 +167,18 @@ Always get explicit confirmation before:
 
 For routine code implementation, proceed without constant check-ins.
 
+## File Organization
+
+Our documentation is organized into these main sections:
+
+- **Top-level**: Project overview and architecture (`docs/index.md`, `docs/architecture.md`)
+- **Development**: Guides for developers (`docs/development/`)
+- **Components**: Documentation for major system components (`docs/components/`)
+- **Guides**: Task-oriented how-to guides (`docs/guides/`)
+- **Reference**: Auto-generated API docs (`docs/reference/`)
+
+When implementing features, be sure to check the appropriate component documentation and update it if necessary.
+
 ## Feature Implementation Example
 
 ```python
@@ -159,6 +191,7 @@ def test_offensive_efficiency_calculation():
 class OffensiveEfficiencyFeature(Feature):
     id = "team_offensive_efficiency"
     name = "Team Offensive Efficiency"
+    description = "Points scored per 100 possessions"
     dependencies = ["team_possessions"]
     required_data = ["games", "teams"]
     
@@ -166,19 +199,48 @@ class OffensiveEfficiencyFeature(Feature):
         # Implementation using Polars
 ```
 
-## Code Contribution Tips
+## Documentation in the TDD Cycle
 
-1. **Follow TDD cycle** for all new code
-2. **Check existing patterns** before creating new ones
-3. **Document alongside development** using our standard format
-4. **Place code in correct modules** following project structure
-5. **Run tests** after each implementation step
+For each TDD cycle, include documentation as follows:
+
+1. **Test Documentation (Red Phase)**
+   ```python
+   def test_function_behavior():
+       """
+       Test that the function does X when given Y and returns Z.
+       
+       This test verifies:
+       - Specific behavior A
+       - Edge case B
+       - Error handling C
+       """
+   ```
+
+2. **Implementation Documentation (Green Phase)**
+   ```python
+   def function_name(param1: Type1, param2: Type2) -> ReturnType:
+       """
+       Brief description of function purpose.
+       
+       Args:
+           param1: Description of param1
+           param2: Description of param2
+           
+       Returns:
+           Description of return value
+       """
+   ```
+
+3. **Refactor Documentation (Refactor Phase)**
+   - Enhance docstrings with examples
+   - Add notes about implementation details
+   - Update component documentation if necessary
 
 ## Key Principles
 
 | **Principle** | **Description** |
 |---------------|-----------------|
 | **Test-First** | Write tests before implementing functionality |
+| **Documentation Alongside** | Document your changes during development, not after |
 | **Simplicity** | Prefer simple solutions over complex abstractions |
-| **Documentation** | Document your changes alongside implementation |
 | **Data Flow** | Follow the pipeline architecture and Parquet-first approach |
