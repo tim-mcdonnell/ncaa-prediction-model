@@ -74,25 +74,32 @@ class TestPipelineResult:
 class MockPipeline(BasePipeline):
     """Mock implementation of BasePipeline for testing."""
     
-    def __init__(self):
-        super().__init__()
+    def __init__(self, retry_enabled=False, max_retry_attempts=3):
+        super().__init__(
+            retry_enabled=retry_enabled,
+            max_retry_attempts=max_retry_attempts
+        )
         self.execute_called = False
         self.validate_called = False
         self.cleanup_called = False
         self.should_fail = False
+        self.fail_count = 0  # Number of times to fail before succeeding
         self.validation_result = True
+        self.execution_count = 0
         
     async def _execute(self, context: PipelineContext) -> PipelineResult:
         """Mock implementation of execute."""
         self.execute_called = True
+        self.execution_count += 1
         
         if self.should_fail:
-            raise ValueError("Test execution failure")
+            if self.execution_count <= self.fail_count:
+                raise ValueError(f"Test execution failure (attempt {self.execution_count})")
             
         return PipelineResult(
             status=PipelineStatus.SUCCESS,
             output_data={"test_output": pl.DataFrame({"result": [1, 2, 3]})},
-            metadata={"execution_info": "test"}
+            metadata={"execution_info": "test", "attempts": self.execution_count}
         )
         
     async def _validate(self, context: PipelineContext) -> bool:
@@ -113,6 +120,11 @@ class TestBasePipeline:
         """Create a mock pipeline instance for testing."""
         return MockPipeline()
     
+    @pytest.fixture
+    def retry_pipeline(self):
+        """Create a mock pipeline with retry enabled."""
+        return MockPipeline(retry_enabled=True, max_retry_attempts=3)
+    
     @pytest.mark.asyncio
     async def test_pipeline_execution_success(self, pipeline):
         """Test successful pipeline execution."""
@@ -131,6 +143,7 @@ class TestBasePipeline:
         """Test pipeline execution failure."""
         # Set pipeline to fail
         pipeline.should_fail = True
+        pipeline.fail_count = 1
         
         # Create context and execute pipeline
         context = PipelineContext(params={"test": True})
@@ -185,4 +198,39 @@ class TestBasePipeline:
         assert state.status == PipelineStatus.SUCCESS
         assert state.start_time is not None
         assert state.end_time is not None
-        assert state.execution_time > 0 
+        assert state.execution_time > 0
+        
+    @pytest.mark.asyncio
+    async def test_retry_successful_after_failures(self, retry_pipeline):
+        """Test that retry functionality works with temporary failures."""
+        # Set pipeline to fail initially but succeed after retries
+        retry_pipeline.should_fail = True
+        retry_pipeline.fail_count = 2  # Fail twice, succeed on third attempt
+        
+        # Create context and execute pipeline
+        context = PipelineContext(params={"test": True})
+        result = await retry_pipeline.execute(context)
+        
+        # Verify successful execution after retries
+        assert retry_pipeline.execution_count > 1, "Should have multiple execution attempts"
+        assert result.status == PipelineStatus.SUCCESS
+        assert retry_pipeline.get_state().status == PipelineStatus.SUCCESS
+        assert result.metadata["attempts"] == retry_pipeline.execution_count
+        
+    @pytest.mark.asyncio
+    async def test_retry_exhausted_still_fails(self):
+        """Test that retrying still fails if all attempts fail."""
+        # Create pipeline that will always fail and has fewer retry attempts
+        pipeline = MockPipeline(retry_enabled=True, max_retry_attempts=2)
+        pipeline.should_fail = True
+        pipeline.fail_count = 999  # Set to a high number to ensure all attempts fail
+        
+        # Create context and execute pipeline
+        context = PipelineContext(params={"test": True})
+        result = await pipeline.execute(context)
+        
+        # Verify failure after all retries exhausted
+        assert pipeline.execution_count > 1, "Should have multiple execution attempts"
+        assert result.status == PipelineStatus.FAILURE
+        assert pipeline.get_state().status == PipelineStatus.FAILURE
+        assert isinstance(result.error, ValueError) 

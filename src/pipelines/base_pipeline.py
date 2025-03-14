@@ -7,6 +7,7 @@ It provides a foundation for all pipeline components with shared functionality f
 - State tracking and persistence
 - Error handling and logging
 - Configuration management
+- Resilience with retry support
 """
 
 import logging
@@ -14,7 +15,9 @@ import time
 from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple, Type, Union
+
+from src.utils.resilience.retry import retry
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -126,11 +129,42 @@ class BasePipeline(ABC):
     error handling, and state management.
     
     This class should be extended by concrete pipeline implementations.
+    
+    Attributes:
+        retry_enabled: Whether to enable automatic retry on failure
+        max_retry_attempts: Maximum number of retry attempts
+        retry_backoff_factor: Multiplicative factor for exponential backoff
+        retry_jitter: Random jitter factor to add to delay (0.0 to 1.0)
+        retry_exceptions: Exception types to retry on
     """
     
-    def __init__(self):
-        """Initialize a new base pipeline."""
+    def __init__(
+        self, 
+        retry_enabled: bool = False,
+        max_retry_attempts: int = 3,
+        retry_backoff_factor: float = 1.5,
+        retry_jitter: float = 0.1,
+        retry_exceptions: Union[
+            Type[Exception], 
+            Tuple[Type[Exception], ...]
+        ] = Exception
+    ):
+        """
+        Initialize a new base pipeline.
+        
+        Args:
+            retry_enabled: Whether to enable automatic retry on failure
+            max_retry_attempts: Maximum number of retry attempts
+            retry_backoff_factor: Multiplicative factor for exponential backoff
+            retry_jitter: Random jitter factor to add to delay (0.0 to 1.0)
+            retry_exceptions: Exception types to retry on
+        """
         self._state = PipelineState()
+        self.retry_enabled = retry_enabled
+        self.max_retry_attempts = max_retry_attempts
+        self.retry_backoff_factor = retry_backoff_factor
+        self.retry_jitter = retry_jitter
+        self.retry_exceptions = retry_exceptions
         logger.debug(f"Initialized {self.__class__.__name__}")
     
     async def execute(self, context: PipelineContext) -> PipelineResult:
@@ -142,6 +176,7 @@ class BasePipeline(ABC):
         - Tracking state and timing
         - Error handling
         - Logging
+        - Automatic retry (if enabled)
         
         Args:
             context: Execution context with parameters and input data
@@ -167,9 +202,13 @@ class BasePipeline(ABC):
                     metadata={"validation_error": "Pipeline validation failed"}
                 )
             
-            # Execute the pipeline implementation
+            # Execute the pipeline implementation with retry if enabled
             logger.debug(f"Executing {self.__class__.__name__}")
-            result = await self._execute(context)
+            if self.retry_enabled:
+                result = await self._execute_with_retry(context)
+            else:
+                result = await self._execute(context)
+                
             self._state.status = result.status
             
             class_name = self.__class__.__name__
@@ -199,6 +238,29 @@ class BasePipeline(ABC):
                 f"Execution of {self.__class__.__name__} took "
                 f"{self._state.execution_time:.2f} seconds"
             )
+    
+    async def _execute_with_retry(self, context: PipelineContext) -> PipelineResult:
+        """
+        Execute the pipeline with retry functionality.
+        
+        This method wraps the _execute method with retry logic for resilience.
+        
+        Args:
+            context: Execution context with parameters and input data
+            
+        Returns:
+            Result of the pipeline execution
+        """
+        retry_decorator = retry(
+            max_attempts=self.max_retry_attempts,
+            backoff_factor=self.retry_backoff_factor,
+            jitter=self.retry_jitter,
+            exceptions=self.retry_exceptions
+        )
+        
+        # Apply retry decorator to _execute method
+        execute_with_retry = retry_decorator(self._execute)
+        return await execute_with_retry(context)
     
     @abstractmethod
     async def _execute(self, context: PipelineContext) -> PipelineResult:
