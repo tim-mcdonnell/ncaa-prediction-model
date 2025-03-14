@@ -37,7 +37,15 @@ class RateLimiter:
         Args:
             rate: Number of requests per second
             burst: Maximum burst size (number of requests that can be made at once)
+            
+        Raises:
+            ValueError: If rate is <= 0 or burst is < 1
         """
+        if rate <= 0:
+            raise ValueError("Rate must be greater than 0")
+        if burst < 1:
+            raise ValueError("Burst must be greater than or equal to 1")
+            
         self.rate = rate
         self.burst = burst
         self.tokens = burst
@@ -522,9 +530,24 @@ class ESPNClient:
             response: Validated scoreboard response
             
         Returns:
-            DataFrame containing game data
+            DataFrame containing game data with the proper schema, even if empty
         """
         records = []
+        
+        # Define the schema columns for empty responses
+        schema_columns = [
+            "game_id", "date", "name", "home_team_id", "home_team_name", 
+            "home_team_score", "away_team_id", "away_team_name", 
+            "away_team_score", "status", "period", "season_year",
+            "season_type"
+        ]
+        
+        # If there are no events, return an empty DataFrame with the proper schema
+        if not response.events:
+            logger.info(
+                "No events found in response, returning empty DataFrame with schema"
+            )
+            return pl.DataFrame([], schema={col: str for col in schema_columns})
         
         for event in response.events:
             for competition in event.competitions:

@@ -57,6 +57,10 @@ line-length = 88
 select = ["E", "F", "B", "I"]
 ignore = []
 
+# Add per-file ignores for test files
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]  # Ignore line length in test files
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"

@@ -21,6 +21,12 @@ class Team(BaseModel):
         logos = data.get("logos")
         if isinstance(logos, list) and logos:
             data["logos"] = logos[0].get("href") if isinstance(logos[0], dict) else None
+        
+        # Set default values for fields that might be null
+        for field in ["location", "name", "abbreviation", "displayName"]:
+            if field in data and data[field] is None:
+                data[field] = ""
+                
         super().__init__(**data)
 
 class GameStatus(BaseModel):
@@ -41,6 +47,12 @@ class Competitor(BaseModel):
     score: Optional[str] = None
     records: Optional[List[Dict[str, Any]]] = None
     winner: Optional[bool] = None
+    
+    def __init__(self, **data):
+        # Ensure score is a string or None, not a numeric value
+        if "score" in data and data["score"] is not None:
+            data["score"] = str(data["score"])
+        super().__init__(**data)
 
 class Competition(BaseModel):
     """Model for competition information."""

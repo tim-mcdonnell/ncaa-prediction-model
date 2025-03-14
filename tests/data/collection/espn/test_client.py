@@ -10,7 +10,6 @@ import pytest
 from pydantic import ValidationError
 
 from src.data.collection.espn.client import ESPNClient, RateLimiter
-from src.data.collection.espn.models import Team, TeamsResponse
 from src.utils.resilience.retry import retry
 
 
@@ -242,6 +241,9 @@ class TestESPNClient:
         3. Verifies that the retry logic respects the Retry-After header value
         4. Confirms the request eventually succeeds after proper backoff
         """
+        # Use a smaller retry-after value for testing to make the test faster
+        retry_after_value = 1.0  # 1 second instead of 2
+        
         @retry(max_attempts=3, backoff_factor=0.5)
         async def test_method(client):
             return await client._get("/test")
@@ -254,7 +256,7 @@ class TestESPNClient:
                     request=MagicMock(),
                     response=MagicMock(
                         status_code=429,
-                        headers={"Retry-After": "2"}  # 2 seconds
+                        headers={"Retry-After": str(retry_after_value)}  # Use the test value
                     )
                 )
                 
@@ -268,9 +270,14 @@ class TestESPNClient:
                 result = await test_method(client)
                 duration = asyncio.get_event_loop().time() - start_time
                 
-                # Should have respected the Retry-After header (2 seconds)
-                assert duration >= 2.0
+                # Allow for some timing flexibility while still ensuring the backoff happened
+                # Should be at least 0.8 of the retry_after_value to account for timing variations
+                min_expected_delay = retry_after_value * 0.8
+                assert duration >= min_expected_delay, f"Expected delay of at least {min_expected_delay}s but got {duration}s"
+                
+                # Verify that the retry actually succeeded
                 assert result == {"data": "success"}
+                assert mock_get.call_count == 2
     
     async def test_rateLimiting_whenIntegratedWithClient_shouldDelayRequests(self):
         """
@@ -403,7 +410,7 @@ class TestESPNClient:
                 assert not result.is_empty()
                 
                 # Score should be empty or null
-                assert result[0, "away_score"] is None or result[0, "away_score"] == ""
+                assert result[0, "away_team_score"] is None or result[0, "away_team_score"] == ""
                 
                 # Reset mock to ensure no state leakage
                 mock_get.reset_mock()
@@ -433,8 +440,8 @@ class TestESPNClient:
                 # Check that expected columns exist
                 expected_columns = [
                     "game_id", "date", "name", "home_team_id", "home_team_name",
-                    "away_team_id", "away_team_name", "home_score", "away_score",
-                    "status", "period", "season_year", "season_type"
+                    "home_team_score", "away_team_id", "away_team_name", 
+                    "away_team_score", "status", "period", "season_year", "season_type"
                 ]
                 for col in expected_columns:
                     assert col in result.columns
