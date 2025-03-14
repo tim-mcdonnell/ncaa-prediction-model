@@ -1,14 +1,8 @@
 import polars as pl
 import pytest
 from pydantic import BaseModel, Field
-from typing import List, Type
 
-from src.data.cleaning.data_cleaner import (
-    DataCleaner,
-    CleaningRule,
-    ValidationResult,
-    QualityReport
-)
+from src.data.cleaning.data_cleaner import CleaningRule, DataCleaner, QualityReport
 
 
 class PlayerTestSchema(BaseModel):
