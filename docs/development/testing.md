@@ -7,11 +7,10 @@ This project follows a strict Test-Driven Development (TDD) methodology, emphasi
 1. **Tests First**: We write tests before implementing functionality to define expected behavior.
 2. **Minimal Implementation**: We write only enough code to pass the current test.
 3. **Continuous Refactoring**: We improve code design after tests pass without changing behavior.
-4. **Documentation Alongside**: We document code as part of the TDD cycle, not as an afterthought.
-5. **Progressive Development**: We implement solutions in logical stages rather than all at once.
-6. **Strict Scope Management**: We implement only what is explicitly requested, minimizing feature creep.
+4. **Progressive Development**: We implement solutions in logical stages rather than all at once.
+5. **Strict Scope Management**: We implement only what is explicitly requested, minimizing feature creep.
 
-## TDD Workflow with Documentation
+## TDD Workflow
 
 Every feature and component must follow this development cycle:
 
@@ -19,89 +18,22 @@ Every feature and component must follow this development cycle:
 - Break down requirements into testable behaviors
 - Identify edge cases and boundary conditions
 - Confirm scope understanding before beginning implementation
-- Plan test and documentation strategy
 
 ### 2. Red Phase
 - Write a failing test that defines the expected behavior
 - Name tests descriptively: `test[WhatIsTested]_[UnderWhatConditions]_[WithWhatExpectedResult]`
-- Document test purpose and validation criteria in test docstrings
 - Verify the test fails for the expected reason
-
-Example test docstring:
-```python
-def test_calculate_offensive_efficiency_with_valid_data_returns_expected_values():
-    """
-    Test that the offensive efficiency calculator correctly computes points per 100 possessions.
-    
-    This test verifies:
-    - Correct calculation formula is applied (points / possessions * 100)
-    - Results are aggregated at the team level
-    - Teams with no possessions are handled appropriately
-    """
-```
 
 ### 3. Green Phase
 - Write the simplest code possible to make the test pass
-- Add proper docstrings with clear parameter and return type documentation
 - Resist implementing functionality not covered by tests
 - Run all tests to ensure no regressions
-
-Example implementation docstring:
-```python
-def calculate_offensive_efficiency(team_data: pl.DataFrame) -> pl.DataFrame:
-    """
-    Calculate offensive efficiency (points per 100 possessions) for each team.
-    
-    Args:
-        team_data: DataFrame with columns [team_id, points, possessions]
-            
-    Returns:
-        DataFrame with columns [team_id, offensive_efficiency]
-        
-    Raises:
-        ValueError: If required columns are missing
-    """
-```
 
 ### 4. Refactor Phase
 - Eliminate code smells and duplication
 - Improve naming, structure, and organization
 - Run tests after each refactoring step
-- Enhance docstrings with examples and implementation notes
-- Update component documentation if necessary
-
-Documentation enhancement example:
-```python
-def calculate_offensive_efficiency(team_data: pl.DataFrame) -> pl.DataFrame:
-    """
-    Calculate offensive efficiency (points per 100 possessions) for each team.
-    
-    Offensive efficiency is one of the four factors in basketball analytics,
-    measuring how efficiently a team scores points on a per-possession basis.
-    
-    Args:
-        team_data: DataFrame with columns [team_id, points, possessions]
-            
-    Returns:
-        DataFrame with columns [team_id, offensive_efficiency]
-        
-    Raises:
-        ValueError: If required columns are missing
-        
-    Example:
-        ```python
-        # Calculate offensive efficiency for all teams
-        efficiency = calculate_offensive_efficiency(team_stats)
-        
-        # Get Duke's offensive efficiency
-        duke_efficiency = efficiency.filter(pl.col("team_id") == "DUKE")
-        ```
-        
-    Notes:
-        Teams with 0 possessions will have null efficiency values.
-        Typical NCAA values range from 90-120 points per 100 possessions.
-    """
-```
+- Document the code during this phase
 
 ## Test Categories
 
@@ -119,11 +51,6 @@ Example:
 
 ```python
 def test_point_differential_feature():
-    """
-    Test that point differential is calculated correctly as points scored minus points allowed.
-    
-    This test verifies correct calculation across multiple games for each team.
-    """
     # Create test data
     test_data = pl.DataFrame({
         "team_id": [1, 1, 2, 2],
@@ -154,15 +81,6 @@ Example:
 
 ```python
 def test_process_raw_games_pipeline():
-    """
-    Test that the processing pipeline correctly transforms raw game data.
-    
-    This integration test verifies:
-    - Raw data is read from the correct location
-    - Transformations are applied correctly
-    - Processed data is saved to the expected location
-    - Home/away win flags are correctly calculated
-    """
     # Create sample raw data
     raw_df = pl.DataFrame({
         "game_id": ["123", "456"],
@@ -217,6 +135,12 @@ Standard test fixtures are provided in `tests/fixtures/`:
 - `sample_data/`: Small datasets for feature engineering and model testing
 - `expected_results/`: Expected outputs for verification
 
+**Note on Test Examples:**
+When creating example code to demonstrate usage patterns:
+- Implementation examples go in the root `/examples/` directory, not in `tests/` or `src/`
+- Test-specific examples should be in test docstrings or comments within test files
+- Never create example implementations within source directories
+
 ### Parameterized Testing
 
 Use parameterized testing to evaluate components with multiple inputs:
@@ -230,7 +154,6 @@ import pytest
     (3, 6)
 ])
 def test_double_function(input_value, expected_output):
-    """Test that the double function returns twice the input value."""
     assert double(input_value) == expected_output
 ```
 
@@ -240,7 +163,6 @@ Use the `unittest.mock` or `pytest-mock` libraries to isolate components from ex
 
 ```python
 def test_espn_client(mocker):
-    """Test that the ESPN client correctly processes API responses."""
     # Mock httpx client response
     mock_response = mocker.Mock()
     mock_response.json.return_value = {"data": "sample"}
@@ -266,15 +188,6 @@ Example:
 
 ```python
 def test_game_collection_to_storage_flow():
-    """
-    Test the end-to-end flow from ESPN API collection to raw storage.
-    
-    This test verifies:
-    - API responses are correctly processed
-    - Data is transformed into the expected format
-    - Parquet files are saved with the correct structure
-    - Metadata tracking is updated appropriately
-    """
     # 1. Set up mocked ESPN responses
     mock_espn_client = MockESPNClient()
     mock_espn_client.add_response(
@@ -322,7 +235,6 @@ def test_game_collection_to_storage_flow():
 ### Documentation Integration
 
 - Use descriptive test names that serve as documentation
-- Write comprehensive test docstrings that explain what is being tested
 - Document public API methods during the refactor phase
 - Tests themselves should demonstrate proper component usage
 
@@ -346,10 +258,9 @@ Tests are automatically run in the CI/CD pipeline:
 
 1. **Prioritize Test Development**: Focus on test creation before implementation
 2. **Use Tests as Specifications**: Tests serve as living documentation of expected behavior
-3. **Document as You Go**: Include documentation in each TDD phase
-4. **Break Changes into Small Units**: Implement one test at a time to ensure focused progress
-5. **Don't Skip Refactoring**: Take time to improve code and documentation after tests pass
-6. **Review Test Coverage**: Regularly check for gaps in test coverage
+3. **Break Changes into Small Units**: Implement one test at a time to ensure focused progress
+4. **Don't Skip Refactoring**: Take time to improve code after tests pass
+5. **Review Test Coverage**: Regularly check for gaps in test coverage
 
 ### Balancing Efficiency with Control
 
@@ -375,20 +286,3 @@ For a productive development workflow:
 6. Test functional pipelines by verifying inputs and outputs
 7. Focus on testing behavior rather than implementation details
 8. Prioritize readability and maintainability in test code
-
-## Documentation in Tests
-
-Good test documentation serves multiple purposes:
-
-1. **Specifications**: Tests define what components should do
-2. **Usage Examples**: Tests demonstrate how to use components
-3. **Edge Case Handling**: Tests document behavior in unusual situations
-4. **Component Interactions**: Tests show how components work together
-
-Follow these principles for test documentation:
-
-1. **Descriptive Names**: Use clear, action-oriented test names
-2. **Comprehensive Docstrings**: Explain test purpose and verification points
-3. **Clear Setup**: Document the test environment and preconditions
-4. **Explicit Assertions**: Make clear what outcomes are expected
-5. **Self-Contained**: Tests should be understandable without external context
