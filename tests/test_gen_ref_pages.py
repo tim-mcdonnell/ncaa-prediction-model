@@ -1,11 +1,10 @@
 """Test the documentation reference pages generator script."""
 
-import os
 import sys
 import tempfile
-from pathlib import Path
 import unittest
-from unittest.mock import patch, MagicMock, mock_open
+from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 # Add the docs directory to the Python path so we can import gen_ref_pages
 sys.path.append(str(Path(__file__).parent.parent / "docs"))
