@@ -9,6 +9,7 @@ This section contains comprehensive documentation for developers working on the 
 - [Workflow Guide](./workflow.md) - Development workflow and best practices
 - [Testing Strategy](./testing.md) - Test-Driven Development approach
 - [Documentation Guide](./documentation.md) - Documentation standards and practices
+- [API Documentation Guide](./api-docs.md) - Generating API reference docs
 - [Technology Stack](./tech-stack.md) - Technologies used in the project
 
 ### Development Tools
