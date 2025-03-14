@@ -15,9 +15,9 @@ This guide provides essential information for AI coding agents working on the NC
 
 ## Key Documentation
 
-- **[Test Strategy](./development/testing.md)**: Our TDD approach and testing practices
-- **[Documentation Guide](./development/documentation.md)**: Documentation standards
-- **[Architecture Overview](./architecture.md)**: System design and components
+- **[Test Strategy](./testing.md)**: Our TDD approach and testing practices
+- **[Documentation Guide](./documentation.md)**: Documentation standards
+- **[Architecture Overview](../architecture.md)**: System design and components
 
 ## ⚠️ Critical Workflow Issues ⚠️
 

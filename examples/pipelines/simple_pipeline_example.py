@@ -6,15 +6,14 @@ using the BasePipeline framework.
 """
 
 import asyncio
-import logging
+
 import polars as pl
-from typing import Dict, Any, Optional
 
 from src.pipelines.base_pipeline import (
     BasePipeline,
     PipelineContext,
     PipelineResult,
-    PipelineStatus
+    PipelineStatus,
 )
 from src.utils.logging import get_pipeline_logger
 
@@ -89,7 +88,9 @@ class SimplePipeline(BasePipeline):
         Returns:
             PipelineResult with transformed data
         """
-        logger.info(f"Executing SimplePipeline with transform_type={self.transform_type}")
+        logger.info(
+            f"Executing SimplePipeline with transform_type={self.transform_type}"
+        )
         
         # Get input data
         input_df = context.input_data["data"]
@@ -112,7 +113,9 @@ class SimplePipeline(BasePipeline):
             else:
                 agg_exprs = [pl.sum(col).alias(f"sum_{col}") for col in agg_cols]
                 result_df = input_df.group_by(group_col).agg(*agg_exprs)
-                logger.info(f"Aggregated data: {len(input_df)} -> {len(result_df)} rows")
+                input_rows = len(input_df)
+                output_rows = len(result_df)
+                logger.info(f"Aggregated data: {input_rows} -> {output_rows} rows")
                 
         elif self.transform_type == "join":
             # If secondary data is provided, join with it

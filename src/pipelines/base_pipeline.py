@@ -9,17 +9,12 @@ It provides a foundation for all pipeline components with shared functionality f
 - Configuration management
 """
 
-import asyncio
 import logging
 import time
 from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
-
-import polars as pl
-
-from src.utils.resilience.retry import retry
+from typing import Any, Dict, Optional
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -177,7 +172,12 @@ class BasePipeline(ABC):
             result = await self._execute(context)
             self._state.status = result.status
             
-            logger.info(f"Execution of {self.__class__.__name__} completed with status: {result.status.name}")
+            class_name = self.__class__.__name__
+            status_name = result.status.name
+            logger.info(
+                f"Execution of {class_name} completed with status: "
+                f"{status_name}"
+            )
             return result
             
         except Exception as e:
@@ -247,7 +247,9 @@ class BasePipeline(ABC):
             await self._cleanup()
             logger.debug(f"Cleanup completed for {self.__class__.__name__}")
         except Exception as e:
-            logger.exception(f"Error during cleanup of {self.__class__.__name__}: {str(e)}")
+            class_name = self.__class__.__name__
+            error_msg = str(e)
+            logger.exception(f"Error during cleanup of {class_name}: {error_msg}")
     
     @abstractmethod
     async def _cleanup(self) -> None:

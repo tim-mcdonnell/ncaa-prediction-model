@@ -50,4 +50,34 @@ We follow a Test-Driven Development workflow:
 3. **Refactor Phase**: Improve code structure while maintaining passing tests
 4. **Document**: Create and update documentation alongside each phase
 
-Documentation is an integral part of our development process, not a separate activity to be done after implementation. For more details, see the [Documentation Guide](./documentation.md). 
+Documentation is an integral part of our development process, not a separate activity to be done after implementation. For more details, see the [Documentation Guide](./documentation.md).
+
+## Core Documentation
+
+The most important resources for developers:
+
+- [Setup Guide](./setup.md) - Development environment setup
+- [Testing Approach](./testing.md) - Test-driven development practices
+- [Documentation Guide](./documentation.md) - Documentation standards
+- [Workflow](./workflow.md) - Development workflow
+- [API Documentation Guide](./api-docs.md) - Generating API reference docs
+
+## System Documentation
+
+Key documentation about the system design:
+
+- [Architecture Overview](../architecture.md) - System design and component details
+
+## Component Documentation
+
+Detailed documentation for system components:
+
+- [Data Collection](../components/data_collection.md) - ESPN data collection details
+- [Features](../components/features.md) - Feature engineering implementation
+- [Models](../components/models.md) - Predictive modeling capabilities
+
+## How-To Guides
+
+Task-oriented guides for common operations:
+
+- [Adding Features](../guides/adding_features.md) - Guide for implementing new basketball metrics 

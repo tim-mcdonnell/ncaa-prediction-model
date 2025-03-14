@@ -42,7 +42,10 @@ This documentation site provides comprehensive information about the project, or
 - [**Development Guides**](development/setup.md) - Setup, workflow, and contribution guidelines
 - [**Components**](components/data_collection.md) - Documentation for major system components
 - [**How-to Guides**](guides/adding_features.md) - Task-oriented guides for common operations
-- [**API Reference**](reference/index.md) - Generated API documentation for the codebase
+  - [Adding Features](guides/adding_features.md) - How to add new basketball metrics
+  - [Extending Pipelines](guides/extending_pipelines.md) - How to extend the pipeline framework
+- [**Configuration**](components/pipeline_framework.md) - Configuration options for system components
+- [**API Reference**](development/api-docs.md) - API documentation for the codebase
 
 ## Getting Started
 

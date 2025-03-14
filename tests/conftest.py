@@ -1,6 +1,5 @@
 """Test configuration for the NCAA prediction model."""
 
-import os
 import sys
 from pathlib import Path
 
