@@ -20,7 +20,8 @@ docs/
 │   ├── setup.md            # Development environment setup
 │   ├── testing.md          # Testing approach (TDD)
 │   ├── documentation.md    # This guide
-│   └── workflow.md         # Development workflow
+│   ├── workflow.md         # Development workflow
+│   └── examples/           # Development templates (issues, PRs, tasks)
 ├── components/             # One document per major component
 │   ├── data_collection.md  # Data collection components
 │   ├── features.md         # Feature engineering
@@ -29,6 +30,21 @@ docs/
 │   └── adding_features.md  # How to add new basketball metrics
 └── reference/              # Auto-generated API docs
 ```
+
+**Important Note on Examples:**
+This project has three distinct types of examples with specific locations:
+
+1. **Code Examples** (`/examples` at project root)
+   - Executable Python code demonstrating library usage
+   - Implementation samples for pipelines, features, etc.
+
+2. **Development Examples** (`/docs/development/examples`)
+   - Templates for project management artifacts
+   - Issue, PR, task, and milestone templates
+
+3. **Documentation Examples** (`/docs/examples` if needed)
+   - Examples of documentation formats
+   - Only create if specifically required
 
 ## Documentation in the TDD Cycle
 

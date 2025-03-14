@@ -54,8 +54,7 @@ Remember: The goal of documentation is to facilitate development, not create bur
 
 For more guidance on working with AI coding agents, see:
 
-- [AI Coding Agent Guide](../development/ai-coding-agent-guide.md) - General guidance for AI agents
-- [AI Task Authoring Guide](../development/ai-task-authoring-guide.md) - Best practices for creating effective AI tasks
+- [AI Coding Agent Guide](../ai-coding-agent-guide.md) - General guidance for AI agents
 
 ## Adding New Examples
 

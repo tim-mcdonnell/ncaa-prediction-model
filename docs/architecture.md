@@ -90,9 +90,294 @@ We use Polars for all data processing, which provides:
 - **Lazy Evaluation**: Optimized execution plans
 - **Parallelism**: Automatic use of multiple cores
 
-## Pipeline Components
+## Pipeline Architecture
 
-### Base Pipeline
+Our pipeline architecture is designed for:
+
+- **Incremental Processing**: Only update what has changed
+- **Dependency Management**: Calculate features in the correct order
+- **Configuration Management**: Flexible control of pipeline behavior
+- **Error Handling**: Robust recovery from failures
+- **Progress Tracking**: Visibility into long-running processes
+- **Simple CLI**: Easy execution of pipeline components
+
+### Base Pipeline Framework
+
+The pipeline framework provides a standardized approach to data processing tasks with consistent patterns for lifecycle management, state tracking, error handling, and more. It consists of four core components:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                     │
+│                       Pipeline Framework                            │
+│                                                                     │
+│   ┌───────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐    │
+│   │           │  │            │  │            │  │            │    │
+│   │ Base      │  │ Pipeline   │  │ Monitoring │  │ Dependency │    │
+│   │ Pipeline  │  │ Composition│  │ Hooks      │  │ Injection  │    │
+│   │           │  │            │  │            │  │            │    │
+│   └───────────┘  └────────────┘  └────────────┘  └────────────┘    │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### Pipeline Lifecycle
+
+Each pipeline follows a defined lifecycle:
+
+```
+┌─────────┐      ┌───────────┐     ┌────────────┐     ┌─────────┐     ┌─────────┐
+│         │      │           │     │            │     │         │     │         │
+│  Init   │─────▶│  Validate │────▶│  Execute   │────▶│ Results │────▶│ Cleanup │
+│         │      │           │     │            │     │         │     │         │
+└─────────┘      └───────────┘     └────────────┘     └─────────┘     └─────────┘
+                       │                  │
+                       │                  │
+                       ▼                  ▼
+                  ┌────────┐         ┌────────┐
+                  │        │         │        │
+                  │ Fail   │         │ Error  │
+                  │        │         │        │
+                  └────────┘         └────────┘
+```
+
+1. **Initialization**: Pipeline is constructed with configuration and dependencies
+2. **Validation**: Input data and parameters are validated
+3. **Execution**: Core pipeline logic processes the inputs
+4. **Results**: Standardized result structure is returned
+5. **Cleanup**: Resources are properly released
+
+#### Pipeline Composition
+
+Pipeline composition allows for creating complex data flows by chaining multiple pipelines together sequentially. Each pipeline in the chain receives the output of the previous pipeline as its input:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│                    ComposedPipeline                         │
+│                                                             │
+│   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    │
+│   │             │    │             │    │             │    │
+│   │  Pipeline A │───▶│  Pipeline B │───▶│  Pipeline C │    │
+│   │             │    │             │    │             │    │
+│   └─────────────┘    └─────────────┘    └─────────────┘    │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+This approach offers:
+- Simple building blocks that are easy to test
+- Reusable pipeline components
+- Flexible composition for different workflow requirements
+- Standardized data flow between components
+
+#### Dependency Injection
+
+Dependency injection provides flexible configuration and easier testing by allowing dependencies to be swapped or mocked:
+
+```
+┌────────────────────────────────────────────────────┐
+│                                                    │
+│                Dependency Registry                 │
+│                                                    │
+│  ┌───────────────────┐    ┌───────────────────┐   │
+│  │                   │    │                   │   │
+│  │   Interface A     │───▶│  Implementation X │   │
+│  │                   │    │                   │   │
+│  └───────────────────┘    └───────────────────┘   │
+│                                                    │
+├────────────────────────────────────────────────────┤
+│                                                    │
+│                     Pipeline                       │
+│                                                    │
+└────────────────────────────────────────────────────┘
+```
+
+Key benefits include:
+- Easier unit testing with mock implementations
+- Flexible runtime configuration
+- Cleaner separation of concerns
+- Simplified pipeline construction
+
+#### Monitoring and Telemetry
+
+The monitoring subsystem captures events from pipelines to enable telemetry, metrics collection, and troubleshooting:
+
+```
+┌───────────────────────────┐
+│                           │
+│      Pipeline Execution   │
+│                           │
+└───────────┬───────────────┘
+            │
+            │ generates
+            │ events
+            ▼
+┌───────────────────────────┐          ┌───────────────────┐
+│                           │          │                   │
+│     Monitoring Events     │─────────▶│  Console Monitor  │
+│                           │          │                   │
+└───────────┬───────────────┘          └───────────────────┘
+            │
+            │                          ┌───────────────────┐
+            │                          │                   │
+            └─────────────────────────▶│  Stats Monitor    │
+                                       │                   │
+                                       └───────────────────┘
+```
+
+Multiple monitors can be registered to handle events including:
+- Pipeline start/end
+- Success/failure events
+- Timing information
+- Error details
+- Resource utilization
+
+#### Usage Examples
+
+The Base Pipeline Framework can be used in various ways to build data processing components. Here are examples demonstrating key features:
+
+**Creating a Custom Pipeline**
+
+```python
+from src.pipelines.base_pipeline import BasePipeline, PipelineContext, PipelineResult, PipelineStatus
+import polars as pl
+
+class TeamStatsCalculator(BasePipeline):
+    """A pipeline that calculates team statistics."""
+    
+    def __init__(self, metric_type: str = "scoring"):
+        super().__init__()
+        self.metric_type = metric_type
+    
+    async def _validate(self, context: PipelineContext) -> bool:
+        """Validate that input data contains required columns."""
+        if "game_data" not in context.input_data:
+            return False
+            
+        df = context.input_data["game_data"]
+        required_cols = ["team_id", "points"]
+        
+        if self.metric_type == "efficiency":
+            # Also require possessions data
+            required_cols.append("possessions")
+            
+        return all(col in df.columns for col in required_cols)
+    
+    async def _execute(self, context: PipelineContext) -> PipelineResult:
+        """Calculate team statistics from game data."""
+        df = context.input_data["game_data"]
+        
+        # Group by team and calculate stats
+        if self.metric_type == "scoring":
+            result_df = df.group_by("team_id").agg(
+                pl.mean("points").alias("ppg")
+            )
+        elif self.metric_type == "efficiency":
+            result_df = df.group_by("team_id").agg(
+                pl.sum("points"),
+                pl.sum("possessions")
+            ).with_columns(
+                (pl.col("points") / pl.col("possessions") * 100).alias("off_efficiency")
+            )
+        
+        return PipelineResult(
+            status=PipelineStatus.SUCCESS,
+            output_data={"stats": result_df},
+            metadata={"metric_type": self.metric_type}
+        )
+    
+    async def _cleanup(self) -> None:
+        """No resources to clean up for this pipeline."""
+        pass
+```
+
+**Composing Multiple Pipelines**
+
+```python
+from src.pipelines.pipeline_composition import ComposedPipeline
+from src.pipelines.base_pipeline import PipelineContext
+
+# Create individual pipelines
+data_loader = DataLoaderPipeline(source="parquet")
+data_filter = DataFilterPipeline(min_games=20)
+stats_calculator = TeamStatsCalculator(metric_type="efficiency")
+
+# Compose them into a single pipeline
+analysis_pipeline = ComposedPipeline(
+    name="team_analysis",
+    pipelines=[data_loader, data_filter, stats_calculator]
+)
+
+# Execute the composed pipeline
+context = PipelineContext(params={"season": 2023})
+result = await analysis_pipeline.execute(context)
+
+# Get the output from the final stage
+team_stats = result.output_data["stats"]
+```
+
+**Using Dependency Injection**
+
+```python
+from src.pipelines.dependency_injection import injectable, Dependency
+from typing import Protocol
+
+# Define protocol for a dependency
+class DataStorage(Protocol):
+    async def save_data(self, df: pl.DataFrame, path: str) -> bool: ...
+
+# Create a pipeline with injectable dependencies
+class DataExportPipeline(BasePipeline):
+    @injectable
+    def __init__(self, storage: DataStorage):
+        super().__init__()
+        self.storage = storage
+    
+    async def _execute(self, context: PipelineContext) -> PipelineResult:
+        # Use the injected storage implementation
+        success = await self.storage.save_data(
+            context.input_data["data"],
+            context.params.get("output_path", "data/default.parquet")
+        )
+        return PipelineResult(
+            status=PipelineStatus.SUCCESS if success else PipelineStatus.FAILURE
+        )
+
+# Register implementations with the dependency registry
+Dependency.register(DataStorage, ParquetStorage())
+
+# Create pipeline without explicitly providing dependencies
+export_pipeline = DataExportPipeline()  # Storage will be injected automatically
+```
+
+**Adding Custom Monitoring**
+
+```python
+from src.pipelines.monitoring import PipelineMonitor, MonitoringEvent, register_monitor
+
+# Create a custom monitor 
+class PerformanceMonitor(PipelineMonitor):
+    async def record_event(self, event: MonitoringEvent) -> None:
+        if event.event_type == "pipeline_end":
+            execution_time = event.data.get("execution_time_ms", 0)
+            print(f"Pipeline {event.pipeline_name} took {execution_time}ms to execute")
+
+# Register the monitor
+register_monitor(PerformanceMonitor())
+
+# Now all pipeline executions will be monitored automatically
+```
+
+For complete working examples, see:
+- `examples/pipelines/simple_pipeline_example.py` - Basic pipeline implementation
+- `examples/pipelines/pipeline_composition_example.py` - Pipeline composition
+- `examples/pipelines/dependency_injection_example.py` - Dependency injection
+- `examples/pipelines/monitoring_example.py` - Monitoring and telemetry
+
+For configuration options and environment variables, see:
+- [Pipeline Framework](components/pipeline_framework.md) - Detailed configuration options
+
+### Pipeline Components
 
 All pipelines inherit from a common `BasePipeline` class that provides:
 
