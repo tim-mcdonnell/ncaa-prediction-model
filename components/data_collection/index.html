@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Documentation for data collection, processing, and storage">
+        <meta name="description" content="Machine learning model to predict NCAA men's basketball game outcomes">
       
       
         <meta name="author" content="Your Name">
@@ -15,19 +15,19 @@
       
       
       
-      <link rel="icon" href="../assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.7">
     
     
       
-        <title>Data Documentation - NCAA Basketball Prediction Model</title>
+        <title>Data Collection - NCAA Basketball Prediction Model</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.8608ea7d.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8608ea7d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -46,9 +46,9 @@
       
     
     
-      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#data-documentation" class="md-skip">
+        <a href="#data-collection" class="md-skip">
           Skip to content
         </a>
       
@@ -90,7 +90,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="NCAA Basketball Prediction Model" class="md-header__button md-logo" aria-label="NCAA Basketball Prediction Model" data-md-component="logo">
+    <a href="../.." title="NCAA Basketball Prediction Model" class="md-header__button md-logo" aria-label="NCAA Basketball Prediction Model" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Data Documentation
+              Data Collection
             
           </span>
         </div>
@@ -225,7 +225,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="NCAA Basketball Prediction Model" class="md-nav__button md-logo" aria-label="NCAA Basketball Prediction Model" data-md-component="logo">
+    <a href="../.." title="NCAA Basketball Prediction Model" class="md-nav__button md-logo" aria-label="NCAA Basketball Prediction Model" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -255,7 +255,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -279,8 +279,6 @@
     
       
         
-          
-        
       
         
       
@@ -298,10 +296,8 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../overview/" class="md-nav__link ">
-              
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
   
   <span class="md-ellipsis">
     Project Overview
@@ -309,14 +305,8 @@
   </span>
   
 
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
+            <span class="md-nav__icon md-icon"></span>
+          </label>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
@@ -326,6 +316,26 @@
           <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../overview/index.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -334,7 +344,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../overview/architecture/" class="md-nav__link">
+      <a href="../../overview/architecture.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -356,7 +366,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../overview/tech-stack/" class="md-nav__link">
+      <a href="../../overview/tech-stack.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -431,6 +441,8 @@
       
         
       
+        
+      
     
     
     
@@ -469,16 +481,184 @@
   
   
     <li class="md-nav__item">
-      <a href="collection/espn-api-integration/" class="md-nav__link">
+      <a href="../../data/collection/index.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    ESPN API Integration
+    Overview
     
   </span>
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_1_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_1_2" id="__nav_3_1_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    ESPN API
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_2">
+            <span class="md-nav__icon md-icon"></span>
+            ESPN API
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data/collection/espn/index.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data/collection/espn/client-usage-guide.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Usage Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data/collection/espn/client-reference.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Technical Reference
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data/collection/espn/testing-guide.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Testing Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data/collection/espn/api-reference.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -566,7 +746,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/setup.md" class="md-nav__link">
+      <a href="../../development/setup/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -588,7 +768,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/contributing.md" class="md-nav__link">
+      <a href="../../development/contributing.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -610,7 +790,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/code-standards/" class="md-nav__link">
+      <a href="../../development/code-standards.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -632,7 +812,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/project-structure/" class="md-nav__link">
+      <a href="../../development/project-structure.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -654,7 +834,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/pipeline-architecture/" class="md-nav__link">
+      <a href="../../development/pipeline-architecture.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -676,7 +856,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/modularity-guidelines/" class="md-nav__link">
+      <a href="../../development/modularity-guidelines.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -698,7 +878,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/implementation-plan/" class="md-nav__link">
+      <a href="../../development/implementation-plan.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -720,7 +900,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/test-strategy/" class="md-nav__link">
+      <a href="../../development/test-strategy.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -742,7 +922,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/ai-coding-agent-guide/" class="md-nav__link">
+      <a href="../../development/ai-coding-agent-guide/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -792,7 +972,7 @@
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../development/examples/" class="md-nav__link ">
+            <a href="../../development/examples/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -826,7 +1006,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/examples/milestone_example/" class="md-nav__link">
+      <a href="../../development/examples/milestone_example/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -848,7 +1028,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/examples/task_example/" class="md-nav__link">
+      <a href="../../development/examples/task_example/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -870,7 +1050,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/examples/issue_example/" class="md-nav__link">
+      <a href="../../development/examples/issue_example/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -892,7 +1072,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/examples/pr_example/" class="md-nav__link">
+      <a href="../../development/examples/pr_example/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -928,25 +1108,9 @@
   
   
   
-    
-    
-      
+    <li class="md-nav__item">
+      <a href="../../reference" class="md-nav__link">
         
-      
-    
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
-            
   
   <span class="md-ellipsis">
     API Reference
@@ -954,41 +1118,7 @@
   </span>
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
-            <span class="md-nav__icon md-icon"></span>
-            API Reference
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../reference/SUMMARY/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    SUMMARY
-    
-  </span>
-  
-
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -1020,18 +1150,54 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#structure" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
-      Structure
+      Overview
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
+  <a href="#responsibilities" class="md-nav__link">
     <span class="md-ellipsis">
-      Overview
+      Responsibilities
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Key Classes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage Examples
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Flow
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuration
     </span>
   </a>
   
@@ -1056,25 +1222,56 @@
   
 
 
-<h1 id="data-documentation">Data Documentation</h1>
-<p>This section contains documentation related to data collection, processing, and storage for the NCAA Basketball Prediction Model.</p>
-<h2 id="structure">Structure</h2>
-<ul>
-<li><strong>Collection</strong>: Documentation related to data collection from various sources</li>
-<li><a href="collection/espn-api-integration/">ESPN API Integration</a>: Details about ESPN API endpoints for NCAA basketball data</li>
-</ul>
+<h1 id="data-collection">Data Collection</h1>
 <h2 id="overview">Overview</h2>
-<p>The NCAA Basketball Prediction Model uses a Parquet-first approach for data storage, with well-defined pipelines for collecting, processing, and analyzing the data. The collection pipeline is responsible for gathering raw data from various sources, which is then transformed by the processing pipeline into a standardized format suitable for feature engineering and model training.</p>
-<p>All data flows through these sequential pipelines, ensuring consistency and reliability in the data processing workflow. </p>
+<p>The data collection component retrieves NCAA basketball data from ESPN APIs
+and stores it in Parquet format for further processing.</p>
+<h2 id="responsibilities">Responsibilities</h2>
+<ul>
+<li>Fetch game data from ESPN endpoints</li>
+<li>Handle rate limiting and retries</li>
+<li>Convert API responses to standardized DataFrame format</li>
+<li>Store raw data in Parquet files</li>
+<li>Support incremental updates for new/changed games</li>
+</ul>
+<h2 id="key-classes">Key Classes</h2>
+<ul>
+<li><code>ESPNClient</code>: Handles API communication with ESPN</li>
+<li><code>CollectionPipeline</code>: Orchestrates the data collection process</li>
+<li><code>ParquetIO</code>: Manages reading/writing Parquet files</li>
+</ul>
+<h2 id="usage-examples">Usage Examples</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Collect all games for the current season</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">src.pipelines</span><span class="w"> </span><span class="kn">import</span> <span class="n">CollectionPipeline</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">pipeline</span> <span class="o">=</span> <span class="n">CollectionPipeline</span><span class="p">()</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">season</span><span class="o">=</span><span class="mi">2023</span><span class="p">)</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># Collect specific games</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">season</span><span class="o">=</span><span class="mi">2023</span><span class="p">,</span> <span class="n">game_ids</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;401468511&quot;</span><span class="p">,</span> <span class="s2">&quot;401468512&quot;</span><span class="p">])</span>
+</code></pre></div>
+<h2 id="data-flow">Data Flow</h2>
+<ol>
+<li><code>ESPNClient</code> fetches data from ESPN endpoints</li>
+<li>Data is converted to standardized DataFrame format</li>
+<li><code>ParquetIO</code> writes data to Parquet files in <code>data/raw/{season}/</code></li>
+<li>Metadata is updated to track collected games</li>
+</ol>
+<h2 id="configuration">Configuration</h2>
+<p>Collection behavior can be configured in <code>configs/collection.toml</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">[espn]</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">base_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball&quot;</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">rate_limit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="w">  </span><span class="c1"># requests per minute</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">[storage]</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">data_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;data/&quot;</span>
+</code></pre></div>
 
 
 
 
 
 
-
-  
-  
 
 
 
@@ -1123,10 +1320,10 @@
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.indexes", "navigation.top", "toc.follow", "search.suggest", "search.highlight", "content.tabs.link", "content.code.copy"], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.indexes", "navigation.top", "toc.follow", "search.suggest", "search.highlight", "content.tabs.link", "content.code.copy"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.c8b220af.min.js"></script>
+      <script src="../../assets/javascripts/bundle.c8b220af.min.js"></script>
       
     
   </body>
