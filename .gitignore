@@ -55,6 +55,7 @@ yarn-error.log*
 
 # Documentation
 site/
+docs/reference/
 
 # Ruff
 .ruff_cache/
