@@ -34,19 +34,15 @@ For detailed information on each milestone, see the [GitHub milestones page](htt
 
 ## Documentation
 
-This documentation site provides:
-
-- Detailed project overview and architecture
-- Milestone documentation with implementation details
-- Development guides and code standards
-- API reference for the codebase
+This documentation site provides comprehensive information about the project, organized into these sections:
 
 ### Documentation Sections
 
-- [**Project Overview**](overview/index.md) - High-level project description and goals
-- [**Architecture Documentation**](development/pipeline-architecture.md) - System design and architectural decisions
-- [**Development Guides**](development/index.md) - Guidelines for contributing to the project
-- [**API Reference**](reference/index.md) - API documentation for the codebase
+- [**Architecture**](architecture.md) - System design and component overview
+- [**Development Guides**](development/setup.md) - Setup, workflow, and contribution guidelines
+- [**Components**](components/data_collection.md) - Documentation for major system components
+- [**How-to Guides**](guides/adding_features.md) - Task-oriented guides for common operations
+- [**API Reference**](reference/index.md) - Generated API documentation for the codebase
 
 ## Getting Started
 
@@ -54,11 +50,36 @@ To get started with the project:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/ncaa-prediction-model.git
+git clone https://github.com/tim-mcdonnell/ncaa-prediction-model.git
 cd ncaa-prediction-model
 
 # Create a virtual environment and install dependencies
 uv venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 uv pip install -e ".[dev]"
-``` 
+```
+
+For detailed setup instructions, see the [Development Setup Guide](development/setup.md).
+
+## Development Approach
+
+We follow a Test-Driven Development (TDD) approach with these core principles:
+
+1. **Tests First**: Write tests before implementing functionality to define expected behavior
+2. **Minimal Implementation**: Write only enough code to pass the current tests
+3. **Continuous Refactoring**: Improve code design after tests pass without changing behavior
+4. **Documentation Alongside**: Document code and designs as part of the development cycle
+
+For more details on our development workflow, see the [Development Workflow Guide](development/workflow.md).
+
+## System Architecture
+
+The system uses a pipeline architecture with modular components:
+
+```
+Collection Pipeline → Processing Pipeline → Feature Pipeline → Prediction Pipeline
+                                                     ↓
+                                          Daily Update Pipeline
+```
+
+For more details on the system architecture, see the [Architecture Documentation](architecture.md). 
