@@ -33,7 +33,7 @@ ENV/
 .DS_Store
 
 # Data directories
-data/
+/data/
 tmp/
 logs/
 
@@ -59,9 +59,6 @@ logs/
 htmlcov/
 coverage.xml
 .pytest_cache/
-
-# Diagnostic directory
-data/diagnostic/
 
 # Data files
 # Uncomment if you want to ignore all data files

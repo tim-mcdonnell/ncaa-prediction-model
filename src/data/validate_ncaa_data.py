@@ -6,6 +6,7 @@ This script performs basic validation and generates a quality report
 for collected NCAA basketball data.
 """
 
+import argparse
 import json
 import logging
 from pathlib import Path
@@ -21,8 +22,27 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Define input/output paths
-INPUT_FILE = "data/targeted_collection/all_games.parquet"
-OUTPUT_DIR = "data/targeted_collection/validated"
+DATA_DIR = "data"
+SEASONS_DIR = f"{DATA_DIR}/seasons"
+OUTPUT_DIR = f"{DATA_DIR}/validated"
+
+
+def parse_args():
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(description="Validate NCAA basketball data")
+    parser.add_argument(
+        "--season",
+        type=int,
+        default=None,
+        help="Specific season to validate (e.g., 2023 for 2023-24 season)"
+    )
+    parser.add_argument(
+        "--output",
+        action="store_true",
+        help="Save validation report to output directory"
+    )
+    
+    return parser.parse_args()
 
 
 def validate_data(df):
@@ -48,166 +68,232 @@ def validate_data(df):
     invalid_away_scores = df.filter(pl.col("away_score") < 0).height
     
     # Check for empty strings in text fields
-    empty_counts = {}
-    for col in ["name", "home_team_name", "away_team_name", "status"]:
-        if col in df.columns:
-            empty_count = df.filter(pl.col(col) == "").height
-            if empty_count > 0:
-                empty_counts[col] = empty_count
+    empty_strings = {}
+    for col in df.select(pl.col(pl.Utf8)).columns:
+        empty_count = df.filter(pl.col(col) == "").height
+        if empty_count > 0:
+            empty_strings[col] = empty_count
     
-    # Prepare validation report
-    validation_report = {
-        "total_records": df.height,
+    # Check for duplicate game IDs
+    total_rows = df.height
+    unique_ids = df.select("id").unique().height
+    duplicate_count = total_rows - unique_ids
+    
+    # Check for data completeness
+    completed_games = df.filter(pl.col("status") == "STATUS_FINAL").height
+    incomplete_games = total_rows - completed_games
+    
+    # Validation results
+    validation_results = {
+        "total_games": total_rows,
         "missing_columns": missing_columns,
-        "null_counts": null_counts,
-        "empty_counts": empty_counts,
+        "null_values": null_counts,
         "invalid_scores": {
-            "home_score": invalid_home_scores,
-            "away_score": invalid_away_scores
+            "home_score_negative": invalid_home_scores,
+            "away_score_negative": invalid_away_scores
         },
-        "is_valid": (
-            len(missing_columns) == 0 and
-            sum(null_counts.values()) == 0 and
-            invalid_home_scores == 0 and
-            invalid_away_scores == 0
-        )
+        "empty_strings": empty_strings,
+        "duplicate_ids": duplicate_count,
+        "game_status": {
+            "completed": completed_games,
+            "incomplete": incomplete_games
+        }
     }
     
-    return validation_report
+    return validation_results
 
 
 def generate_quality_report(df):
-    """Generate a quality report for the data."""
-    # Basic statistics
+    """Generate a data quality report for the games data."""
+    # Get basic statistics
     total_games = df.height
-    unique_teams = len(
-        set(df["home_team_id"].to_list() + df["away_team_id"].to_list())
-    )
     
-    # Date range
-    min_date = df["date"].min()
-    max_date = df["date"].max()
+    # Calculate date range
+    if "date" in df.columns:
+        date_col = df.select("date").to_series()
+        date_strings = [str(d).split("T")[0] for d in date_col]
+        earliest_date = min(date_strings)
+        latest_date = max(date_strings)
+    else:
+        earliest_date = "unknown"
+        latest_date = "unknown"
     
-    # Score statistics
-    avg_home_score = df["home_score"].mean()
-    avg_away_score = df["away_score"].mean()
-    max_score = max(df["home_score"].max(), df["away_score"].max())
-    min_score = min(df["home_score"].min(), df["away_score"].min())
+    # Count unique teams
+    if all(col in df.columns for col in ["home_team_id", "away_team_id"]):
+        home_teams = set(df["home_team_id"].to_list())
+        away_teams = set(df["away_team_id"].to_list())
+        unique_teams = len(home_teams.union(away_teams))
+        teams_as_home = len(home_teams)
+        teams_as_away = len(away_teams)
+        teams_both = len(home_teams.intersection(away_teams))
+    else:
+        unique_teams = "unknown"
+        teams_as_home = "unknown"
+        teams_as_away = "unknown"
+        teams_both = "unknown"
     
-    # Game status
-    status_counts = df.group_by("status").agg(pl.len()).sort("len", descending=True)
-    status_dict = {row["status"]: row["len"] for row in status_counts.to_dicts()}
-    
-    # Column statistics
-    column_stats = []
-    for col in df.columns:
-        col_type = str(df[col].dtype)
-        null_count = df.filter(pl.col(col).is_null()).height
-        unique_count = df[col].n_unique()
+    # Calculate scoring statistics
+    score_stats = {}
+    if "home_score" in df.columns and "away_score" in df.columns:
+        home_scores = df.select("home_score").to_series()
+        away_scores = df.select("away_score").to_series()
         
-        col_stat = {
-            "column": col,
-            "dtype": col_type,
-            "null_count": null_count,
-            "unique_count": unique_count
-        }
-        
-        # Add numeric stats for numeric columns
-        if col in ["home_score", "away_score"]:
-            col_stat.update({
-                "min": float(df[col].min()),
-                "max": float(df[col].max()),
-                "mean": float(df[col].mean()),
-                "median": float(df[col].median())
-            })
-        
-        column_stats.append(col_stat)
+        # Calculate point differentials for completed games
+        completed = df.filter(pl.col("status") == "STATUS_FINAL")
+        if completed.height > 0:
+            differentials = abs(completed["home_score"] - completed["away_score"])
+            score_stats = {
+                "avg_home_score": round(float(home_scores.mean()), 2),
+                "avg_away_score": round(float(away_scores.mean()), 2),
+                "max_home_score": int(home_scores.max()),
+                "max_away_score": int(away_scores.max()),
+                "min_home_score": int(home_scores.min()),
+                "min_away_score": int(away_scores.min()),
+                "avg_point_differential": round(float(differentials.mean()), 2),
+                "max_point_differential": int(differentials.max())
+            }
     
-    # Prepare quality report
-    quality_report = {
-        "overall_stats": {
+    # Generate the report
+    report = {
+        "basic_stats": {
             "total_games": total_games,
+            "date_range": f"{earliest_date} to {latest_date}",
             "unique_teams": unique_teams,
-            "date_range": f"{min_date} to {max_date}",
-            "score_range": f"{min_score} to {max_score}",
-            "avg_home_score": float(avg_home_score),
-            "avg_away_score": float(avg_away_score)
+            "teams_as_home": teams_as_home,
+            "teams_as_away": teams_as_away,
+            "teams_both_home_and_away": teams_both,
         },
-        "status_counts": status_dict,
-        "column_stats": column_stats
+        "score_stats": score_stats,
+        "validation": validate_data(df)
     }
     
-    return quality_report
+    return report
+
+
+def validate_season_data(season):
+    """Validate data for a specific season."""
+    # Check if season data exists
+    season_dir = Path(SEASONS_DIR) / str(season)
+    games_path = season_dir / "games.parquet"
+    teams_path = season_dir / "teams.parquet"
+    game_details_path = season_dir / "game_details.parquet"
+    
+    if not games_path.exists():
+        logger.error(f"Games data not found for season {season}")
+        return None
+    
+    # Load and validate games data
+    logger.info(f"Validating games data for season {season}")
+    games_df = pl.read_parquet(games_path)
+    
+    games_report = generate_quality_report(games_df)
+    games_report["file_path"] = str(games_path)
+    games_report["season"] = season
+    
+    # Add teams data validation if available
+    if teams_path.exists():
+        logger.info(f"Validating teams data for season {season}")
+        teams_df = pl.read_parquet(teams_path)
+        
+        teams_report = {
+            "total_teams": teams_df.height,
+            "file_path": str(teams_path)
+        }
+        games_report["teams_data"] = teams_report
+    
+    # Add game details data validation if available
+    if game_details_path.exists():
+        logger.info(f"Validating game details data for season {season}")
+        details_df = pl.read_parquet(game_details_path)
+        
+        details_report = {
+            "total_game_details": details_df.height,
+            "columns": details_df.columns,
+            "file_path": str(game_details_path)
+        }
+        
+        # Check if we have shooting statistics
+        shooting_cols = [
+            col for col in details_df.columns 
+            if 'fg' in col.lower() or 'ft' in col.lower()
+        ]
+        if shooting_cols:
+            details_report["has_shooting_stats"] = True
+            details_report["shooting_columns"] = shooting_cols
+        
+        games_report["game_details_data"] = details_report
+    
+    return games_report
 
 
 def main():
-    """Main function to validate collected data."""
-    logger.info("Starting data validation")
+    """Main function to validate NCAA basketball data."""
+    args = parse_args()
     
-    # Create output directory
-    output_dir = Path(OUTPUT_DIR)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    # Ensure output directory exists if needed
+    if args.output:
+        Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
     
-    # Load collected data
-    logger.info(f"Loading data from {INPUT_FILE}")
-    df = pl.read_parquet(INPUT_FILE)
-    logger.info(f"Loaded {len(df)} games")
-    
-    # 1. Validate data
-    logger.info("Validating data")
-    validation_report = validate_data(df)
-    
-    # Save validation report
-    validation_report_path = output_dir / "validation_report.json"
-    with open(validation_report_path, "w") as f:
-        json.dump(validation_report, f, indent=2)
-    
-    logger.info(f"Validation result: {validation_report['is_valid']}")
-    
-    # 2. Generate quality report
-    logger.info("Generating quality report")
-    quality_report = generate_quality_report(df)
-    
-    # Save quality report
-    quality_report_path = output_dir / "quality_report.json"
-    with open(quality_report_path, "w") as f:
-        json.dump(quality_report, f, indent=2)
-    
-    # 3. Save cleaned data (just a copy for now)
-    logger.info("Saving cleaned data")
-    cleaned_file = output_dir / "cleaned_games.parquet"
-    df.write_parquet(cleaned_file)
-    
-    # 4. Print summary
-    print("\nData Validation Summary:")
-    print(f"Total games: {df.height}")
-    print(f"Valid: {validation_report['is_valid']}")
-    
-    if validation_report["missing_columns"]:
-        print(f"Missing columns: {validation_report['missing_columns']}")
-    
-    if validation_report["null_counts"]:
-        print("\nNull values:")
-        for col, count in validation_report["null_counts"].items():
-            print(f"- {col}: {count} nulls")
-    
-    if validation_report["empty_counts"]:
-        print("\nEmpty strings:")
-        for col, count in validation_report["empty_counts"].items():
-            print(f"- {col}: {count} empty values")
-    
-    print("\nData Quality Summary:")
-    print(f"Date range: {quality_report['overall_stats']['date_range']}")
-    print(f"Unique teams: {quality_report['overall_stats']['unique_teams']}")
-    print(f"Score range: {quality_report['overall_stats']['score_range']}")
-    print(f"Average scores: Home {quality_report['overall_stats']['avg_home_score']:.1f}, " +
-          f"Away {quality_report['overall_stats']['avg_away_score']:.1f}")
-    
-    print("\nGame statuses:")
-    for status, count in quality_report["status_counts"].items():
-        print(f"- {status}: {count} games")
-    
-    print(f"\nValidation reports saved to: {OUTPUT_DIR}")
+    if args.season:
+        # Validate specific season
+        logger.info(f"Validating data for season {args.season}")
+        report = validate_season_data(args.season)
+        
+        # Save or display report
+        if args.output and report:
+            output_file = Path(OUTPUT_DIR) / (
+                f"validation_report_season_{args.season}.json"
+            )
+            with open(output_file, "w") as f:
+                json.dump(report, f, indent=2)
+            logger.info(f"Saved validation report to {output_file}")
+    else:
+        # Validate all available seasons
+        logger.info("Validating data for all available seasons")
+        
+        # Find all season directories
+        season_dirs = list(Path(SEASONS_DIR).glob("*"))
+        
+        if not season_dirs:
+            logger.error(f"No season data found in {SEASONS_DIR}")
+            return
+        
+        # Validate each season
+        all_reports = {}
+        for season_dir in season_dirs:
+            if not season_dir.is_dir():
+                continue
+                
+            season = season_dir.name
+            logger.info(f"Processing season {season}")
+            
+            report = validate_season_data(season)
+            if report:
+                all_reports[season] = report
+        
+        # Save combined report if requested
+        if args.output and all_reports:
+            output_file = Path(OUTPUT_DIR) / "validation_report_all_seasons.json"
+            with open(output_file, "w") as f:
+                json.dump(all_reports, f, indent=2)
+            logger.info(f"Saved validation report for all seasons to {output_file}")
+            
+            # Print summary
+            print("\nValidation Summary:")
+            for season, report in all_reports.items():
+                total_games = report["basic_stats"]["total_games"]
+                validation = report["validation"]
+                
+                # Check for serious issues
+                issues = len(validation["missing_columns"])
+                issues += sum(validation["null_values"].values())
+                issues += sum(validation["invalid_scores"].values())
+                
+                status = "🟢 Good" 
+                if issues > 0:
+                    status = "🟠 Issues Found" if issues < 10 else "🔴 Serious Issues"
+                
+                print(f"Season {season}: {status} ({total_games} games)")
 
 
 if __name__ == "__main__":

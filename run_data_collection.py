@@ -26,9 +26,8 @@ logger = logging.getLogger(__name__)
 def setup_directories():
     """Create necessary directories for data collection."""
     directories = [
-        "data/raw",
-        "data/targeted_collection",
-        "data/targeted_collection/validated",
+        "data/seasons",
+        "data/validated",
         "logs"
     ]
     
