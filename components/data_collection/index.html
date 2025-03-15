@@ -826,9 +826,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#key-classes" class="md-nav__link">
+  <a href="#key-classes-and-functions" class="md-nav__link">
     <span class="md-ellipsis">
-      Key Classes
+      Key Classes and Functions
     </span>
   </a>
   
@@ -840,6 +840,39 @@
       Usage Examples
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Usage Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#collecting-season-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Collecting Season Data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#command-line-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Command Line Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#accessing-the-collected-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Accessing the Collected Data
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -853,13 +886,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#data-structure" class="md-nav__link">
+  <a href="#data-storage-structure" class="md-nav__link">
     <span class="md-ellipsis">
-      Data Structure
+      Data Storage Structure
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Data Structure">
+    <nav class="md-nav" aria-label="Data Storage Structure">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -895,9 +928,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
+  <a href="#debug-mode" class="md-nav__link">
     <span class="md-ellipsis">
-      Configuration
+      Debug Mode
     </span>
   </a>
   
@@ -913,18 +946,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#error-handling" class="md-nav__link">
+  <a href="#command-line-arguments" class="md-nav__link">
     <span class="md-ellipsis">
-      Error Handling
+      Command Line Arguments
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#dependencies" class="md-nav__link">
+  <a href="#validation" class="md-nav__link">
     <span class="md-ellipsis">
-      Dependencies
+      Validation
     </span>
   </a>
   
@@ -1151,9 +1184,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#key-classes" class="md-nav__link">
+  <a href="#key-classes-and-functions" class="md-nav__link">
     <span class="md-ellipsis">
-      Key Classes
+      Key Classes and Functions
     </span>
   </a>
   
@@ -1165,6 +1198,39 @@
       Usage Examples
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Usage Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#collecting-season-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Collecting Season Data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#command-line-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Command Line Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#accessing-the-collected-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Accessing the Collected Data
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1178,13 +1244,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#data-structure" class="md-nav__link">
+  <a href="#data-storage-structure" class="md-nav__link">
     <span class="md-ellipsis">
-      Data Structure
+      Data Storage Structure
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Data Structure">
+    <nav class="md-nav" aria-label="Data Storage Structure">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1220,9 +1286,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
+  <a href="#debug-mode" class="md-nav__link">
     <span class="md-ellipsis">
-      Configuration
+      Debug Mode
     </span>
   </a>
   
@@ -1238,18 +1304,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#error-handling" class="md-nav__link">
+  <a href="#command-line-arguments" class="md-nav__link">
     <span class="md-ellipsis">
-      Error Handling
+      Command Line Arguments
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#dependencies" class="md-nav__link">
+  <a href="#validation" class="md-nav__link">
     <span class="md-ellipsis">
-      Dependencies
+      Validation
     </span>
   </a>
   
@@ -1278,111 +1344,219 @@
 <h2 id="overview">Overview</h2>
 <p>The data collection component retrieves NCAA basketball data from ESPN APIs
 and stores it in Parquet format for further processing. It supports both full season
-collection and incremental updates, with configurable rate limiting to respect ESPN's API constraints.</p>
+collection and incremental updates, with configurable rate limiting to respect ESPN's API constraints.
+The data is consolidated into season-based files to improve storage efficiency and access performance.</p>
 <h2 id="responsibilities">Responsibilities</h2>
 <ul>
 <li>Fetch game data, team information, and game details from ESPN endpoints</li>
 <li>Handle rate limiting and retries for API requests</li>
 <li>Process and transform API responses to standardized DataFrame format</li>
-<li>Store organized data in Parquet files with a consistent directory structure</li>
+<li>Store organized data in consolidated season-based Parquet files</li>
 <li>Support incremental updates to efficiently collect only new or changed data</li>
+<li>Provide debug mode for storing raw API responses for troubleshooting</li>
 <li>Provide comprehensive error handling and logging</li>
 </ul>
-<h2 id="key-classes">Key Classes</h2>
+<h2 id="key-classes-and-functions">Key Classes and Functions</h2>
 <ul>
 <li><code>ESPNClient</code>: Handles API communication with ESPN, including endpoints for scoreboard, team, and game summary data</li>
-<li><code>CollectionPipeline</code>: Orchestrates the entire data collection process, including game, team, and detailed statistics collection</li>
-<li><code>PipelineContext</code>: Provides execution context with parameters for the pipeline</li>
-<li><code>PipelineResult</code>: Contains results and metadata from pipeline execution</li>
+<li><code>collect_date_range</code>: Collects data for a range of dates and consolidates it into season files</li>
+<li><code>collect_seasons</code>: Orchestrates data collection for multiple seasons</li>
+<li><code>fetch_scoreboard</code>: Fetches and optionally stores raw API responses when in debug mode</li>
+<li><code>extract_game_data</code>: Transforms API responses into structured game data</li>
 </ul>
 <h2 id="usage-examples">Usage Examples</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Collect all games for a specific season (full mode)</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">src.pipelines.collection_pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">CollectionPipeline</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Initialize the pipeline with default settings</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">pipeline</span> <span class="o">=</span> <span class="n">CollectionPipeline</span><span class="p">(</span><span class="n">data_dir</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># Collect a complete season</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">collect_season_games</span><span class="p">(</span><span class="n">season</span><span class="o">=</span><span class="mi">2023</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># Check if collection was successful</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">PipelineStatus</span><span class="o">.</span><span class="n">SUCCESS</span><span class="p">:</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Collected </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;games_count&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> games&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Collection failed: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="c1"># Perform an incremental update for the current season</span>
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">collect_season_games</span><span class="p">(</span><span class="n">season</span><span class="o">=</span><span class="mi">2023</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;incremental&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="c1"># Collect multiple seasons at once</span>
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">collect_all_seasons</span><span class="p">(</span><span class="n">start_year</span><span class="o">=</span><span class="mi">2020</span><span class="p">,</span> <span class="n">end_year</span><span class="o">=</span><span class="mi">2023</span><span class="p">)</span>
+<h3 id="collecting-season-data">Collecting Season Data</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Collect data for a specific season range</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">src.data.collect_ncaa_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">collect_seasons</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Collect the 2022-23 season</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">seasons</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">collect_seasons</span><span class="p">(</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">start_year</span><span class="o">=</span><span class="mi">2022</span><span class="p">,</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">end_year</span><span class="o">=</span><span class="mi">2022</span><span class="p">,</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">rate_limit</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">max_retries</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="n">incremental</span><span class="o">=</span><span class="kc">False</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="p">))</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="c1"># Incremental update for the current season</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="n">seasons</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">collect_seasons</span><span class="p">(</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    <span class="n">start_year</span><span class="o">=</span><span class="mi">2023</span><span class="p">,</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    <span class="n">end_year</span><span class="o">=</span><span class="mi">2023</span><span class="p">,</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    <span class="n">rate_limit</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    <span class="n">max_retries</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    <span class="n">incremental</span><span class="o">=</span><span class="kc">True</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="p">))</span>
+</code></pre></div>
+<h3 id="command-line-usage">Command Line Usage</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Collect a specific season</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>python<span class="w"> </span>-m<span class="w"> </span>src.data.collect_ncaa_data<span class="w"> </span>--start-year<span class="o">=</span><span class="m">2022</span><span class="w"> </span>--end-year<span class="o">=</span><span class="m">2022</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Collect with debug mode enabled (saves raw responses to tmp directory)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>python<span class="w"> </span>-m<span class="w"> </span>src.data.collect_ncaa_data<span class="w"> </span>--start-year<span class="o">=</span><span class="m">2023</span><span class="w"> </span>--end-year<span class="o">=</span><span class="m">2023</span><span class="w"> </span>--debug
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># Perform incremental update of the current season</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>python<span class="w"> </span>-m<span class="w"> </span>src.data.collect_ncaa_data<span class="w"> </span>--start-year<span class="o">=</span><span class="m">2023</span><span class="w"> </span>--end-year<span class="o">=</span><span class="m">2023</span><span class="w"> </span>--incremental
+</code></pre></div>
+<h3 id="accessing-the-collected-data">Accessing the Collected Data</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Reading the consolidated season data</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># Load games for a specific season</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">season</span> <span class="o">=</span> <span class="mi">2023</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">games_df</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;data/seasons/</span><span class="si">{</span><span class="n">season</span><span class="si">}</span><span class="s2">/games.parquet&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># Load team data for a specific season</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">teams_df</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;data/seasons/</span><span class="si">{</span><span class="n">season</span><span class="si">}</span><span class="s2">/teams.parquet&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="c1"># Load game details for a specific season</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="n">details_df</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;data/seasons/</span><span class="si">{</span><span class="n">season</span><span class="si">}</span><span class="s2">/game_details.parquet&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="c1"># Filter games for a specific team</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="n">team_id</span> <span class="o">=</span> <span class="s2">&quot;120&quot;</span>  <span class="c1"># Example team ID</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="n">team_games</span> <span class="o">=</span> <span class="n">games_df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;home_team_id&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">team_id</span><span class="p">)</span> <span class="o">|</span> 
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>    <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;away_team_id&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">team_id</span><span class="p">)</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="p">)</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="c1"># Get games within a date range</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="n">start_date</span> <span class="o">=</span> <span class="s2">&quot;2023-01-01&quot;</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="n">end_date</span> <span class="o">=</span> <span class="s2">&quot;2023-01-31&quot;</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="n">date_filtered_games</span> <span class="o">=</span> <span class="n">games_df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>    <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">start_date</span><span class="p">)</span> <span class="o">&amp;</span> 
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>    <span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">end_date</span><span class="p">)</span>
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="p">)</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a><span class="c1"># Join games with their detailed statistics</span>
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a><span class="n">games_with_details</span> <span class="o">=</span> <span class="n">games_df</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>    <span class="n">details_df</span><span class="p">,</span>
+<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>    <span class="n">on</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a>    <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span>
+<a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a><span class="p">)</span>
+<a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a>
+<a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a><span class="c1"># Analyze shooting percentages for home teams</span>
+<a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a><span class="n">shooting_stats</span> <span class="o">=</span> <span class="n">details_df</span><span class="o">.</span><span class="n">select</span><span class="p">([</span>
+<a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a>    <span class="s2">&quot;id&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a>    <span class="s2">&quot;home_team_id&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a>    <span class="s2">&quot;home_field_goal_pct&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-42" name="__codelineno-2-42" href="#__codelineno-2-42"></a>    <span class="s2">&quot;home_three_point_pct&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-43" name="__codelineno-2-43" href="#__codelineno-2-43"></a>    <span class="s2">&quot;home_free_throw_pct&quot;</span>
+<a id="__codelineno-2-44" name="__codelineno-2-44" href="#__codelineno-2-44"></a><span class="p">])</span>
+<a id="__codelineno-2-45" name="__codelineno-2-45" href="#__codelineno-2-45"></a>
+<a id="__codelineno-2-46" name="__codelineno-2-46" href="#__codelineno-2-46"></a><span class="c1"># Get average statistics for a team&#39;s home games</span>
+<a id="__codelineno-2-47" name="__codelineno-2-47" href="#__codelineno-2-47"></a><span class="n">team_home_stats</span> <span class="o">=</span> <span class="n">details_df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+<a id="__codelineno-2-48" name="__codelineno-2-48" href="#__codelineno-2-48"></a>    <span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;home_team_id&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">team_id</span>
+<a id="__codelineno-2-49" name="__codelineno-2-49" href="#__codelineno-2-49"></a><span class="p">)</span><span class="o">.</span><span class="n">select</span><span class="p">([</span>
+<a id="__codelineno-2-50" name="__codelineno-2-50" href="#__codelineno-2-50"></a>    <span class="n">pl</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;home_field_goal_pct&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;avg_fg_pct&quot;</span><span class="p">),</span>
+<a id="__codelineno-2-51" name="__codelineno-2-51" href="#__codelineno-2-51"></a>    <span class="n">pl</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;home_three_point_pct&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;avg_3pt_pct&quot;</span><span class="p">),</span>
+<a id="__codelineno-2-52" name="__codelineno-2-52" href="#__codelineno-2-52"></a>    <span class="n">pl</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;home_free_throw_pct&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;avg_ft_pct&quot;</span><span class="p">),</span>
+<a id="__codelineno-2-53" name="__codelineno-2-53" href="#__codelineno-2-53"></a>    <span class="n">pl</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;home_rebounds&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;avg_rebounds&quot;</span><span class="p">),</span>
+<a id="__codelineno-2-54" name="__codelineno-2-54" href="#__codelineno-2-54"></a>    <span class="n">pl</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;home_assists&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;avg_assists&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-55" name="__codelineno-2-55" href="#__codelineno-2-55"></a><span class="p">])</span>
 </code></pre></div>
 <h2 id="data-flow">Data Flow</h2>
 <ol>
-<li><code>CollectionPipeline</code> initializes and validates parameters</li>
-<li>Pipeline creates the appropriate directory structure for storing data</li>
-<li><code>ESPNClient</code> fetches scoreboard data for each date in the season range</li>
-<li>For each game, metadata is collected and transformed</li>
-<li>Team information is collected for all teams in the season</li>
-<li>Game details are collected for each game, extracting statistics from the boxscore</li>
-<li>All collected data is stored in Parquet files in the season directory:</li>
-<li><code>seasons/{season}/games.parquet</code>: Basic game information</li>
-<li><code>seasons/{season}/teams.parquet</code>: Team information</li>
-<li><code>seasons/{season}/game_details.parquet</code>: Detailed game statistics</li>
+<li>Command line arguments are parsed to determine collection parameters</li>
+<li>For each date in the specified range, scoreboard data is fetched from ESPN</li>
+<li>Game and team data is extracted and accumulated in memory by season</li>
+<li>If debug mode is enabled, raw API responses are saved to the temp directory</li>
+<li>After all dates are processed, consolidated data is written to season-based files</li>
+<li>For incremental updates, existing data is merged with new data, updating changed games</li>
 </ol>
-<h2 id="data-structure">Data Structure</h2>
-<p>The pipeline organizes data in the following structure:</p>
+<h2 id="data-storage-structure">Data Storage Structure</h2>
+<p>The collection pipeline organizes data in the following structure:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>data/
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>└── seasons/
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    └── {season}/           # E.g., 2023 for 2022-23 season
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>        ├── games.parquet   # All games for the season
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>        ├── teams.parquet   # All teams for the season
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>        └── game_details.parquet  # Detailed statistics for games
+</code></pre></div>
 <h3 id="games-dataframe">Games DataFrame</h3>
 <p>Contains basic game information:
 - <code>id</code>: ESPN game ID
 - <code>date</code>: Game date and time (ISO format)
+- <code>name</code>: Game name/description
 - <code>home_team_id</code>: ESPN ID of home team
+- <code>home_team_name</code>: Name of home team
 - <code>away_team_id</code>: ESPN ID of away team
+- <code>away_team_name</code>: Name of away team
 - <code>home_score</code>: Final score of home team
 - <code>away_score</code>: Final score of away team
-- <code>status</code>: Game status (e.g., "final", "scheduled")
+- <code>status</code>: Game status (e.g., "STATUS_FINAL")
 - <code>collection_timestamp</code>: Time when data was collected</p>
 <h3 id="teams-dataframe">Teams DataFrame</h3>
 <p>Contains team information:
 - <code>id</code>: ESPN team ID
 - <code>name</code>: Full team name
-- <code>abbreviation</code>: Team abbreviation
-- <code>conference_id</code>: ESPN conference ID
-- <code>conference_name</code>: Conference name</p>
-<h3 id="game-details-dataframe">Game Details DataFrame</h3>
-<p>Contains detailed game statistics:
-- <code>id</code>: ESPN game ID
-- Various statistics for home and away teams (e.g., <code>home_fieldgoalsmade</code>, <code>away_threepointers</code>)
-- <code>venue_id</code>: ESPN venue ID
-- <code>venue_name</code>: Venue name
-- <code>attendance</code>: Game attendance
+- <code>first_seen</code>: First date the team was observed in data
 - <code>collection_timestamp</code>: Time when data was collected</p>
-<h2 id="configuration">Configuration</h2>
-<p>The CollectionPipeline can be configured with the following parameters:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">CollectionPipeline</span><span class="p">(</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">data_dir</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">,</span>          <span class="c1"># Base directory for storing data</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">rate_limit</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>           <span class="c1"># Max requests per second</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">burst_limit</span><span class="o">=</span><span class="mi">10</span>            <span class="c1"># Max burst of requests allowed</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">)</span>
+<h3 id="game-details-dataframe">Game Details DataFrame</h3>
+<p>Contains detailed game statistics and venue information:
+- <code>id</code>: ESPN game ID
+- <code>venue_id</code>: ESPN venue ID
+- <code>venue_name</code>: Name of the venue
+- <code>attendance</code>: Game attendance
+- <code>home_team_id</code>: ESPN ID of home team
+- <code>away_team_id</code>: ESPN ID of away team
+- Various team statistics with prefixes <code>home_</code> and <code>away_</code> (examples):
+  - <code>home_field_goals_made</code>: Field goals made by home team
+  - <code>home_field_goals_attempted</code>: Field goals attempted by home team
+  - <code>home_field_goal_pct</code>: Field goal percentage for home team
+  - <code>home_three_point_field_goals</code>: Three-pointers made by home team
+  - <code>home_rebounds</code>: Rebounds by home team
+  - <code>home_assists</code>: Assists by home team
+  - <code>away_field_goals_made</code>: Field goals made by away team
+  - <code>away_field_goals_attempted</code>: Field goals attempted by away team
+  - <code>away_field_goal_pct</code>: Field goal percentage for away team
+- <code>collection_timestamp</code>: Time when data was collected</p>
+<h2 id="debug-mode">Debug Mode</h2>
+<p>The debug mode saves raw API responses to a temporary directory for troubleshooting:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>/tmp/debug_data/
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>└── {year}/               # Year portion of the date
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    └── response_{date}.json  # Raw API response for that date
 </code></pre></div>
+<p>To access debug data:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Get the temp directory path</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">temp_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">()</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1"># Construct path to debug files</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="n">debug_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;debug_data&quot;</span> <span class="o">/</span> <span class="s2">&quot;2023&quot;</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="c1"># List all debug files</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="n">debug_files</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">debug_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;response_*.json&quot;</span><span class="p">))</span>
+</code></pre></div></p>
 <h2 id="incremental-updates">Incremental Updates</h2>
-<p>The pipeline supports an incremental update mode which:
+<p>The collection pipeline supports incremental updates which:
 1. Reads existing Parquet files for the season
-2. Only collects data for new games or games that have changed
+2. Only processes new games or games that have changed
 3. Efficiently merges new data with existing data
-4. Only updates game details for games that are not yet final</p>
-<p>This approach minimizes API requests and processing time for regular updates.</p>
-<h2 id="error-handling">Error Handling</h2>
-<p>The pipeline includes robust error handling:
-- Individual game or team failures don't cause the entire pipeline to fail
-- Failed requests are logged with detailed error information
-- The pipeline produces a comprehensive result with success/failure status</p>
-<h2 id="dependencies">Dependencies</h2>
+4. Updates game information for changed games</p>
+<p>This approach minimizes processing time and API requests for regular updates.</p>
+<h2 id="command-line-arguments">Command Line Arguments</h2>
+<p>The collection script supports the following command line arguments:</p>
 <ul>
-<li><code>aiohttp</code> or <code>httpx</code>: For asynchronous HTTP requests</li>
-<li><code>polars</code>: For DataFrame manipulation and Parquet I/O</li>
-<li><code>pydantic</code>: For data validation and modeling of API responses</li>
+<li><code>--start-year</code>: Start year for data collection (default: 2023)</li>
+<li><code>--end-year</code>: End year for data collection (default: 2023)</li>
+<li><code>--debug</code>: Save raw API responses to tmp directory for debugging (default: False)</li>
+<li><code>--rate-limit</code>: Rate limit in seconds between API calls (default: 1.0)</li>
+<li><code>--max-retries</code>: Maximum number of retries for API calls (default: 3)</li>
+<li><code>--incremental</code>: Use incremental update mode (default: False)</li>
 </ul>
+<h2 id="validation">Validation</h2>
+<p>The collection pipeline includes validation features to ensure data quality:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Validate collected data for a specific season</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>python<span class="w"> </span>-m<span class="w"> </span>src.data.validate_ncaa_data<span class="w"> </span>--season<span class="o">=</span><span class="m">2023</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># Generate validation report for all seasons</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>python<span class="w"> </span>-m<span class="w"> </span>src.data.validate_ncaa_data<span class="w"> </span>--output
+</code></pre></div>
 
 
 
