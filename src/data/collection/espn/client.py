@@ -1,6 +1,9 @@
 import asyncio
 import logging
+import tempfile
+import json
 from datetime import date, datetime, timedelta
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import httpx
@@ -48,28 +51,36 @@ class RateLimiter:
             
         self.rate = rate
         self.burst = burst
+        
+        # Initialize the token bucket
         self.tokens = burst
-        self.last_update = asyncio.get_event_loop().time()
-        self._lock = asyncio.Lock()
+        self.last_refill = asyncio.get_event_loop().time()
     
     async def acquire(self) -> None:
-        """Acquire a token, waiting if necessary."""
-        async with self._lock:
-            now = asyncio.get_event_loop().time()
-            time_passed = now - self.last_update
-            self.tokens = min(
-                self.burst,
-                self.tokens + time_passed * self.rate
-            )
-            
-            if self.tokens < 1:
-                # Calculate the time needed to get one token
-                wait_time = (1 - self.tokens) / self.rate
-                await asyncio.sleep(wait_time)
-                self.tokens = 1  # We now have exactly one token
-            
-            self.tokens -= 1
-            self.last_update = asyncio.get_event_loop().time()
+        """
+        Acquire a token, waiting if necessary.
+        
+        Waits until a token is available using the token bucket algorithm.
+        """
+        now = asyncio.get_event_loop().time()
+        
+        # Calculate tokens to add based on time passed
+        time_passed = now - self.last_refill
+        new_tokens = time_passed * self.rate
+        
+        # Refill the bucket, but don't exceed burst limit
+        self.tokens = min(self.tokens + new_tokens, self.burst)
+        self.last_refill = now
+        
+        # If no tokens are available, wait for enough time to get one
+        if self.tokens < 1:
+            wait_time = (1 - self.tokens) / self.rate
+            await asyncio.sleep(wait_time)
+            self.tokens = 1
+            self.last_refill = asyncio.get_event_loop().time()
+        
+        # Use a token
+        self.tokens -= 1
 
 class ESPNClient:
     """Client for interacting with ESPN's NCAA basketball APIs."""
@@ -83,81 +94,90 @@ class ESPNClient:
         rate_limit: float = 5.0,  # requests per second
         burst_limit: int = 10,
         timeout: float = 30.0,
+        debug: bool = False,
     ):
         """
-        Initialize ESPN client.
+        Initialize the ESPN client.
         
         Args:
-            rate_limit: Number of requests allowed per second
-            burst_limit: Maximum number of requests that can be made at once
-            timeout: Default timeout for HTTP requests in seconds
+            rate_limit: Maximum requests per second
+            burst_limit: Maximum burst size
+            timeout: Request timeout in seconds
+            debug: Whether to save raw API responses for debugging
         """
-        self.rate_limiter = RateLimiter(rate_limit, burst_limit)
+        self.rate_limiter = RateLimiter(rate=rate_limit, burst=burst_limit)
         self.timeout = timeout
-        self._client: Optional[httpx.AsyncClient] = None
-        
-        logger.info(
-            f"Initialized ESPN client with rate_limit={rate_limit}, "
-            f"burst_limit={burst_limit}"
-        )
+        self._client = None
+        self.debug = debug
     
     async def __aenter__(self) -> 'ESPNClient':
-        """Async context manager entry."""
+        """Enter the async context manager."""
         self._client = httpx.AsyncClient(timeout=self.timeout)
-        logger.debug("ESPN client context entered, HTTP client initialized")
         return self
     
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
-        """Async context manager exit."""
+        """Exit the async context manager."""
         if self._client:
-            logger.debug("Closing ESPN client HTTP connection")
             await self._client.aclose()
             self._client = None
     
     @property
     def client(self) -> httpx.AsyncClient:
-        """Get the HTTP client, raising an error if not initialized."""
+        """Get the HTTP client."""
         if self._client is None:
-            logger.error("Attempted to use HTTP client before initialization")
-            raise RuntimeError(
-                "Client not initialized. Use async with ESPNClient() as client: ..."
-            )
+            raise RuntimeError("Client not initialized. Use async with ESPNClient() as client: ...")
         return self._client
     
     async def _get(
         self, endpoint: str, params: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
-        Make a rate-limited GET request to the ESPN API.
+        Make a GET request to the ESPN API.
         
         Args:
             endpoint: API endpoint path
-            params: Optional query parameters
+            params: Query parameters
             
         Returns:
-            JSON response data
+            JSON response as a dictionary
+            
+        Raises:
+            httpx.HTTPError: On HTTP errors
+            ValueError: On invalid responses
         """
+        # Rate limit requests
         await self.rate_limiter.acquire()
         
-        url = f"{self.BASE_URL}{endpoint}"
-        logger.debug(f"Making GET request to {url} with params: {params}")
+        # Construct full URL
+        url = f"{self.BASE_URL}/{endpoint}"
         
-        start_time = asyncio.get_event_loop().time()
+        # Make the request
         response = await self.client.get(url, params=params)
-        duration = asyncio.get_event_loop().time() - start_time
         
-        logger.debug(
-            f"Received response from {url} in {duration:.2f}s "
-            f"(status: {response.status_code})"
-        )
+        # Check for errors
+        response.raise_for_status()
         
-        try:
-            response.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            logger.error(f"HTTP error {e.response.status_code} from {url}: {str(e)}")
-            raise
+        # Parse response
+        data = response.json()
         
-        return response.json()
+        # Save raw response for debugging if requested
+        if self.debug and params and 'date' in params:
+            date_str = params['date']
+            year = date_str[:4]
+            
+            # Create debug directory in temp folder
+            debug_dir = Path(tempfile.gettempdir()) / "debug_data" / year
+            debug_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Save response
+            endpoint_name = endpoint.split('/')[-1]  # Get last part of endpoint
+            debug_file = debug_dir / f"{endpoint_name}_{date_str}.json"
+            with open(debug_file, "w") as f:
+                json.dump(data, f, indent=2)
+            
+            logger.debug(f"Saved debug response to {debug_file}")
+        
+        return data
     
     def _validate_date_format(self, date_str: str) -> bool:
         """

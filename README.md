@@ -91,6 +91,8 @@ ncaa-prediction-model/
 ├── data/                  # Data organized by processing stage
 ├── src/                   # Source code
 │   ├── data/              # Data collection and processing
+│   │   ├── collect_ncaa_data.py  # Data collection script
+│   │   └── validate_ncaa_data.py # Data validation script
 │   ├── features/          # Feature engineering
 │   ├── models/            # ML models
 │   ├── pipelines/         # Pipeline orchestration
@@ -121,4 +123,126 @@ This project follows a Test-Driven Development (TDD) approach:
 3. Refactor for clarity and efficiency while maintaining test coverage
 
 ## License
+[MIT License](LICENSE)
+
+## Data Collection
+
+The data collection process fetches NCAA basketball game data from the ESPN API. The process includes:
+
+1. Collecting raw game data for specified seasons
+2. Processing and cleaning the data
+3. Validating the data quality
+4. Storing the data in a structured format for analysis
+
+### Running the Data Collection Pipeline
+
+To run the full data collection pipeline:
+
+```bash
+./run_data_collection.py --start-year 2023 --end-year 2023
+```
+
+This will:
+- Collect game data for the specified seasons
+- Validate the collected data
+- Generate quality reports
+
+#### Command Line Options
+
+- `--start-year`: First season to collect (default: 2023)
+- `--end-year`: Last season to collect (default: 2023)
+- `--skip-collection`: Skip the data collection step and only run validation
+- `--skip-validation`: Skip the validation step and only run collection
+
+### Data Structure
+
+The collected data is stored in the following structure:
+
+```
+data/
+├── seasons/                # Organized by season
+│   ├── 2022/              # Season directory (e.g., 2022-23 season)
+│   │   ├── games.parquet  # All games for the season
+│   │   ├── teams.parquet  # All teams for the season
+│   │   └── game_details.parquet  # Detailed game statistics
+│   └── 2023/              # Another season directory
+│       ├── games.parquet
+│       ├── teams.parquet
+│       └── game_details.parquet
+└── validated/             # Validated and cleaned data
+    ├── cleaned_games.parquet     # Cleaned data
+    ├── validation_report.json    # Data validation report
+    └── quality_report.json       # Data quality metrics
+```
+
+### Data Fields
+
+The collected game data includes the following fields:
+
+#### games.parquet
+- `id`: Unique game identifier
+- `date`: Game date (YYYYMMDD format)
+- `name`: Game name/description
+- `home_team_id`: Home team identifier
+- `home_team_name`: Home team name
+- `away_team_id`: Away team identifier
+- `away_team_name`: Away team name
+- `home_score`: Home team score
+- `away_score`: Away team score
+- `status`: Game status (e.g., "STATUS_FINAL")
+- `collection_timestamp`: Timestamp when the data was collected
+
+#### game_details.parquet
+- `id`: Unique game identifier (matches with games.parquet)
+- `venue_id`: Venue identifier
+- `venue_name`: Name of the venue where the game was played
+- `attendance`: Number of attendees
+- Various shooting statistics for both home and away teams (FG, FT, 3PT)
+- Rebounding, assist, steal, block, and turnover statistics
+
+### Debug Mode
+
+The data collection pipeline supports a debug mode that stores raw API responses for troubleshooting:
+
+```bash
+python src/data/collect_ncaa_data.py --start-year 2023 --end-year 2023 --debug
+```
+
+When the debug flag is enabled:
+- Raw JSON responses are stored in a temporary directory
+- Detailed logging is enabled
+- Useful for diagnosing API issues or data collection problems
+
+## Development
+
+### Prerequisites
+
+- Python 3.9+
+- Required packages listed in `requirements.txt`
+
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+### Project Structure
+
+```
+ncaa-prediction-model/
+├── data/                     # Data directory
+├── logs/                     # Log files
+├── src/                      # Source code
+│   ├── data/                 # Data collection and processing
+│   │   ├── collect_ncaa_data.py  # Data collection script
+│   │   └── validate_ncaa_data.py # Data validation script
+│   └── models/               # Prediction models
+├── run_data_collection.py    # Main pipeline script
+└── README.md                 # This file
+```
+
+## License
+
 [MIT License](LICENSE)
