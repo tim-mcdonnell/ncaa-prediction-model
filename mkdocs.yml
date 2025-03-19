@@ -49,6 +49,10 @@ nav:
     - CLI Design: architecture/cli-design.md
     - Logging Strategy: architecture/logging-strategy.md
     - Development Phases: architecture/development-phases.md
+  - Development Guides:
+    - Overview: development-guides/index.md
+    - How to Write Effective Tasks: development-guides/how-to-write-effective-tasks.md
+    - Task Example: development-guides/task-example.md
   - API Reference: 
     - ESPN API: espn-api-reference.md
 
