@@ -44,8 +44,13 @@ nav:
     - Overview: architecture/index.md
     - Data Pipeline: architecture/data-pipeline.md
     - Data Entities: architecture/data-entities.md
-    - Directory Structure: architecture/data-directory-structure.md
+    - Data Directory Structure: architecture/data-directory-structure.md
+    - Configuration Management: architecture/configuration-management.md
+    - CLI Design: architecture/cli-design.md
+    - Logging Strategy: architecture/logging-strategy.md
     - Development Phases: architecture/development-phases.md
+  - API Reference: 
+    - ESPN API: espn-api-reference.md
 
 plugins:
   - search

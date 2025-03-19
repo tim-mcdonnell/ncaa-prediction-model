@@ -14,18 +14,17 @@ repos:
         args: [--branch, main, --branch, master]
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.3
+    rev: v0.1.9
     hooks:
     -   id: ruff
         args: [--fix]
     -   id: ruff-format
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.6.1
+    rev: v1.8.0
     hooks:
     -   id: mypy
-        additional_dependencies: [types-requests, types-PyYAML]
-        args: ["--ignore-missing-imports", "--disable-error-code=unreachable"]
+        additional_dependencies: [types-requests]
 
 # Temporarily disable pytest check until we have tests
 # -   id: pytest-check
@@ -35,3 +34,12 @@ repos:
 #     pass_filenames: false
 #     always_run: true
 #     args: ["-v", "--no-cov"]  # Run without coverage for speed in pre-commit
+
+-   repo: local
+    hooks:
+    -   id: pytest
+        name: pytest
+        entry: pytest
+        language: system
+        pass_filenames: false
+        always_run: true

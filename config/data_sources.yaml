@@ -1,0 +1,23 @@
+espn_api:
+  base_url: "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball"
+  endpoints:
+    teams: "/teams"
+    team_detail: "/teams/{team_id}"
+    scoreboard: "/scoreboard"
+    game_summary: "/summary"
+  request_delay: 1.0  # seconds between requests
+  max_retries: 3
+  timeout: 10.0  # seconds
+
+data_paths:
+  bronze: "data/bronze"
+  silver: "data/silver"
+  gold: "data/gold"
+  models: "models"
+
+seasons:
+  current: "2023-24"
+  historical:
+    - "2022-23"
+    - "2021-22"
+    - "2020-21" 
