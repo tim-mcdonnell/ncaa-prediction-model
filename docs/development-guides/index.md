@@ -23,4 +23,4 @@ By using these guides:
 3. Testing will be comprehensive and follow TDD principles
 4. Documentation will be complete and standardized
 
-Use these guides as references when creating new tasks or implementing features for the NCAA Basketball Analytics Project. 
+Use these guides as references when creating new tasks or implementing features for the NCAA Basketball Analytics Project.

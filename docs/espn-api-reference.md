@@ -59,13 +59,13 @@ No file chosen
 
 
 Untitled
-Last message 1 minute ago 
+Last message 1 minute ago
 
 Designing a Scalable Data Pipeline for NCAA Basketball Analytics
-Last message 1 minute ago 
+Last message 1 minute ago
 
 High-Level Structure for NCAA Basketball Data Analytics
-Last message 2 days ago 
+Last message 2 days ago
 
 Project knowledge
 
@@ -1787,7 +1787,7 @@ curl "https://sports.core.api.espn.com/v3/sports/basketball/mens-college-basketb
 ### News Endpoint {#news}
 - URL: `/apis/site/v2/sports/basketball/mens-college-basketball/news`
 - Retrieves latest news, not season-specific
-- Parameters: 
+- Parameters:
 
 | Parameter | Required | Description |
 |-----------|----------|-------------|

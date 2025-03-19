@@ -110,16 +110,16 @@ class AppConfig(BaseModel):
 
 class ConfigManager:
     """Manages application configuration from multiple sources."""
-    
+
     def __init__(self, config_dir: Union[str, Path] = "config"):
         self.config_dir = Path(config_dir)
         self._config: Optional[AppConfig] = None
-    
+
     def load_config(self) -> AppConfig:
         """Load configuration from files and environment variables."""
         if self._config is not None:
             return self._config
-            
+
         # Load configuration files
         config_data = {}
         for config_file in self.config_dir.glob("*.yaml"):
@@ -127,31 +127,31 @@ class ConfigManager:
                 # Use filename without extension as the top-level key
                 key = config_file.stem
                 config_data[key] = yaml.safe_load(f)
-        
+
         # Flatten the dictionary for easier environment variable override
         flat_config = self._flatten_dict(config_data)
-        
+
         # Override with environment variables
         for key, value in os.environ.items():
             if key.startswith("NCAA_"):
                 # Convert from environment variable format to config key
                 config_key = key[5:].lower().replace("__", ".")  # Remove NCAA_ prefix
                 flat_config[config_key] = self._convert_value_type(value, flat_config.get(config_key))
-        
+
         # Unflatten back to nested structure
         config_dict = self._unflatten_dict(flat_config)
-        
+
         # Create validated config object
         self._config = AppConfig(**config_dict)
         return self._config
-    
+
     @property
     def config(self) -> AppConfig:
         """Get the current configuration, loading it if necessary."""
         if self._config is None:
             return self.load_config()
         return self._config
-    
+
     def _flatten_dict(self, d: Dict[str, Any], parent_key: str = "", sep: str = ".") -> Dict[str, Any]:
         """Flatten nested dictionaries with keys joined by separator."""
         items = []
@@ -162,7 +162,7 @@ class ConfigManager:
             else:
                 items.append((new_key, v))
         return dict(items)
-    
+
     def _unflatten_dict(self, d: Dict[str, Any], sep: str = ".") -> Dict[str, Any]:
         """Unflatten dictionary with keys split by separator."""
         result = {}
@@ -175,12 +175,12 @@ class ConfigManager:
                 curr = curr[part]
             curr[parts[-1]] = value
         return result
-    
+
     def _convert_value_type(self, value: str, reference_value: Any) -> Any:
         """Convert string value to appropriate type based on reference value."""
         if reference_value is None:
             return value
-            
+
         if isinstance(reference_value, bool):
             return value.lower() in ("true", "yes", "1", "t", "y")
         elif isinstance(reference_value, int):
@@ -233,11 +233,11 @@ def fetch_team_data(team_id: str):
     base_url = config.espn_api.base_url
     endpoint = config.espn_api.endpoints["team_detail"].format(team_id=team_id)
     url = f"{base_url}{endpoint}"
-    
+
     # Use other config values
     timeout = config.espn_api.timeout
     max_retries = config.espn_api.max_retries
-    
+
     # Implementation...
 ```
 
@@ -254,11 +254,11 @@ def main():
     parser.add_argument("--batch-size", type=int, help="Batch size for processing")
     parser.add_argument("--workers", type=int, help="Number of worker processes")
     args = parser.parse_args()
-    
+
     # Load baseline config
     config_manager = get_config_manager()
     config = config_manager.load_config()
-    
+
     # Override with command line arguments if provided
     if args.batch_size is not None:
         config.batch_size = args.batch_size
@@ -274,4 +274,4 @@ def main():
 4. **Namespace Environment Variables**: Use the `NCAA_` prefix to avoid conflicts
 5. **Provide Defaults**: Include sensible defaults for most settings
 6. **Keep Sensitive Data Separate**: Use environment variables for API keys, etc.
-7. **Test With Different Configurations**: Ensure the application works with various settings 
+7. **Test With Different Configurations**: Ensure the application works with various settings

@@ -24,18 +24,17 @@ repos:
     rev: v1.8.0
     hooks:
     -   id: mypy
-        additional_dependencies: [types-requests]
-
--   id: pytest-check
-    name: pytest-check
-    entry: pytest
-    language: system
-    pass_filenames: false
-    always_run: true
-    args: ["-v", "--no-cov"]  # Run without coverage for speed in pre-commit
+        additional_dependencies: [types-requests,types-pyyaml]
 
 -   repo: local
     hooks:
+    -   id: pytest-check
+        name: pytest-check
+        entry: pytest
+        language: system
+        pass_filenames: false
+        always_run: true
+
     -   id: pytest
         name: pytest
         entry: pytest

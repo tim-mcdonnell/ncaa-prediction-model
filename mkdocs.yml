@@ -25,14 +25,14 @@ markdown_extensions:
       custom_fences:
         - name: mermaid
           class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
+          format: !!python/name:pymdownx.superfences.fence_code_format '{}'
   - pymdownx.tabbed
   - pymdownx.tasklist
   - admonition
   - pymdownx.details
   - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: material.extensions.emoji.twemoji
+      emoji_generator: material.extensions.emoji.to_svg
   - attr_list
   - toc:
       permalink: true
@@ -53,7 +53,7 @@ nav:
     - Overview: development-guides/index.md
     - How to Write Effective Tasks: development-guides/how-to-write-effective-tasks.md
     - Task Example: development-guides/task-example.md
-  - API Reference: 
+  - API Reference:
     - ESPN API: espn-api-reference.md
 
 plugins:

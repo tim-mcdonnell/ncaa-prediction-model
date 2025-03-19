@@ -82,7 +82,7 @@ The DuckDB database contains metadata tables for tracking data lineage:
 #### Metadata Tables
 
 - **source_metadata**: Information about raw data sources
-  - Links source ID to raw data and tracking information 
+  - Links source ID to raw data and tracking information
   - Tracks content hashes, ingestion timestamps, and processing status
 - **silver_dependencies**: Lineage from bronze to silver
 - **gold_dependencies**: Lineage from silver to gold
@@ -154,7 +154,7 @@ def read_scoreboard_data(date):
             LIMIT 1
         """
         result = conn.execute(query, [date]).fetchone()
-        
+
         if result:
             # Parse the raw_data JSON
             return json.loads(result[0])

@@ -48,9 +48,9 @@ def configure_logging() -> None:
     log_level = config.logging.level
     json_logs = config.logging.json_format
     log_file = config.logging.file
-    
+
     level = getattr(logging, log_level.upper())
-    
+
     # Processors for structlog
     processors = [
         structlog.contextvars.merge_contextvars,
@@ -61,14 +61,14 @@ def configure_logging() -> None:
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
     ]
-    
+
     if json_logs:
         # JSON formatter for production
         processors.append(structlog.processors.JSONRenderer())
     else:
         # Rich console formatter for development
         processors.append(structlog.dev.ConsoleRenderer())
-    
+
     # Configure structlog
     structlog.configure(
         processors=processors,
@@ -76,10 +76,10 @@ def configure_logging() -> None:
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
-    
+
     # Configure standard logging
     handlers = []
-    
+
     # Console handler with Rich formatting
     console_handler = RichHandler(
         console=console,
@@ -89,13 +89,13 @@ def configure_logging() -> None:
     )
     console_handler.setLevel(level)
     handlers.append(console_handler)
-    
+
     # File handler if specified
     if log_file:
         file_handler = logging.FileHandler(log_file)
         file_handler.setLevel(level)
         handlers.append(file_handler)
-    
+
     # Root logger configuration
     logging.basicConfig(
         level=level,
@@ -139,7 +139,7 @@ def process_pipeline(date: str) -> None:
         pipeline="ingest",
         date=date
     )
-    
+
     logger.info("Starting pipeline")
     try:
         # Pipeline operations
@@ -182,10 +182,10 @@ For production deployments:
 - File logs are rotated daily with a 30-day retention:
   ```python
   from logging.handlers import TimedRotatingFileHandler
-  
+
   handler = TimedRotatingFileHandler(
-      "logs/app.log", 
-      when="midnight", 
+      "logs/app.log",
+      when="midnight",
       backupCount=30
   )
   ```
@@ -204,4 +204,4 @@ For production, JSON-formatted logs can be:
 1. Include `structlog` and `rich` in the project dependencies
 2. Add the logging configuration to application startup
 3. Create a module-specific logger at the top of each file
-4. Use structured logging with explicit parameter names 
+4. Use structured logging with explicit parameter names

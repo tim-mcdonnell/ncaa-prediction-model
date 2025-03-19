@@ -165,4 +165,4 @@ Follow these steps to complete the task:
 - [Configuration Management](../architecture/configuration-management.md)
 - [Logging Strategy](../architecture/logging-strategy.md)
 - [ESPN API Reference](../espn-api-reference.md)
-- [CONTRIBUTING.md](../../CONTRIBUTING.md) 
+- [CONTRIBUTING.md](../../CONTRIBUTING.md)

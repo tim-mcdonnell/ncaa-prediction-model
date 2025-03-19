@@ -1,1 +1,1 @@
-"""Tests for data ingestion modules.""" 
+"""Tests for data ingestion modules."""

@@ -140,21 +140,21 @@ CREATE TABLE example (
 ## Common Pitfalls to Avoid
 
 ### ❌ Vague Requirements
-**Poor:** "Implement data storage for NCAA information."  
+**Poor:** "Implement data storage for NCAA information."
 **Better:** "Create a single DuckDB database file at `data/ncaa.duckdb` with the schema defined in the Technical Requirements section."
 
 ### ❌ Unspecific Testing Instructions
-**Poor:** "Write tests for the implementation."  
+**Poor:** "Write tests for the implementation."
 **Better:** "Implement the following test cases in `tests/test_ncaa_data.py`:
 - `test_fetch_data_success`: Verifies successful API data retrieval
 - `test_store_data_formatting`: Ensures data is properly formatted before storage"
 
 ### ❌ Ambiguous Architecture Guidance
-**Poor:** "Follow the project's database architecture."  
+**Poor:** "Follow the project's database architecture."
 **Better:** "Use a single DuckDB database file at `data/ncaa.duckdb`. Do NOT create separate database files for different data types. All tables should be created in this single file."
 
 ### ❌ Missing Verification Steps
-**Poor:** "Make sure it works."  
+**Poor:** "Make sure it works."
 **Better:** "Execute `python -m ncaa.scripts.fetch --start-date 2023-01-01 --end-date 2023-01-31` and verify that:
 1. Data is retrieved without errors
 2. The database file contains the expected number of records

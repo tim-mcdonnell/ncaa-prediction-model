@@ -30,7 +30,7 @@ This project implements a medallion data architecture with three distinct proces
 
 All data is stored in a single DuckDB database with consistent naming conventions:
 - Bronze layer tables: `bronze_{api_endpoint_name}`
-- Silver layer tables: `silver_{entity_name}`  
+- Silver layer tables: `silver_{entity_name}`
 - Gold layer tables: `gold_{feature_set_name}`
 
 For detailed implementation specifics, refer to:
@@ -81,10 +81,10 @@ def test_calculate_win_percentage_with_valid_games_returns_correct_percentage():
         {"game_id": "2", "home_team": "Duke", "away_team": "Virginia", "home_score": 65, "away_score": 70}
     ]
     team_id = "Duke"
-    
+
     # Act: Call the function
     win_percentage = calculate_win_percentage(team_id, games)
-    
+
     # Assert: Verify results
     assert win_percentage == 0.5  # 1 win, 1 loss = 50%
 ```
@@ -155,14 +155,14 @@ Example:
 ```python
 def get_team_stats(team_id: str, season: str) -> dict:
     """Retrieve team statistics for a specific season.
-    
+
     Args:
         team_id: ESPN team identifier
         season: Season in YYYY-YY format (e.g., "2022-23")
-        
+
     Returns:
         Dictionary of team statistics
-        
+
     Raises:
         ValueError: If team_id or season is invalid
     """
@@ -179,10 +179,10 @@ def get_team_stats(team_id: str, season: str) -> dict:
    # Create and activate virtual environment
    uv venv
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   
+
    # Install development dependencies
    uv pip install -e ".[dev]"
-   
+
    # Install pre-commit hooks
    pre-commit install
    ```
