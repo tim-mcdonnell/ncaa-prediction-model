@@ -37,26 +37,26 @@ class Database:
     
     def _initialize_tables(self) -> None:
         """Initialize database tables if they don't exist."""
-        # Check if bronze_scoreboard table exists
-        result = self.conn.execute("""
+        # Bronze layer table for scoreboard data
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS bronze_scoreboard (
+                id INTEGER,
+                date VARCHAR,
+                source_url VARCHAR,
+                parameters VARCHAR,
+                content_hash VARCHAR,
+                raw_data VARCHAR,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        # Check if index exists before creating it
+        index_exists = self.conn.execute("""
             SELECT name FROM sqlite_master 
-            WHERE type='table' AND name='bronze_scoreboard'
+            WHERE type='index' AND name='idx_bronze_scoreboard_date'
         """).fetchone()
         
-        if not result:
-            logger.info("Creating bronze_scoreboard table")
-            self.conn.execute("""
-                CREATE TABLE bronze_scoreboard (
-                    id INTEGER PRIMARY KEY,
-                    date STRING,
-                    ingestion_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    source_url STRING,
-                    parameters STRING,
-                    content_hash STRING,
-                    raw_data STRING
-                )
-            """)
-            
+        if not index_exists:
             # Create index on date for faster lookups
             self.conn.execute("""
                 CREATE INDEX idx_bronze_scoreboard_date ON bronze_scoreboard(date)
@@ -65,42 +65,42 @@ class Database:
     def insert_bronze_scoreboard(self, date: str, url: str, params: Dict[str, Any], 
                                 data: Dict[str, Any]) -> None:
         """
-        Insert scoreboard data into bronze_scoreboard table.
+        Insert scoreboard data into the bronze layer.
         
         Args:
-            date: Date in YYYY-MM-DD format
-            url: Request URL
+            date: Date string in YYYY-MM-DD format
+            url: Source URL
             params: Request parameters
-            data: Raw JSON response data
+            data: Response data
         """
-        # Convert data to JSON string
-        json_data = json.dumps(data)
-        
-        # Generate hash of data
-        content_hash = hashlib.md5(json_data.encode()).hexdigest()
-        
-        # Convert params to JSON string
-        params_json = json.dumps(params)
-        
-        # Check if record with same hash already exists
+        # Check if data already exists for this date and URL
         existing = self.conn.execute("""
             SELECT id FROM bronze_scoreboard 
-            WHERE date = ? AND content_hash = ?
-        """, [date, content_hash]).fetchone()
+            WHERE date = ? AND source_url = ?
+        """, [date, url]).fetchone()
         
         if existing:
             logger.info("Duplicate scoreboard data found, skipping", 
                        date=date, 
-                       hash=content_hash)
+                       url=url)
             return
+        
+        # Get next ID
+        max_id = self.conn.execute("SELECT MAX(id) FROM bronze_scoreboard").fetchone()[0]
+        next_id = 1 if max_id is None else max_id + 1
+        
+        # Prepare data
+        params_json = json.dumps(params)
+        json_data = json.dumps(data)
+        content_hash = hashlib.md5(json_data.encode('utf-8')).hexdigest()
         
         # Insert data
         self.conn.execute("""
-            INSERT INTO bronze_scoreboard (date, source_url, parameters, content_hash, raw_data)
-            VALUES (?, ?, ?, ?, ?)
-        """, [date, url, params_json, content_hash, json_data])
+            INSERT INTO bronze_scoreboard (id, date, source_url, parameters, content_hash, raw_data)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, [next_id, date, url, params_json, content_hash, json_data])
         
-        logger.info("Inserted scoreboard data", date=date, hash=content_hash)
+        logger.info("Inserted scoreboard data", date=date, url=url)
     
     def get_processed_dates(self) -> List[str]:
         """

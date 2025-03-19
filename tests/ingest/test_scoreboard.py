@@ -164,7 +164,7 @@ class TestScoreboardIngestionModule:
             
             # Assert
             # Check that the ingestion class was created correctly
-            mock_ingestion_cls.assert_called_once_with(espn_api_config, "data/ncaa_basketball.duckdb")
+            mock_ingestion_cls.assert_called_once_with(espn_api_config, "data/ncaa.duckdb")
             
             # Check that process_date_range was called with the expected dates
             mock_ingestion.process_date_range.assert_called_once_with(["2023-02-28"])

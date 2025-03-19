@@ -112,7 +112,7 @@ def scoreboard(ctx: click.Context,
             seasons=season_list,
             year=year,
             espn_api_config=config.espn_api,
-            db_path=f"{config.data_paths.bronze}/ncaa_basketball.duckdb"
+            db_path="data/ncaa.duckdb"
         )
         logger.info("Scoreboard ingestion completed successfully")
     except Exception as e:

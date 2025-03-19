@@ -21,7 +21,7 @@ logger = structlog.get_logger(__name__)
 class ScoreboardIngestion:
     """Scoreboard data ingestion from ESPN API."""
     
-    def __init__(self, espn_api_config: ESPNApiConfig, db_path: str = "data/ncaa_basketball.duckdb"):
+    def __init__(self, espn_api_config: ESPNApiConfig, db_path: str = "data/ncaa.duckdb"):
         """
         Initialize scoreboard ingestion.
         
@@ -133,7 +133,7 @@ def ingest_scoreboard(
     seasons: Optional[List[str]] = None,
     year: Optional[int] = None,
     espn_api_config: ESPNApiConfig = None,
-    db_path: str = "data/ncaa_basketball.duckdb"
+    db_path: str = "data/ncaa.duckdb"
 ) -> None:
     """
     Ingest scoreboard data from ESPN API.
