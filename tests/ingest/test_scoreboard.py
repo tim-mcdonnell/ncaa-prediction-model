@@ -3,7 +3,7 @@ import json
 import os
 from pathlib import Path
 from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch, MagicMock, call
 
 from src.ingest.scoreboard import ScoreboardIngestion, ingest_scoreboard
 from src.utils.config import ESPNApiConfig
@@ -42,7 +42,7 @@ class TestScoreboardIngestionModule:
         """Create a mock ESPNApiClient instance."""
         with patch("src.ingest.scoreboard.ESPNApiClient") as mock_client_cls:
             mock_client = MagicMock()
-            mock_client.fetch_scoreboard = AsyncMock()
+            mock_client.fetch_scoreboard = MagicMock()
             mock_client._build_url.return_value = "https://example.com/scoreboard"
             
             # Sample API response
@@ -79,8 +79,7 @@ class TestScoreboardIngestionModule:
             mock_client_cls.return_value = mock_client
             yield mock_client
     
-    @pytest.mark.asyncio
-    async def test_fetch_and_store_date_WithValidDate_FetchesAndStoresData(self, espn_api_config, mock_db, mock_api_client):
+    def test_fetch_and_store_date_WithValidDate_FetchesAndStoresData(self, espn_api_config, mock_db, mock_api_client):
         """Test fetching and storing data for a specific date."""
         # Arrange
         ingestion = ScoreboardIngestion(espn_api_config)
@@ -89,7 +88,7 @@ class TestScoreboardIngestionModule:
         date = "2023-02-28"
         
         # Act
-        await ingestion.fetch_and_store_date(date, mock_db)
+        ingestion.fetch_and_store_date(date, mock_db)
         
         # Assert
         # Check that the API was called properly
@@ -104,8 +103,7 @@ class TestScoreboardIngestionModule:
         assert args[2]["dates"] == "20230228"  # Params
         assert "events" in args[3]  # Data
     
-    @pytest.mark.asyncio
-    async def test_process_date_range_WithMultipleDates_ProcessesAllDates(self, espn_api_config, mock_db, mock_api_client):
+    def test_process_date_range_WithMultipleDates_ProcessesAllDates(self, espn_api_config, mock_db, mock_api_client):
         """Test processing a range of dates."""
         # Arrange
         with patch("src.ingest.scoreboard.Database") as mock_db_cls:
@@ -117,7 +115,7 @@ class TestScoreboardIngestionModule:
             dates = ["2023-02-28", "2023-03-01", "2023-03-02"]
             
             # Act
-            await ingestion.process_date_range(dates)
+            ingestion.process_date_range(dates)
             
             # Assert
             # Check that the database was queried for processed dates
@@ -129,8 +127,7 @@ class TestScoreboardIngestionModule:
             # Check database inserts
             assert mock_db.insert_bronze_scoreboard.call_count == 3
     
-    @pytest.mark.asyncio
-    async def test_process_date_range_WithAlreadyProcessedDates_SkipsProcessedDates(self, espn_api_config, mock_db, mock_api_client):
+    def test_process_date_range_WithAlreadyProcessedDates_SkipsProcessedDates(self, espn_api_config, mock_db, mock_api_client):
         """Test that already processed dates are skipped."""
         # Arrange
         with patch("src.ingest.scoreboard.Database") as mock_db_cls:
@@ -145,7 +142,7 @@ class TestScoreboardIngestionModule:
             dates = ["2023-02-28", "2023-03-01", "2023-03-02"]
             
             # Act
-            await ingestion.process_date_range(dates)
+            ingestion.process_date_range(dates)
             
             # Assert
             # Should only process the one unprocessed date
@@ -158,11 +155,8 @@ class TestScoreboardIngestionModule:
     def test_ingest_scoreboard_WithSpecificDate_ProcessesDate(self, espn_api_config):
         """Test ingesting data for a specific date."""
         # Arrange
-        with patch("src.ingest.scoreboard.ScoreboardIngestion") as mock_ingestion_cls, \
-             patch("src.ingest.scoreboard.asyncio.run") as mock_run:
-            
+        with patch("src.ingest.scoreboard.ScoreboardIngestion") as mock_ingestion_cls:
             mock_ingestion = MagicMock()
-            mock_ingestion.process_date_range = AsyncMock()
             mock_ingestion_cls.return_value = mock_ingestion
             
             # Act
@@ -172,24 +166,16 @@ class TestScoreboardIngestionModule:
             # Check that the ingestion class was created correctly
             mock_ingestion_cls.assert_called_once_with(espn_api_config, "data/ncaa_basketball.duckdb")
             
-            # Check that the process was called with the correct date
-            mock_run.assert_called_once()
-            
-            # Extract arguments passed to process_date_range
-            process_call = mock_run.call_args[0][0]
-            
-            # Ensure process_date_range would be called with the right arguments
-            assert mock_ingestion.process_date_range == process_call._coro._obj
+            # Check that process_date_range was called with the expected dates
+            mock_ingestion.process_date_range.assert_called_once_with(["2023-02-28"])
     
     def test_ingest_scoreboard_WithDateRange_ProcessesDateRange(self, espn_api_config):
         """Test ingesting data for a date range."""
         # Arrange
         with patch("src.ingest.scoreboard.ScoreboardIngestion") as mock_ingestion_cls, \
-             patch("src.ingest.scoreboard.asyncio.run") as mock_run, \
              patch("src.ingest.scoreboard.generate_date_range") as mock_generate_range:
             
             mock_ingestion = MagicMock()
-            mock_ingestion.process_date_range = AsyncMock()
             mock_ingestion_cls.return_value = mock_ingestion
             
             # Mock date range generation
@@ -206,24 +192,16 @@ class TestScoreboardIngestionModule:
             # Check date range generation
             mock_generate_range.assert_called_once_with("2023-02-28", "2023-03-02")
             
-            # Check that the process was called
-            mock_run.assert_called_once()
-            
-            # Extract arguments passed to process_date_range
-            process_call = mock_run.call_args[0][0]
-            
-            # Ensure process_date_range would be called with the right arguments
-            assert mock_ingestion.process_date_range == process_call._coro._obj
+            # Check that the process was called with generated dates
+            mock_ingestion.process_date_range.assert_called_once_with(["2023-02-28", "2023-03-01", "2023-03-02"])
     
     def test_ingest_scoreboard_WithYesterdayFlag_ProcessesYesterday(self, espn_api_config):
         """Test ingesting data with yesterday flag."""
         # Arrange
         with patch("src.ingest.scoreboard.ScoreboardIngestion") as mock_ingestion_cls, \
-             patch("src.ingest.scoreboard.asyncio.run") as mock_run, \
              patch("src.ingest.scoreboard.get_yesterday") as mock_get_yesterday:
             
             mock_ingestion = MagicMock()
-            mock_ingestion.process_date_range = AsyncMock()
             mock_ingestion_cls.return_value = mock_ingestion
             
             # Mock yesterday date
@@ -239,26 +217,24 @@ class TestScoreboardIngestionModule:
             # Check yesterday date retrieval
             mock_get_yesterday.assert_called_once()
             
-            # Check that the process was called
-            mock_run.assert_called_once()
+            # Check that the process was called with yesterday's date
+            mock_ingestion.process_date_range.assert_called_once_with(["2023-03-14"])
     
     def test_ingest_scoreboard_WithSeason_ProcessesSeasonDates(self, espn_api_config):
         """Test ingesting data for a specific season."""
         # Arrange
         with patch("src.ingest.scoreboard.ScoreboardIngestion") as mock_ingestion_cls, \
-             patch("src.ingest.scoreboard.asyncio.run") as mock_run, \
              patch("src.ingest.scoreboard.get_season_date_range") as mock_get_season, \
              patch("src.ingest.scoreboard.generate_date_range") as mock_generate_range:
             
             mock_ingestion = MagicMock()
-            mock_ingestion.process_date_range = AsyncMock()
             mock_ingestion_cls.return_value = mock_ingestion
             
             # Mock season date range function
             mock_get_season.return_value = ("2022-11-01", "2023-04-30")
             
             # Mock date range generation
-            mock_generate_range.return_value = ["2022-11-01", "2022-11-02", "...etc..."]
+            mock_generate_range.return_value = ["2022-11-01", "2022-11-02", "2022-11-03"]
             
             # Act
             ingest_scoreboard(
@@ -273,26 +249,24 @@ class TestScoreboardIngestionModule:
             # Check that date range was generated
             mock_generate_range.assert_called_once_with("2022-11-01", "2023-04-30")
             
-            # Check that the process was called
-            mock_run.assert_called_once()
+            # Check that the process was called with season dates
+            mock_ingestion.process_date_range.assert_called_once_with(["2022-11-01", "2022-11-02", "2022-11-03"])
     
     def test_ingest_scoreboard_WithNoParameters_UsesHistoricalStartDate(self, espn_api_config):
         """Test ingesting data with no parameters uses historical start date."""
         # Arrange
         with patch("src.ingest.scoreboard.ScoreboardIngestion") as mock_ingestion_cls, \
-             patch("src.ingest.scoreboard.asyncio.run") as mock_run, \
              patch("src.ingest.scoreboard.get_yesterday") as mock_get_yesterday, \
              patch("src.ingest.scoreboard.generate_date_range") as mock_generate_range:
             
             mock_ingestion = MagicMock()
-            mock_ingestion.process_date_range = AsyncMock()
             mock_ingestion_cls.return_value = mock_ingestion
             
             # Mock yesterday date
             mock_get_yesterday.return_value = "2023-03-14"
             
             # Mock date range generation
-            mock_generate_range.return_value = ["2023-01-01", "2023-01-02", "...etc..."]
+            mock_generate_range.return_value = ["2023-01-01", "2023-01-02", "2023-01-03"]
             
             # Act
             ingest_scoreboard(
@@ -303,5 +277,5 @@ class TestScoreboardIngestionModule:
             # Check that date range was generated from historical start date to yesterday
             mock_generate_range.assert_called_once_with("2023-01-01", "2023-03-14")
             
-            # Check that the process was called
-            mock_run.assert_called_once() 
+            # Check that the process was called with historical dates
+            mock_ingestion.process_date_range.assert_called_once_with(["2023-01-01", "2023-01-02", "2023-01-03"]) 

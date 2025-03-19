@@ -1,20 +1,19 @@
-import asyncio
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 from datetime import datetime
 import structlog
 
-from utils.config import ESPNApiConfig
-from utils.database import Database
-from utils.date_utils import (
+from src.utils.config import ESPNApiConfig
+from src.utils.database import Database
+from src.utils.date_utils import (
     format_date_for_espn, 
     generate_date_range, 
     get_season_date_range,
     get_today,
     get_yesterday
 )
-from utils.espn_api_client import ESPNApiClient
+from src.utils.espn_api_client import ESPNApiClient
 
 # Initialize logger
 logger = structlog.get_logger(__name__)
@@ -44,7 +43,7 @@ class ScoreboardIngestion:
                     db_path=db_path, 
                     batch_size=self.batch_size)
     
-    async def fetch_and_store_date(self, date: str, db: Database) -> None:
+    def fetch_and_store_date(self, date: str, db: Database) -> None:
         """
         Fetch and store scoreboard data for a specific date.
         
@@ -57,7 +56,7 @@ class ScoreboardIngestion:
         
         try:
             # Fetch data from ESPN API
-            data = await self.api_client.fetch_scoreboard(espn_date)
+            data = self.api_client.fetch_scoreboard(espn_date)
             
             # Store data in bronze layer
             url = self.api_client._build_url("scoreboard")
@@ -76,7 +75,7 @@ class ScoreboardIngestion:
             logger.error("Failed to process date", date=date, error=str(e))
             raise
     
-    async def process_date_range(self, dates: List[str]) -> None:
+    def process_date_range(self, dates: List[str]) -> None:
         """
         Process a range of dates in batches.
         
@@ -112,10 +111,14 @@ class ScoreboardIngestion:
                        batch_end=batch[-1],
                        batch_size=len(batch))
             
+            # Convert dates to ESPN format for batch processing
+            espn_dates = [format_date_for_espn(date) for date in batch]
+            
+            # Fetch data for all dates in the batch
             with Database(self.db_path) as db:
-                # Process each date in the batch
-                tasks = [self.fetch_and_store_date(date, db) for date in batch]
-                await asyncio.gather(*tasks)
+                # Process dates in the batch
+                for date in batch:
+                    self.fetch_and_store_date(date, db)
             
             logger.info("Completed batch", 
                        batch_start=batch[0], 
@@ -195,12 +198,12 @@ def ingest_scoreboard(
     # Create ingestion instance
     ingestion = ScoreboardIngestion(espn_api_config, db_path)
     
-    # Run the async process
+    # Run the process
     logger.info("Starting scoreboard ingestion", 
                date_count=len(dates_to_process),
                start_date=dates_to_process[0],
                end_date=dates_to_process[-1])
     
-    asyncio.run(ingestion.process_date_range(dates_to_process))
+    ingestion.process_date_range(dates_to_process)
     
     logger.info("Completed scoreboard ingestion", date_count=len(dates_to_process)) 

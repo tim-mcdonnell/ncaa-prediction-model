@@ -1,7 +1,6 @@
-import asyncio
+import time
 import httpx
 import json
-import time
 from typing import Any, Dict, List, Optional, Set, Tuple
 import structlog
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -64,7 +63,7 @@ class ESPNApiClient:
         
         return url
     
-    async def _throttle_request(self) -> None:
+    def _throttle_request(self) -> None:
         """Apply throttling between requests to avoid rate limiting."""
         now = time.time()
         time_since_last = now - self.last_request_time
@@ -72,19 +71,17 @@ class ESPNApiClient:
         if time_since_last < self.request_delay:
             delay = self.request_delay - time_since_last
             logger.debug("Throttling request", delay=delay)
-            await asyncio.sleep(delay)
+            time.sleep(delay)
         
         self.last_request_time = time.time()
     
     @retry(stop=stop_after_attempt(3), 
           wait=wait_exponential(multiplier=1, min=1, max=10))
-    async def _request(self, client: httpx.AsyncClient, 
-                     url: str, params: Dict[str, Any] = None) -> dict:
+    def _request(self, url: str, params: Dict[str, Any] = None) -> dict:
         """
         Make an HTTP request to the ESPN API with retry logic.
         
         Args:
-            client: Async HTTP client
             url: Request URL
             params: Query parameters
             
@@ -94,27 +91,28 @@ class ESPNApiClient:
         Raises:
             httpx.HTTPError: If request fails after retries
         """
-        await self._throttle_request()
+        self._throttle_request()
         
         logger.debug("Making API request", url=url, params=params)
         
         start_time = time.time()
-        response = await client.get(url, params=params, timeout=self.timeout)
-        duration = time.time() - start_time
-        
-        logger.debug("API response received", 
-                    status_code=response.status_code, 
-                    duration=duration)
-        
-        # Raise exception for non-200 responses
-        response.raise_for_status()
-        
-        # Parse JSON response
-        return response.json()
+        with httpx.Client(timeout=self.timeout) as client:
+            response = client.get(url, params=params)
+            duration = time.time() - start_time
+            
+            logger.debug("API response received", 
+                        status_code=response.status_code, 
+                        duration=duration)
+            
+            # Raise exception for non-200 responses
+            response.raise_for_status()
+            
+            # Parse JSON response
+            return response.json()
     
-    async def fetch_scoreboard(self, date: str, 
-                              groups: str = "50", 
-                              limit: int = 200) -> dict:
+    def fetch_scoreboard(self, date: str, 
+                        groups: str = "50", 
+                        limit: int = 200) -> dict:
         """
         Fetch scoreboard data for a specific date.
         
@@ -135,13 +133,73 @@ class ESPNApiClient:
         
         logger.info("Fetching scoreboard data", date=date, groups=groups, limit=limit)
         
-        async with httpx.AsyncClient() as client:
-            data = await self._request(client, url, params)
+        data = self._request(url, params)
+        
+        # Log the number of events/games found
+        events_count = len(data.get("events", []))
+        logger.info("Fetched scoreboard data", 
+                   date=date, 
+                   events_count=events_count)
+        
+        return data
+    
+    def fetch_scoreboard_batch(self, dates: List[str], 
+                             groups: str = "50", 
+                             limit: int = 200) -> Dict[str, dict]:
+        """
+        Fetch scoreboard data for multiple dates concurrently.
+        
+        Args:
+            dates: List of dates in YYYYMMDD format
+            groups: ESPN groups parameter (50 = Division I)
+            limit: Maximum number of games to return
             
-            # Log the number of events/games found
-            events_count = len(data.get("events", []))
-            logger.info("Fetched scoreboard data", 
-                       date=date, 
-                       events_count=events_count)
-            
-            return data 
+        Returns:
+            Dictionary mapping dates to their respective JSON responses
+        """
+        url = self._build_url("scoreboard")
+        
+        logger.info("Fetching scoreboard data for multiple dates", 
+                   dates_count=len(dates))
+        
+        results = {}
+        
+        # Using httpx for concurrent requests
+        with httpx.Client(timeout=self.timeout) as client:
+            for date in dates:
+                # Apply throttling
+                self._throttle_request()
+                
+                params = {
+                    "dates": date,
+                    "groups": groups,
+                    "limit": limit
+                }
+                
+                logger.debug("Making API request", date=date)
+                
+                start_time = time.time()
+                response = client.get(url, params=params)
+                duration = time.time() - start_time
+                
+                logger.debug("API response received", 
+                           date=date,
+                           status_code=response.status_code, 
+                           duration=duration)
+                
+                # Raise exception for non-200 responses
+                response.raise_for_status()
+                
+                # Parse JSON response
+                data = response.json()
+                
+                # Log the number of events/games found
+                events_count = len(data.get("events", []))
+                logger.info("Fetched scoreboard data", 
+                           date=date, 
+                           events_count=events_count)
+                
+                # Store results
+                results[date] = data
+        
+        return results 
