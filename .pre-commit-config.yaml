@@ -26,14 +26,13 @@ repos:
     -   id: mypy
         additional_dependencies: [types-requests]
 
-# Temporarily disable pytest check until we have tests
-# -   id: pytest-check
-#     name: pytest-check
-#     entry: pytest
-#     language: system
-#     pass_filenames: false
-#     always_run: true
-#     args: ["-v", "--no-cov"]  # Run without coverage for speed in pre-commit
+-   id: pytest-check
+    name: pytest-check
+    entry: pytest
+    language: system
+    pass_filenames: false
+    always_run: true
+    args: ["-v", "--no-cov"]  # Run without coverage for speed in pre-commit
 
 -   repo: local
     hooks:
