@@ -1,9 +1,4 @@
----
-title: NCAA Men's Basketball Prediction Model
-description: A machine learning project for predicting NCAA basketball game outcomes
----
-
-# NCAA Basketball Prediction Model
+ NCAA Basketball Prediction Model
 
 ## Project Overview
 

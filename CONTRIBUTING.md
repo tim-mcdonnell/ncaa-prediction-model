@@ -1,8 +1,3 @@
----
-title: Contributing Guidelines
-description: Guidelines for contributing to the NCAA Basketball Prediction Model
----
-
 # Contributing to NCAA Basketball Prediction Model
 
 Thank you for your interest in contributing to the NCAA Basketball Prediction Model. This document provides guidelines to help you get started.
