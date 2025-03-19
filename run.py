@@ -60,27 +60,60 @@ def ingest() -> None:
 @ingest.command()
 @click.option("--date", type=click.DateTime(formats=["%Y-%m-%d"]), 
              help="Date to fetch scoreboard data for (YYYY-MM-DD)")
+@click.option("--start-date", type=click.DateTime(formats=["%Y-%m-%d"]),
+             help="Start date for range (YYYY-MM-DD)")
+@click.option("--end-date", type=click.DateTime(formats=["%Y-%m-%d"]),
+             help="End date for range (YYYY-MM-DD)")
+@click.option("--yesterday", is_flag=True, help="Fetch data for yesterday")
+@click.option("--today", is_flag=True, help="Fetch data for today")
 @click.option("--seasons", help="Comma-separated list of seasons (YYYY-YY)")
+@click.option("--year", type=int, help="Calendar year to fetch")
 @click.pass_context
-def scoreboard(ctx: click.Context, date: Optional[click.DateTime], seasons: Optional[str]) -> None:
+def scoreboard(ctx: click.Context, 
+               date: Optional[click.DateTime], 
+               start_date: Optional[click.DateTime],
+               end_date: Optional[click.DateTime],
+               yesterday: bool,
+               today: bool,
+               seasons: Optional[str],
+               year: Optional[int]) -> None:
     """Ingest scoreboard data from ESPN API."""
     from ingest.scoreboard import ingest_scoreboard
     
     config = ctx.obj["config"]
     
-    # Process date if provided
+    # Process date parameters
     date_str = date.strftime("%Y-%m-%d") if date else None
+    start_date_str = start_date.strftime("%Y-%m-%d") if start_date else None
+    end_date_str = end_date.strftime("%Y-%m-%d") if end_date else None
     
     # Process seasons if provided
     season_list = None
     if seasons:
         season_list = [s.strip() for s in seasons.split(",")]
     
-    logger.info("Starting scoreboard ingestion", date=date_str, seasons=season_list)
+    logger.info("Starting scoreboard ingestion", 
+               date=date_str, 
+               start_date=start_date_str,
+               end_date=end_date_str,
+               yesterday=yesterday,
+               today=today,
+               seasons=season_list,
+               year=year)
     
     try:
         # Call the actual implementation
-        ingest_scoreboard(date_str, season_list, config.espn_api)
+        ingest_scoreboard(
+            date=date_str,
+            start_date=start_date_str,
+            end_date=end_date_str,
+            yesterday=yesterday,
+            today=today,
+            seasons=season_list,
+            year=year,
+            espn_api_config=config.espn_api,
+            db_path=f"{config.data_paths.bronze}/ncaa_basketball.duckdb"
+        )
         logger.info("Scoreboard ingestion completed successfully")
     except Exception as e:
         logger.exception("Scoreboard ingestion failed", error=str(e))
