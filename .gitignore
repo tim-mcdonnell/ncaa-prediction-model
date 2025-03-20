@@ -75,4 +75,4 @@ uv.lock
 
 # Distribution / packaging
 *.manifest
-*.spec 
+*.spec

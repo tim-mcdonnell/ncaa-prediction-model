@@ -43,11 +43,11 @@ The project uses ESPN's undocumented APIs to retrieve NCAA basketball data:
 def fetch_scoreboard(date: str, limit: int = 100) -> dict:
     """
     Fetch scoreboard data for a specific date.
-    
+
     Args:
         date: Date in YYYYMMDD format
         limit: Maximum number of games to return
-        
+
     Returns:
         JSON response as dictionary
     """
@@ -56,10 +56,10 @@ def fetch_scoreboard(date: str, limit: int = 100) -> dict:
         "dates": date,
         "limit": limit
     }
-    
+
     response = requests.get(url, params=params)
     response.raise_for_status()
-    
+
     return response.json()
 ```
 
@@ -114,37 +114,37 @@ The Silver layer transforms raw data into cleaned, normalized structures.
 def process_games(raw_data: dict) -> List[dict]:
     """
     Process raw scoreboard data into normalized game records.
-    
+
     Args:
         raw_data: Raw JSON data from scoreboard API
-        
+
     Returns:
         List of normalized game dictionaries
     """
     games = []
-    
+
     for event in raw_data.get("events", []):
         game_id = event.get("id")
         competitions = event.get("competitions", [])
-        
+
         if not competitions:
             continue
-            
+
         competition = competitions[0]
-        
+
         # Extract teams and scores
         teams_data = {}
         for competitor in competition.get("competitors", []):
             is_home = competitor.get("homeAway") == "home"
             team_id = competitor.get("team", {}).get("id")
             score = competitor.get("score")
-            
+
             role = "home" if is_home else "away"
             teams_data[role] = {
                 "team_id": team_id,
                 "score": int(score) if score else None
             }
-        
+
         # Create normalized game record
         game = {
             "game_id": game_id,
@@ -157,9 +157,9 @@ def process_games(raw_data: dict) -> List[dict]:
             "neutral_site": competition.get("neutralSite", False),
             "conference_game": competition.get("conferenceCompetition", False)
         }
-        
+
         games.append(game)
-    
+
     return games
 ```
 
@@ -186,35 +186,35 @@ The Gold layer generates features for machine learning models.
 def calculate_team_features(team_id: str, games: List[dict]) -> dict:
     """
     Calculate team performance features from game data.
-    
+
     Args:
         team_id: Team identifier
         games: List of processed game dictionaries
-        
+
     Returns:
         Dictionary of team features
     """
     team_games = [g for g in games if g["home_team_id"] == team_id or g["away_team_id"] == team_id]
-    
+
     # Calculate overall record
     wins = 0
     losses = 0
     points_for = 0
     points_against = 0
-    
+
     for game in team_games:
         is_home = game["home_team_id"] == team_id
         team_score = game["home_score"] if is_home else game["away_score"]
         opponent_score = game["away_score"] if is_home else game["home_score"]
-        
+
         if team_score > opponent_score:
             wins += 1
         elif team_score < opponent_score:
             losses += 1
-            
+
         points_for += team_score if team_score else 0
         points_against += opponent_score if opponent_score else 0
-    
+
     # Calculate averages
     games_played = wins + losses
     if games_played > 0:
@@ -225,7 +225,7 @@ def calculate_team_features(team_id: str, games: List[dict]) -> dict:
         avg_points_for = 0
         avg_points_against = 0
         win_pct = 0
-    
+
     return {
         "team_id": team_id,
         "games_played": games_played,

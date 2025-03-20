@@ -27,7 +27,7 @@ Where:
 The command interface is implemented using [Click](https://click.palletsprojects.com/), which provides:
 
 1. **Composability**: Easy to compose complex command hierarchies
-2. **Type Safety**: Automatic type conversion and validation 
+2. **Type Safety**: Automatic type conversion and validation
 3. **Self-Documentation**: Automatic help text generation
 4. **Testability**: Easy to test commands
 
@@ -51,7 +51,7 @@ ncaa-prediction-model/
     │   ├── scoreboard.py  # Scoreboard ingestion implementation
     │   └── teams.py       # Teams ingestion implementation
     ├── process/           # Data processing commands
-    ├── features/          # Feature engineering commands 
+    ├── features/          # Feature engineering commands
     ├── models/            # Model training/prediction commands
     └── utils/             # Shared utilities
         ├── __init__.py
@@ -146,7 +146,7 @@ $ python run.py --help
 Usage: run.py [OPTIONS] COMMAND [ARGS]...
 
   NCAA Basketball Prediction Model.
-  
+
   Run commands for data ingestion, processing, model training, and more.
 
 Options:
@@ -189,4 +189,4 @@ def test_scoreboard_ingestion():
     result = runner.invoke(cli, ["ingest", "scoreboard", "--date", "2023-03-15"])
     assert result.exit_code == 0
     assert "Scoreboard ingestion completed successfully" in result.output
-``` 
+```

@@ -8,6 +8,8 @@ espn_api:
   request_delay: 1.0  # seconds between requests
   max_retries: 3
   timeout: 10.0  # seconds
+  historical_start_date: "2021-11-01"  # Start of 2021-22 season
+  batch_size: 30  # Process dates in batches of 30
 
 data_paths:
   bronze: "data/bronze"
@@ -20,4 +22,4 @@ seasons:
   historical:
     - "2022-23"
     - "2021-22"
-    - "2020-21" 
+    - "2020-21"
