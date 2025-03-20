@@ -6,7 +6,9 @@ Run from the project root with: python run.py [command] [subcommand] [options]
 """
 
 import sys
+from datetime import datetime
 from pathlib import Path
+from typing import Any, cast
 
 import click
 import structlog
@@ -22,7 +24,7 @@ from src.utils.logging import configure_logging  # noqa: E402
 logger = structlog.get_logger(__name__)
 
 
-@click.group()
+@click.group()  # type: ignore
 @click.option("--log-level", default=None, help="Override logging level")
 @click.option("--config-dir", default="config", help="Configuration directory")
 @click.pass_context
@@ -56,12 +58,12 @@ def cli(ctx: click.Context, log_level: str | None, config_dir: str) -> None:
 # ======================================================================
 
 
-@cli.group()
+@cli.group()  # type: ignore
 def ingest() -> None:
     """Commands for data ingestion."""
 
 
-@ingest.command()
+@ingest.command()  # type: ignore
 @click.option(
     "--date",
     type=click.DateTime(formats=["%Y-%m-%d"]),
@@ -82,32 +84,50 @@ def ingest() -> None:
 @click.option("--seasons", help="Comma-separated list of seasons (YYYY-YY)")
 @click.option("--year", type=int, help="Calendar year to fetch")
 @click.pass_context
-def scoreboard(ctx: click.Context, **kwargs: dict) -> None:
+def scoreboard(ctx: click.Context, **kwargs: dict[str, Any]) -> None:
     """Ingest scoreboard data from ESPN API."""
     from src.ingest.scoreboard import ScoreboardIngestionConfig, ingest_scoreboard
 
     config = ctx.obj["config"]
+    processed_kwargs: dict[str, Any] = {}
 
     # Process date parameters
     if kwargs.get("date"):
-        kwargs["date"] = kwargs["date"].strftime("%Y-%m-%d")
+        date_obj = cast(datetime, kwargs["date"])
+        processed_kwargs["date"] = date_obj.strftime("%Y-%m-%d")
+
     if kwargs.get("start_date"):
-        kwargs["start_date"] = kwargs["start_date"].strftime("%Y-%m-%d")
+        start_date_obj = cast(datetime, kwargs["start_date"])
+        processed_kwargs["start_date"] = start_date_obj.strftime("%Y-%m-%d")
+
     if kwargs.get("end_date"):
-        kwargs["end_date"] = kwargs["end_date"].strftime("%Y-%m-%d")
+        end_date_obj = cast(datetime, kwargs["end_date"])
+        processed_kwargs["end_date"] = end_date_obj.strftime("%Y-%m-%d")
+
+    # Copy other parameters
+    for key in ["yesterday", "today", "year"]:
+        if key in kwargs and kwargs[key] is not None:
+            processed_kwargs[key] = kwargs[key]
 
     # Process seasons if provided
     if kwargs.get("seasons"):
-        kwargs["seasons"] = [s.strip() for s in kwargs["seasons"].split(",")]
+        seasons_str = cast(str, kwargs["seasons"])
+        processed_kwargs["seasons"] = [s.strip() for s in seasons_str.split(",")]
 
-    logger.info("Starting scoreboard ingestion", **kwargs)
+    logger.info("Starting scoreboard ingestion", **processed_kwargs)
 
     try:
         # Create ingestion config
         ingestion_config = ScoreboardIngestionConfig(
             espn_api_config=config.espn_api,
             db_path="data/ncaa.duckdb",
-            **kwargs,
+            date=processed_kwargs.get("date"),
+            start_date=processed_kwargs.get("start_date"),
+            end_date=processed_kwargs.get("end_date"),
+            yesterday=processed_kwargs.get("yesterday", False),
+            today=processed_kwargs.get("today", False),
+            seasons=processed_kwargs.get("seasons"),
+            year=processed_kwargs.get("year"),
         )
 
         # Call the actual implementation
@@ -118,7 +138,7 @@ def scoreboard(ctx: click.Context, **kwargs: dict) -> None:
         sys.exit(1)
 
 
-@ingest.command()
+@ingest.command()  # type: ignore
 @click.option("--conference", help="Conference ID to limit ingestion")
 @click.option("--seasons", help="Comma-separated list of seasons (YYYY-YY)")
 @click.pass_context
@@ -149,12 +169,12 @@ def teams(ctx: click.Context, conference: str | None, seasons: str | None) -> No
 # ======================================================================
 
 
-@cli.group()
+@cli.group()  # type: ignore
 def process() -> None:
     """Commands for data processing."""
 
 
-@process.command()
+@process.command()  # type: ignore
 @click.option("--entity", required=True, help="Entity to process")
 @click.option("--incremental", is_flag=True, help="Only process new data")
 def bronze_to_silver(entity: str, incremental: bool) -> None:
@@ -168,12 +188,12 @@ def bronze_to_silver(entity: str, incremental: bool) -> None:
 # ======================================================================
 
 
-@cli.group()
+@cli.group()  # type: ignore
 def features() -> None:
     """Commands for feature engineering."""
 
 
-@features.command()
+@features.command()  # type: ignore
 @click.option("--feature-set", required=True, help="Feature set to generate")
 def generate(feature_set: str) -> None:
     """Generate features for model training."""
@@ -181,7 +201,7 @@ def generate(feature_set: str) -> None:
     # Implementation here
 
 
-@features.command("list")
+@features.command("list")  # type: ignore
 @click.option("--entity", help="Filter features by entity")
 def list_features(entity: str | None) -> None:
     """List available features."""
@@ -194,12 +214,12 @@ def list_features(entity: str | None) -> None:
 # ======================================================================
 
 
-@cli.group()
+@cli.group()  # type: ignore
 def model() -> None:
     """Commands for model operations."""
 
 
-@model.command()
+@model.command()  # type: ignore
 @click.option("--model-type", required=True, help="Type of model to train")
 @click.option("--feature-set", required=True, help="Feature set to use for training")
 def train(model_type: str, feature_set: str) -> None:
@@ -208,11 +228,11 @@ def train(model_type: str, feature_set: str) -> None:
     # Implementation here
 
 
-@model.command()
+@model.command()  # type: ignore
 @click.option("--model-id", required=True, help="ID of trained model to use")
 @click.option("--upcoming", is_flag=True, help="Predict upcoming games")
 @click.option("--date", type=click.DateTime(), help="Predict games for specific date")
-def predict(model_id: str, upcoming: bool, date: click.DateTime | None) -> None:
+def predict(model_id: str, upcoming: bool, date: datetime | None) -> None:
     """Generate predictions using trained model."""
     date_str = date.strftime("%Y-%m-%d") if date else None
     logger.info(

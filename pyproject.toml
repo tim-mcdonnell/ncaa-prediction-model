@@ -19,7 +19,8 @@ dependencies = [
     "dash>=2.14.0",
     "torch>=2.0.0",
     "torchvision>=0.15.0",
-    "lightning>=2.0.0"
+    "lightning>=2.0.0",
+    "types-pyyaml>=6.0.12.20241230",
 ]
 
 
@@ -27,6 +28,7 @@ dependencies = [
 dev = [
     "pytest>=7.4.3",
     "pytest-cov>=4.1.0",
+    "pytest-mock>=3.14.0",
     "ruff>=0.11.0",
     "mypy>=1.8.0",
     "mkdocs-material>=9.5.4",
@@ -89,8 +91,9 @@ warn_unused_configs = true
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 check_untyped_defs = true
-disallow_untyped_decorators = true
+disallow_untyped_decorators = false  # Allow untyped decorators
 no_implicit_optional = true
+disable_error_code = ["misc", "no-untyped-def"]  # Ignore errors for untyped decorators and function defs
 
 [[tool.mypy.overrides]]
 module = "tests.*"

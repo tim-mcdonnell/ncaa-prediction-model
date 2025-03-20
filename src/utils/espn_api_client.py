@@ -5,6 +5,7 @@ handling connection throttling, retries, and error handling to ensure reliable d
 """
 
 import time
+from dataclasses import dataclass
 from typing import Any
 
 import httpx
@@ -15,43 +16,49 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 logger = structlog.get_logger(__name__)
 
 
+@dataclass
+class ESPNApiConfig:
+    """Configuration for ESPN API client."""
+
+    # Required parameters
+    base_url: str
+    endpoints: dict[str, str]
+
+    # Optional parameters with defaults
+    request_delay: float = 1.0
+    max_retries: int = 3
+    timeout: float = 10.0
+
+
 class ESPNApiClient:
     """Client for ESPN's undocumented API."""
 
     def __init__(
         self: "ESPNApiClient",
-        base_url: str,
-        endpoints: dict[str, str],
-        request_delay: float = 1.0,
-        max_retries: int = 3,
-        timeout: float = 10.0,
+        config: ESPNApiConfig,
     ) -> None:
         """Initialize ESPN API client.
 
         Args:
-            base_url: Base URL for the API
-            endpoints: Dictionary of endpoint paths
-            request_delay: Delay between requests in seconds
-            max_retries: Maximum number of retries for failed requests
-            timeout: Request timeout in seconds
+            config: ESPNApiConfig object with client configuration
         """
-        self.base_url = base_url
-        self.endpoints = endpoints
-        self.request_delay = request_delay
-        self.max_retries = max_retries
-        self.timeout = timeout
+        self.base_url = config.base_url
+        self.endpoints = config.endpoints
+        self.request_delay = config.request_delay
+        self.max_retries = config.max_retries
+        self.timeout = config.timeout
         self.last_request_time = 0.0
 
         logger.debug(
             "Initialized ESPN API client",
-            base_url=base_url,
-            endpoints=endpoints,
-            request_delay=request_delay,
-            max_retries=max_retries,
-            timeout=timeout,
+            base_url=self.base_url,
+            endpoints=self.endpoints,
+            request_delay=self.request_delay,
+            max_retries=self.max_retries,
+            timeout=self.timeout,
         )
 
-    def _build_url(self: "ESPNApiClient", endpoint: str, **kwargs: dict[str, Any]) -> str:
+    def _build_url(self: "ESPNApiClient", endpoint: str, **kwargs: str) -> str:
         """Build URL for API endpoint with path parameters.
 
         Args:
@@ -75,9 +82,13 @@ class ESPNApiClient:
         if kwargs:
             path = path.format(**kwargs)
 
+        # Ensure path starts with a slash for proper URL joining
+        if not path.startswith("/"):
+            path = f"/{path}"
+
         return f"{self.base_url}{path}"
 
-    def get_endpoint_url(self: "ESPNApiClient", endpoint: str, **kwargs: dict[str, Any]) -> str:
+    def get_endpoint_url(self: "ESPNApiClient", endpoint: str, **kwargs: str) -> str:
         """Get the full URL for an API endpoint.
 
         Args:
@@ -104,7 +115,7 @@ class ESPNApiClient:
 
         self.last_request_time = time.time()
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))  # type: ignore
     def _request(
         self: "ESPNApiClient",
         url: str,
@@ -141,7 +152,7 @@ class ESPNApiClient:
             response.raise_for_status()
 
             # Parse JSON response
-            return response.json()
+            return dict(response.json())
 
     def fetch_scoreboard(
         self: "ESPNApiClient",
@@ -164,7 +175,7 @@ class ESPNApiClient:
 
         logger.info("Fetching scoreboard data", date=date, groups=groups, limit=limit)
 
-        data = self._request(url, params)
+        data: dict[str, Any] = self._request(url, params)
         logger.debug("Fetched scoreboard data", num_events=len(data.get("events", [])))
         return data
 
@@ -196,7 +207,7 @@ class ESPNApiClient:
                 # Apply throttling
                 self._throttle_request()
 
-                params = {"dates": date, "groups": groups, "limit": limit}
+                params: dict[str, str | int] = {"dates": date, "groups": groups, "limit": limit}
 
                 logger.debug("Making API request", date=date)
 
@@ -215,7 +226,7 @@ class ESPNApiClient:
                 response.raise_for_status()
 
                 # Parse JSON response
-                data = response.json()
+                data = dict(response.json())
 
                 # Log the number of events/games found
                 events_count = len(data.get("events", []))

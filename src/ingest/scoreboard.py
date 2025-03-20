@@ -21,6 +21,7 @@ from src.utils.date_utils import (
     get_yesterday,
 )
 from src.utils.espn_api_client import ESPNApiClient
+from src.utils.espn_api_client import ESPNApiConfig as ClientAPIConfig
 
 # Initialize logger
 logger = structlog.get_logger(__name__)
@@ -62,22 +63,24 @@ class ScoreboardIngestion:
         """
         # Handle both object and dictionary config formats for testing compatibility
         if isinstance(espn_api_config, dict):
-            self.api_client = ESPNApiClient(
+            client_config = ClientAPIConfig(
                 base_url=espn_api_config.get("base_url", ""),
                 endpoints=espn_api_config.get("endpoints", {}),
                 request_delay=espn_api_config.get("request_delay", 1.0),
                 max_retries=espn_api_config.get("max_retries", 3),
                 timeout=espn_api_config.get("timeout", 10),
             )
+            self.api_client = ESPNApiClient(client_config)
             self.batch_size = espn_api_config.get("batch_size", 10)
         else:
-            self.api_client = ESPNApiClient(
+            client_config = ClientAPIConfig(
                 base_url=espn_api_config.base_url,
                 endpoints=espn_api_config.endpoints,
                 request_delay=espn_api_config.request_delay,
                 max_retries=espn_api_config.max_retries,
                 timeout=espn_api_config.timeout,
             )
+            self.api_client = ESPNApiClient(client_config)
             self.batch_size = espn_api_config.batch_size
 
         self.db_path = db_path
@@ -251,12 +254,22 @@ def ingest_scoreboard_legacy(  # noqa: PLR0913
     espn_api_config: ESPNApiConfig | None = None,
     db_path: str = "data/ncaa.duckdb",
 ) -> list[str]:
-    """Legacy interface for ingest_scoreboard for backwards compatibility.
+    """Legacy interface for scoreboard ingestion.
+
+    Note: This function is maintained for backward compatibility.
+    New code should use the ingest_scoreboard function with ScoreboardIngestionConfig.
+
+    Only one date selection parameter should be used. Precedence (high to low):
+    1. date
+    2. start_date & end_date
+    3. yesterday/today
+    4. seasons
+    5. year
 
     Args:
-        date: Single date to ingest (YYYY-MM-DD)
-        start_date: Start date for range (YYYY-MM-DD)
-        end_date: End date for range (YYYY-MM-DD)
+        date: Specific date to ingest in YYYY-MM-DD format
+        start_date: Start date for date range in YYYY-MM-DD format
+        end_date: End date for date range in YYYY-MM-DD format
         yesterday: Ingest data for yesterday
         today: Ingest data for today
         seasons: List of seasons in YYYY-YY format
@@ -267,6 +280,17 @@ def ingest_scoreboard_legacy(  # noqa: PLR0913
     Returns:
         List of dates that were processed
     """
+    if espn_api_config is None:
+        # Load default configuration if none provided
+        import os
+        from pathlib import Path
+
+        from src.utils.config import get_config  # Local import to avoid circular imports
+
+        config_dir = Path(os.environ.get("CONFIG_DIR", "config"))
+        config_obj = get_config(config_dir)
+        espn_api_config = config_obj.espn_api
+
     config = ScoreboardIngestionConfig(
         espn_api_config=espn_api_config,
         db_path=db_path,

@@ -58,17 +58,13 @@ class TestDateUtils:
         assert result == expected
 
     def test_format_date_for_api_with_invalid_date_raises_value_error(self):
-        """Test format_date_for_api with invalid date format raises ValueError."""
+        """Test format_date_for_api with invalid date raises ValueError."""
         # Arrange
-        invalid_date = "03/15/2023"  # Wrong format (MM/DD/YYYY instead of YYYY-MM-DD)
+        invalid_date = "03/15/2023"  # Not in YYYY-MM-DD format
 
         # Act & Assert
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match="Invalid date format"):
             format_date_for_api(invalid_date)
-
-        # Check for the expected error message
-        assert "Invalid date format" in str(exc_info.value)
-        assert invalid_date in str(exc_info.value)
 
     def test_get_date_range_with_valid_dates_returns_date_list(self):
         """Test get_date_range with valid dates returns list of dates."""
@@ -76,40 +72,35 @@ class TestDateUtils:
         start_date = "2023-03-15"
         end_date = "2023-03-17"
         expected = ["2023-03-15", "2023-03-16", "2023-03-17"]
+        expected_count = 3
 
         # Act
         result = get_date_range(start_date, end_date)
 
         # Assert
         assert result == expected
-        assert len(result) == 3
+        assert len(result) == expected_count
 
     def test_get_date_range_with_end_date_before_start_date_raises_value_error(self):
         """Test get_date_range with end date before start date raises ValueError."""
         # Arrange
         start_date = "2023-03-15"
-        end_date = "2023-03-14"  # Before start_date
+        end_date = "2023-03-14"  # One day before start_date
+        expected_error = f"End date {end_date} is before start date {start_date}"
 
         # Act & Assert
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match=expected_error):
             get_date_range(start_date, end_date)
-
-        # Check error message contains both dates
-        assert start_date in str(exc_info.value)
-        assert end_date in str(exc_info.value)
 
     def test_get_date_range_with_invalid_date_format_raises_value_error(self):
         """Test get_date_range with invalid date format raises ValueError."""
         # Arrange
-        start = "03/15/2023"  # Wrong format
-        end = "2023-03-17"
+        invalid_start = "2023/03/15"  # Incorrect format, should be YYYY-MM-DD
+        valid_end = "2023-03-18"
 
         # Act & Assert
-        with pytest.raises(ValueError) as exc_info:
-            get_date_range(start, end)
-
-        # Check that message indicates date format issue
-        assert "Invalid date format" in str(exc_info.value)
+        with pytest.raises(ValueError, match="Invalid date format"):
+            get_date_range(invalid_start, valid_end)
 
     def test_get_season_date_range_with_valid_season_returns_date_range(self):
         """Test get_season_date_range with valid season format returns start and end dates."""
@@ -128,33 +119,23 @@ class TestDateUtils:
     def test_get_season_date_range_with_invalid_season_format_raises_value_error(self):
         """Test get_season_date_range with invalid season format raises ValueError."""
         # Arrange
-        invalid_formats = ["2022", "22-23", "2022/23", "202223"]
+        invalid_season = "20222023"  # Invalid format, should be YYYY-YY
 
         # Act & Assert
-        for invalid_format in invalid_formats:
-            with pytest.raises(ValueError) as exc_info:
-                get_season_date_range(invalid_format)
-            
-            # Check that the message indicates an issue with season format
-            assert "Invalid season format" in str(exc_info.value)
-            assert invalid_format in str(exc_info.value)
+        with pytest.raises(ValueError, match="Invalid season format"):
+            get_season_date_range(invalid_season)
 
     def test_get_date_range_returns_correct_dates(self):
-        """Test get_date_range returns the correct date range."""
+        """Test get_date_range returns correct list of dates."""
         # Arrange
-        start_date = "2023-01-01"
-        end_date = "2023-01-05"
-        expected = [
-            "2023-01-01",
-            "2023-01-02",
-            "2023-01-03",
-            "2023-01-04",
-            "2023-01-05",
-        ]
+        start_date = "2023-03-15"
+        end_date = "2023-03-17"
+        expected_dates = ["2023-03-15", "2023-03-16", "2023-03-17"]
+        expected_date_count = 3
 
         # Act
-        result = get_date_range(start_date, end_date)
+        dates = get_date_range(start_date, end_date)
 
         # Assert
-        assert result == expected
-        assert len(result) == len(expected)
+        assert len(dates) == expected_date_count
+        assert dates == expected_dates

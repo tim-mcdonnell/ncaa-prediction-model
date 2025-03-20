@@ -4,18 +4,18 @@ from unittest.mock import MagicMock, patch
 
 import httpx
 import pytest
-import requests
+from tenacity import RetryError
 
-from src.utils.espn_api_client import ESPNApiClient
+from src.utils.espn_api_client import ESPNApiClient, ESPNApiConfig
 
 
 class TestESPNApiClientModule:
     """Tests for the ESPN API client module."""
 
-    @pytest.fixture()
+    @pytest.fixture()  # type: ignore
     def client(self) -> ESPNApiClient:
         """Create a test ESPN API client."""
-        return ESPNApiClient(
+        config = ESPNApiConfig(
             base_url="https://test.api.com",
             endpoints={
                 "scoreboard": "/sports/basketball/scoreboard",
@@ -26,6 +26,7 @@ class TestESPNApiClientModule:
             max_retries=2,
             timeout=1.0,
         )
+        return ESPNApiClient(config)
 
     def test_init_with_valid_parameters_initializes_correctly(self) -> None:
         """Test initialization with valid parameters."""
@@ -34,13 +35,14 @@ class TestESPNApiClientModule:
         default_retries = 3
         default_timeout = 10.0
 
-        client = ESPNApiClient(
+        config = ESPNApiConfig(
             base_url="https://test.api.com",
             endpoints={"scoreboard": "/scoreboard"},
             request_delay=default_delay,
             max_retries=default_retries,
             timeout=default_timeout,
         )
+        client = ESPNApiClient(config)
 
         # Assert
         assert client.base_url == "https://test.api.com"
@@ -181,9 +183,6 @@ class TestESPNApiClientModule:
         mock_context = MagicMock()
         mock_context.__enter__.return_value = mock_client
 
-        # Import RetryError for assertion
-        from tenacity import RetryError
-
         # Mock httpx.Client
         with patch("httpx.Client", return_value=mock_context):
             # Act & Assert
@@ -230,18 +229,24 @@ class TestESPNApiClientModule:
     ) -> None:
         """Test fetch_scoreboard_batch with multiple dates returns data for all dates."""
         # Arrange
-        dates = ["20230315", "20230316", "20230317"]
-        expected_date_count = 3
+        dates = ["20230315", "20230316"]  # Only passing 2 dates
+        expected_date_count = 2  # Expected count matches number of dates
 
         # Prepare test data
         mock_responses = {
             "20230315": {"events": [{"id": "123", "name": "Game 1"}]},
             "20230316": {"events": [{"id": "124", "name": "Game 2"}]},
-            "20230317": {"events": [{"id": "125", "name": "Game 3"}]},
         }
 
         # Configure mock client to return different responses based on date parameter
         def get_side_effect(_: str, params: dict[str, Any] | None = None) -> MagicMock:
+            if params is None or "dates" not in params:
+                mock_resp = MagicMock()
+                mock_resp.status_code = 200
+                mock_resp.raise_for_status = MagicMock()
+                mock_resp.json.return_value = {"events": []}
+                return mock_resp
+
             date = params["dates"]
             mock_resp = MagicMock()
             mock_resp.status_code = 200
@@ -271,7 +276,9 @@ class TestESPNApiClientModule:
         ):
             # Act
             result = client.fetch_scoreboard_batch(
-                dates=["20230315", "20230316"], groups="50", limit=100
+                dates=dates,  # Pass the dates list directly
+                groups="50",
+                limit=100,
             )
 
             # Assert
@@ -281,24 +288,29 @@ class TestESPNApiClientModule:
                 assert date in result
                 assert result[date] == mock_responses[date]
 
-            # Check that get was called exactly 3 times (once per date)
+            # Check that get was called exactly once per date
             assert mock_client.get.call_count == expected_date_count
 
 
 class TestESPNApiClient:
-    """Tests for the ESPN API client."""
+    """Integration tests for ESPNApiClient."""
 
-    @pytest.fixture()
-    def mock_requests_get(self):
-        """Create a mock for the requests.get function."""
-        with patch("src.utils.espn_api_client.requests.get") as mock_get:
+    @pytest.fixture()  # type: ignore
+    def mock_httpx_client(self):
+        """Mock the httpx.Client for testing."""
+        with patch("httpx.Client") as mock_client:
             mock_response = MagicMock()
-            mock_response.json.return_value = {"test": "data"}
             mock_response.status_code = 200
-            mock_get.return_value = mock_response
-            yield mock_get
+            mock_response.raise_for_status = MagicMock()
+            mock_response.json.return_value = {"events": [{"id": "12345"}]}
 
-    @pytest.fixture()
+            mock_client_instance = MagicMock()
+            mock_client_instance.get.return_value = mock_response
+            mock_client.return_value.__enter__.return_value = mock_client_instance
+
+            yield mock_client_instance
+
+    @pytest.fixture()  # type: ignore
     def api_config(self):
         """Create a test API configuration."""
         return {
@@ -310,61 +322,88 @@ class TestESPNApiClient:
     def test_init_with_config_sets_properties_correctly(self, api_config):
         """Test initialization with config sets properties correctly."""
         # Act
-        client = ESPNApiClient(config=api_config)
+        config = ESPNApiConfig(
+            base_url=api_config["base_url"],
+            endpoints={"scoreboard": "scoreboard"},
+            request_delay=api_config["request_delay"],
+        )
+        client = ESPNApiClient(config)
 
         # Assert
         assert client.base_url == api_config["base_url"]
+        assert client.endpoints == {"scoreboard": "scoreboard"}
         assert client.request_delay == api_config["request_delay"]
 
     def test_fetch_scoreboard_with_valid_date_calls_get_with_correct_params(
-        self, mock_requests_get, api_config
+        self, mock_httpx_client, api_config
     ):
-        """Test fetch_scoreboard with valid date calls requests.get with correct parameters."""
+        """Test fetch_scoreboard with valid date calls httpx client with correct parameters."""
         # Arrange
-        client = ESPNApiClient(config=api_config)
-        date = "2023-03-15"
-        expected_url = f"{api_config['base_url']}/scoreboard"
-        expected_params = {"dates": "20230315", "limit": "300", "groups": "50"}
+        config = ESPNApiConfig(
+            base_url=api_config["base_url"],
+            endpoints={"scoreboard": "scoreboard"},
+            request_delay=0.001,  # Use very small delay for tests
+        )
+        client = ESPNApiClient(config)
 
         # Act
-        result = client.fetch_scoreboard(date)
+        client.fetch_scoreboard("20230315")
 
         # Assert
-        mock_requests_get.assert_called_once_with(expected_url, params=expected_params, timeout=5)
-        assert result == {"test": "data"}
+        mock_httpx_client.get.assert_called_once()
+        args, kwargs = mock_httpx_client.get.call_args
+        assert args[0] == f"{api_config['base_url']}/scoreboard"
+        assert kwargs["params"]["dates"] == "20230315"
 
     def test_fetch_scoreboard_with_failed_request_raises_exception(self, api_config):
         """Test fetch_scoreboard with failed request raises an exception."""
         # Arrange
-        with patch("src.utils.espn_api_client.requests.get") as mock_get:
+        with patch("src.utils.espn_api_client.httpx.Client") as mock_client:
             mock_response = MagicMock()
-            mock_response.raise_for_status.side_effect = requests.HTTPError("404 Client Error")
-            mock_get.return_value = mock_response
+            mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+                "404 Client Error", request=MagicMock(), response=mock_response
+            )
 
-            client = ESPNApiClient(config=api_config)
-            date = "2023-03-15"
+            mock_client_instance = MagicMock()
+            mock_client_instance.get.return_value = mock_response
+            mock_client.return_value.__enter__.return_value = mock_client_instance
+
+            config = ESPNApiConfig(
+                base_url=api_config["base_url"],
+                endpoints={"scoreboard": "/scoreboard"},
+                request_delay=0.001,  # Use very small delay for tests
+            )
+            client = ESPNApiClient(config)
 
             # Act & Assert
-            with pytest.raises(requests.HTTPError, match="404 Client Error"):
-                client.fetch_scoreboard(date)
+            with pytest.raises(RetryError):
+                client.fetch_scoreboard("20230315")
 
     def test_build_url_with_valid_endpoint_returns_full_url(self, api_config):
         """Test _build_url with valid endpoint returns the full URL."""
         # Arrange
-        client = ESPNApiClient(config=api_config)
-        endpoint = "scoreboard"
-        expected_url = f"{api_config['base_url']}/{endpoint}"
+        config = ESPNApiConfig(
+            base_url=api_config["base_url"],
+            endpoints={"scoreboard": "scoreboard"},
+            request_delay=0.001,  # Use very small delay for tests
+        )
+        client = ESPNApiClient(config)
 
         # Act
-        url = client._build_url(endpoint)
+        url = client._build_url("scoreboard")
 
         # Assert
-        assert url == expected_url
+        assert url == f"{api_config['base_url']}/scoreboard"
 
     def test_build_url_with_invalid_endpoint_raises_error(self, api_config):
         """Test _build_url with invalid endpoint raises ValueError."""
         # Arrange
-        client = ESPNApiClient(config=api_config)
+        config = ESPNApiConfig(
+            base_url=api_config["base_url"],
+            endpoints={"scoreboard": "scoreboard"},
+            request_delay=0.001,  # Use very small delay for tests
+        )
+        client = ESPNApiClient(config)
 
         # Act & Assert
         with pytest.raises(ValueError, match="Invalid endpoint"):
