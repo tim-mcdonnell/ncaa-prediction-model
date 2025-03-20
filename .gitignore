@@ -67,8 +67,7 @@ Thumbs.db
 
 # Project specific
 tmp/
-data/raw/
-data/processed/
+data/
 .env.local
 *.log
 uv.lock
