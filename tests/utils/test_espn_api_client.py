@@ -564,8 +564,8 @@ class TestESPNApiClient:
         )
         client = ESPNApiClient(config)
 
-        # Fix the response.json() coroutine issue
-        mock_httpx_async_client.get.return_value.json = AsyncMock(
+        # Fix the response.json() coroutine issue - now a regular MagicMock
+        mock_httpx_async_client.get.return_value.json = MagicMock(
             return_value={"events": [{"id": "test"}]}
         )
 
