@@ -344,8 +344,8 @@ class ESPNApiClient:
                     # Mark as successful
                     success = True
 
-                    # Parse JSON response - must await the json() coroutine
-                    json_data = await response.json()
+                    # Parse JSON response
+                    json_data = response.json()
                     return dict(json_data)
             except httpx.HTTPStatusError as e:
                 status_code = e.response.status_code
