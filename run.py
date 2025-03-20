@@ -83,6 +83,21 @@ def ingest() -> None:
 @click.option("--today", is_flag=True, help="Fetch data for today")
 @click.option("--seasons", help="Comma-separated list of seasons (YYYY-YY)")
 @click.option("--year", type=int, help="Calendar year to fetch")
+@click.option(
+    "--concurrency",
+    type=int,
+    help="Maximum number of concurrent requests (overrides configuration)",
+)
+@click.option(
+    "--aggressive",
+    is_flag=True,
+    help="Use aggressive settings for maximum performance",
+)
+@click.option(
+    "--cautious",
+    is_flag=True,
+    help="Use cautious settings for better reliability",
+)
 @click.pass_context
 def scoreboard(ctx: click.Context, **kwargs: dict[str, Any]) -> None:
     """Ingest scoreboard data from ESPN API."""
@@ -105,7 +120,7 @@ def scoreboard(ctx: click.Context, **kwargs: dict[str, Any]) -> None:
         processed_kwargs["end_date"] = end_date_obj.strftime("%Y-%m-%d")
 
     # Copy other parameters
-    for key in ["yesterday", "today", "year"]:
+    for key in ["yesterday", "today", "year", "concurrency", "aggressive", "cautious"]:
         if key in kwargs and kwargs[key] is not None:
             processed_kwargs[key] = kwargs[key]
 
@@ -113,6 +128,14 @@ def scoreboard(ctx: click.Context, **kwargs: dict[str, Any]) -> None:
     if kwargs.get("seasons"):
         seasons_str = cast(str, kwargs["seasons"])
         processed_kwargs["seasons"] = [s.strip() for s in seasons_str.split(",")]
+
+    # Log concurrency settings if provided
+    if kwargs.get("concurrency"):
+        logger.info("Using custom concurrency setting", concurrency=kwargs.get("concurrency"))
+    if kwargs.get("aggressive"):
+        logger.info("Using aggressive performance settings")
+    if kwargs.get("cautious"):
+        logger.info("Using cautious reliability settings")
 
     logger.info("Starting scoreboard ingestion", **processed_kwargs)
 
@@ -128,6 +151,9 @@ def scoreboard(ctx: click.Context, **kwargs: dict[str, Any]) -> None:
             today=processed_kwargs.get("today", False),
             seasons=processed_kwargs.get("seasons"),
             year=processed_kwargs.get("year"),
+            concurrency=processed_kwargs.get("concurrency"),
+            aggressive=processed_kwargs.get("aggressive", False),
+            cautious=processed_kwargs.get("cautious", False),
         )
 
         # Call the actual implementation

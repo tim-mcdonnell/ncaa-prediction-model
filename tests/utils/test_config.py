@@ -3,7 +3,7 @@ import copy
 import pytest
 import yaml
 
-from src.utils.config import get_config
+from src.utils.config import Config, get_config
 
 # Constants
 DEFAULT_REQUEST_DELAY = 0.5
@@ -22,7 +22,7 @@ class TestConfigModule:
             "espn_api": {
                 "base_url": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball",
                 "endpoints": {"scoreboard": "scoreboard", "teams": "teams"},
-                "request_delay": 0.5,
+                "initial_request_delay": 0.5,
                 "max_retries": 3,
                 "timeout": 10.0,
                 "batch_size": 20,
@@ -47,15 +47,22 @@ class TestConfigModule:
         result = get_config(config_dir)
 
         # Assert
-        espn_api = result.espn_api
-        data_paths = result.data_paths
-        seasons = result.seasons
-
-        assert espn_api.base_url == valid_config["espn_api"]["base_url"]  # type: ignore
-        assert espn_api.endpoints == valid_config["espn_api"]["endpoints"]  # type: ignore
-        assert espn_api.request_delay == valid_config["espn_api"]["request_delay"]  # type: ignore
-        assert data_paths.bronze == valid_config["data_paths"]["bronze"]  # type: ignore
-        assert seasons.current == valid_config["seasons"]["current"]  # type: ignore
+        assert isinstance(result, Config)
+        assert result.espn_api.base_url == valid_config["espn_api"]["base_url"]
+        assert result.espn_api.endpoints == valid_config["espn_api"]["endpoints"]
+        assert (
+            result.espn_api.initial_request_delay
+            == valid_config["espn_api"]["initial_request_delay"]
+        )
+        assert result.espn_api.max_retries == valid_config["espn_api"]["max_retries"]
+        assert result.espn_api.timeout == valid_config["espn_api"]["timeout"]
+        assert result.espn_api.batch_size == valid_config["espn_api"]["batch_size"]
+        assert result.data_paths.bronze == valid_config["data_paths"]["bronze"]
+        assert result.data_paths.silver == valid_config["data_paths"]["silver"]
+        assert result.data_paths.gold == valid_config["data_paths"]["gold"]
+        assert result.data_paths.models == valid_config["data_paths"]["models"]
+        assert result.seasons.current == valid_config["seasons"]["current"]
+        assert result.seasons.historical == valid_config["seasons"]["historical"]
 
     def test_get_config_with_missing_config_file_raises_file_not_found_error(self, tmp_path):
         """Test handling a missing configuration file."""
@@ -87,7 +94,7 @@ class TestConfigModule:
             "espn_api": {
                 # Missing base_url
                 "endpoints": {"scoreboard": "scoreboard"},
-                "request_delay": 0.5,
+                "initial_request_delay": 0.5,
                 "max_retries": 3,
                 "timeout": 10.0,
             },
@@ -117,7 +124,7 @@ class TestConfigModule:
             "espn_api": {
                 "base_url": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball",
                 "endpoints": {"scoreboard": "scoreboard"},
-                "request_delay": 0.5,
+                "initial_request_delay": 0.5,
                 "max_retries": 3,
                 "timeout": 10.0,
             },
@@ -155,7 +162,7 @@ class TestConfigModule:
             "espn_api": {
                 "base_url": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball",
                 "endpoints": {"scoreboard": "scoreboard", "teams": "teams"},
-                "request_delay": 0.5,
+                "initial_request_delay": 0.5,
                 "max_retries": 3,
                 "timeout": 10.0,
                 "batch_size": 20,
