@@ -30,11 +30,18 @@ class ESPNApiConfig:
 
     base_url: str
     endpoints: dict[str, str]
-    request_delay: float
+    initial_request_delay: float
     max_retries: int
     timeout: float
     historical_start_date: str | None = None
     batch_size: int = 50
+    max_concurrency: int = 5
+    min_request_delay: float = 0.1
+    max_request_delay: float = 5.0
+    backoff_factor: float = 1.5
+    recovery_factor: float = 0.9
+    error_threshold: int = 3
+    success_threshold: int = 10
 
 
 @dataclass
@@ -97,12 +104,19 @@ def get_config(config_dir: Path) -> Config:
             espn_api_config = ESPNApiConfig(
                 base_url=data_sources["espn_api"]["base_url"],
                 endpoints=data_sources["espn_api"]["endpoints"],
-                request_delay=data_sources["espn_api"]["request_delay"],
+                initial_request_delay=data_sources["espn_api"]["initial_request_delay"],
                 max_retries=data_sources["espn_api"]["max_retries"],
                 timeout=data_sources["espn_api"]["timeout"],
                 # Set defaults for historical_start_date and batch_size if not present
                 historical_start_date=data_sources["espn_api"].get("historical_start_date"),
                 batch_size=data_sources["espn_api"].get("batch_size", 50),
+                max_concurrency=data_sources["espn_api"].get("max_concurrency", 5),
+                min_request_delay=data_sources["espn_api"].get("min_request_delay", 0.1),
+                max_request_delay=data_sources["espn_api"].get("max_request_delay", 5.0),
+                backoff_factor=data_sources["espn_api"].get("backoff_factor", 1.5),
+                recovery_factor=data_sources["espn_api"].get("recovery_factor", 0.9),
+                error_threshold=data_sources["espn_api"].get("error_threshold", 3),
+                success_threshold=data_sources["espn_api"].get("success_threshold", 10),
             )
 
             # Extract data paths config

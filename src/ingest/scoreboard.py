@@ -6,6 +6,7 @@ It supports various date-based fetching strategies including specific dates, dat
 yesterday/today, and entire seasons.
 """
 
+import asyncio
 from dataclasses import dataclass
 from typing import Any
 
@@ -46,6 +47,23 @@ class ScoreboardIngestionConfig:
     seasons: list[str] | None = None
     year: int | None = None
 
+    # Concurrency options
+    concurrency: int | None = None
+    aggressive: bool = False
+    cautious: bool = False
+
+
+def get_existing_dates(db: Database) -> list[str]:
+    """Get already processed dates from the database.
+
+    Args:
+        db: Database connection
+
+    Returns:
+        List of dates already in the database in YYYY-MM-DD format
+    """
+    return db.get_processed_dates()
+
 
 class ScoreboardIngestion:
     """Scoreboard data ingestion from ESPN API."""
@@ -54,21 +72,30 @@ class ScoreboardIngestion:
         self: "ScoreboardIngestion",
         espn_api_config: ESPNApiConfig | dict,
         db_path: str = "data/ncaa.duckdb",
+        skip_existing: bool = False,
     ) -> None:
         """Initialize scoreboard ingestion.
 
         Args:
             espn_api_config: ESPN API configuration (object or dict)
             db_path: Path to DuckDB database
+            skip_existing: Whether to skip dates that are already in the database
         """
         # Handle both object and dictionary config formats for testing compatibility
         if isinstance(espn_api_config, dict):
             client_config = ClientAPIConfig(
                 base_url=espn_api_config.get("base_url", ""),
                 endpoints=espn_api_config.get("endpoints", {}),
-                request_delay=espn_api_config.get("request_delay", 1.0),
+                initial_request_delay=espn_api_config.get("initial_request_delay", 1.0),
                 max_retries=espn_api_config.get("max_retries", 3),
                 timeout=espn_api_config.get("timeout", 10),
+                max_concurrency=espn_api_config.get("max_concurrency", 5),
+                min_request_delay=espn_api_config.get("min_request_delay", 0.1),
+                max_request_delay=espn_api_config.get("max_request_delay", 5.0),
+                backoff_factor=espn_api_config.get("backoff_factor", 1.5),
+                recovery_factor=espn_api_config.get("recovery_factor", 0.9),
+                error_threshold=espn_api_config.get("error_threshold", 3),
+                success_threshold=espn_api_config.get("success_threshold", 10),
             )
             self.api_client = ESPNApiClient(client_config)
             self.batch_size = espn_api_config.get("batch_size", 10)
@@ -76,19 +103,27 @@ class ScoreboardIngestion:
             client_config = ClientAPIConfig(
                 base_url=espn_api_config.base_url,
                 endpoints=espn_api_config.endpoints,
-                request_delay=espn_api_config.request_delay,
+                initial_request_delay=espn_api_config.initial_request_delay,
                 max_retries=espn_api_config.max_retries,
                 timeout=espn_api_config.timeout,
+                max_concurrency=espn_api_config.max_concurrency,
+                min_request_delay=espn_api_config.min_request_delay,
+                max_request_delay=espn_api_config.max_request_delay,
+                backoff_factor=espn_api_config.backoff_factor,
+                recovery_factor=espn_api_config.recovery_factor,
+                error_threshold=espn_api_config.error_threshold,
+                success_threshold=espn_api_config.success_threshold,
             )
             self.api_client = ESPNApiClient(client_config)
-            self.batch_size = espn_api_config.batch_size
+            self.batch_size = getattr(espn_api_config, "batch_size", 10)
 
         self.db_path = db_path
+        self.skip_existing = skip_existing
 
         logger.debug(
             "Initialized scoreboard ingestion",
-            db_path=db_path,
             batch_size=self.batch_size,
+            db_path=self.db_path,
         )
 
     def fetch_and_store_date(
@@ -123,8 +158,43 @@ class ScoreboardIngestion:
 
         return data
 
+    async def fetch_and_store_date_async(
+        self: "ScoreboardIngestion",
+        date: str,
+        db: Database,
+    ) -> dict[str, Any]:
+        """Asynchronously fetch and store scoreboard data for a specific date.
+
+        Args:
+            date: Date in YYYY-MM-DD format
+            db: Database connection
+
+        Returns:
+            The API response data
+        """
+        logger.info("Asynchronously fetching scoreboard data for date", date=date)
+
+        # Format date for ESPN API
+        espn_date = format_date_for_api(date)
+
+        # Fetch data asynchronously
+        data = await self.api_client.fetch_scoreboard_async(date=espn_date)
+
+        # Store in database (database writes are sequential to avoid concurrency issues)
+        db.insert_bronze_scoreboard(
+            date=date,
+            url=f"{self.api_client.get_endpoint_url('scoreboard')}",
+            params={"dates": espn_date, "groups": "50", "limit": 200},
+            data=data,
+        )
+
+        return data
+
     def process_date_range(self: "ScoreboardIngestion", dates: list[str]) -> list[str]:
         """Process a range of dates in batches.
+
+        Note: This method is maintained for backward compatibility.
+        New code should use process_date_range_async for better performance.
 
         Args:
             dates: List of dates in YYYY-MM-DD format
@@ -132,18 +202,27 @@ class ScoreboardIngestion:
         Returns:
             List of processed dates
         """
-        logger.info("Processing date range", start=dates[0], end=dates[-1], total_dates=len(dates))
+        # For backward compatibility, run the async version in a new event loop
+        return asyncio.run(self.process_date_range_async(dates))
 
-        # Get already processed dates
-        with Database(self.db_path) as db:
-            processed_dates = set(db.get_processed_dates())
+    async def process_date_range_async(self: "ScoreboardIngestion", dates: list[str]) -> list[str]:
+        """Process a range of dates asynchronously, fetching data for each date.
 
-        # Filter out already processed dates
-        dates_to_process = [d for d in dates if d not in processed_dates]
+        Args:
+            dates: List of dates to process in YYYYMMDD format
 
-        if not dates_to_process:
-            logger.info("All dates already processed", total_dates=len(dates))
-            return []
+        Returns:
+            List of dates that were successfully processed
+        """
+        # Filter out dates that are already processed if configured to skip
+        dates_to_process = dates
+        if self.skip_existing:
+            # Get list of dates already in database
+            with Database(self.db_path) as db:
+                existing_dates = get_existing_dates(db)
+
+            # Filter out existing dates
+            dates_to_process = [date for date in dates if date not in existing_dates]
 
         logger.info(
             "Dates to process",
@@ -153,10 +232,11 @@ class ScoreboardIngestion:
         )
 
         # Process in batches
+        processed_dates: list[str] = []
         for i in range(0, len(dates_to_process), self.batch_size):
             batch = dates_to_process[i : i + self.batch_size]
             logger.info(
-                "Processing batch",
+                "Processing batch asynchronously",
                 batch_start=batch[0],
                 batch_end=batch[-1],
                 batch_size=len(batch),
@@ -164,35 +244,57 @@ class ScoreboardIngestion:
 
             # Use Database context manager for each batch
             with Database(self.db_path) as db:
-                # Process dates in the batch
+                # Process all dates in the batch concurrently
+                batch_tasks = []
                 for date in batch:
-                    self.fetch_and_store_date(date, db)
+                    task = self.fetch_and_store_date_async(date, db)
+                    batch_tasks.append(task)
 
-            logger.info("Completed batch", batch_start=batch[0], batch_end=batch[-1])
+                # Wait for all batch tasks to complete
+                batch_results = await asyncio.gather(*batch_tasks, return_exceptions=True)
 
-        return dates_to_process
+                # Check for any errors and log them
+                for date, result in zip(batch, batch_results, strict=False):
+                    if isinstance(result, Exception):
+                        logger.error(
+                            "Error processing date",
+                            date=date,
+                            error=str(result),
+                            error_type=type(result).__name__,
+                        )
+                    else:
+                        processed_dates.append(date)
+
+            logger.info(
+                "Completed batch",
+                batch_start=batch[0],
+                batch_end=batch[-1],
+                successful=len([r for r in batch_results if not isinstance(r, Exception)]),
+                failed=len([r for r in batch_results if isinstance(r, Exception)]),
+            )
+
+        logger.info(
+            "Completed processing date range",
+            processed=len(processed_dates),
+            total=len(dates_to_process),
+        )
+        return processed_dates
 
 
-def ingest_scoreboard(config: ScoreboardIngestionConfig) -> list[str]:
-    """Ingest scoreboard data from ESPN API.
+def _determine_dates_to_process(config: ScoreboardIngestionConfig) -> list[str]:
+    """Determine which dates to process based on provided parameters.
 
     Args:
         config: Configuration for scoreboard ingestion
 
     Returns:
-        List of dates that were processed
+        List of dates to process
 
     Raises:
-        ValueError: If no dates are specified or if ESPN API configuration is missing
+        ValueError: If no dates are determined
     """
-    if config.espn_api_config is None:
-        error_msg = "ESPN API configuration is required"
-        raise ValueError(error_msg)
-
-    # Initialize dates list
     dates_to_process = []
 
-    # Determine which dates to process based on provided parameters
     if config.date:
         dates_to_process.append(config.date)
     elif config.start_date and config.end_date:
@@ -222,24 +324,81 @@ def ingest_scoreboard(config: ScoreboardIngestionConfig) -> list[str]:
         raise ValueError(error_msg)
 
     # Sort dates and remove duplicates
-    dates_to_process = sorted(set(dates_to_process))
+    return sorted(set(dates_to_process))
+
+
+async def ingest_scoreboard_async(config: ScoreboardIngestionConfig) -> list[str]:
+    """Asynchronously ingest scoreboard data from ESPN API.
+
+    Args:
+        config: Configuration for scoreboard ingestion
+
+    Returns:
+        List of dates that were processed
+
+    Raises:
+        ValueError: If no dates are specified or if ESPN API configuration is missing
+    """
+    if config.espn_api_config is None:
+        error_msg = "ESPN API configuration is required"
+        raise ValueError(error_msg)
+
+    # Determine which dates to process
+    dates_to_process = _determine_dates_to_process(config)
+
+    # Create API config with potential concurrency overrides
+    api_config = config.espn_api_config
+
+    # Override concurrency settings if specified
+    if config.concurrency is not None:
+        api_config.max_concurrency = config.concurrency
+        logger.info("Overriding max concurrency", value=config.concurrency)
+
+    # Apply aggressive or cautious settings
+    if config.aggressive:
+        api_config.min_request_delay = 0.05
+        api_config.initial_request_delay = 0.1
+        api_config.recovery_factor = 0.8
+        logger.info("Using aggressive request settings for faster processing")
+    elif config.cautious:
+        api_config.initial_request_delay = max(api_config.initial_request_delay, 1.0)
+        api_config.backoff_factor = 2.0
+        api_config.max_concurrency = min(api_config.max_concurrency, 3)
+        logger.info("Using cautious request settings for reliability")
 
     # Create ingestion instance
-    ingestion = ScoreboardIngestion(config.espn_api_config, config.db_path)
+    ingestion = ScoreboardIngestion(api_config, config.db_path)
 
     # Run the process
     logger.info(
-        "Starting scoreboard ingestion",
+        "Starting async scoreboard ingestion",
         date_count=len(dates_to_process),
         start_date=dates_to_process[0],
         end_date=dates_to_process[-1],
+        max_concurrency=api_config.max_concurrency,
     )
 
-    processed_dates = ingestion.process_date_range(dates_to_process)
+    processed_dates = await ingestion.process_date_range_async(dates_to_process)
 
-    logger.info("Completed scoreboard ingestion", date_count=len(processed_dates))
+    logger.info("Completed async scoreboard ingestion", date_count=len(processed_dates))
 
     return processed_dates
+
+
+def ingest_scoreboard(config: ScoreboardIngestionConfig) -> list[str]:
+    """Ingest scoreboard data from ESPN API.
+
+    Args:
+        config: Configuration for scoreboard ingestion
+
+    Returns:
+        List of dates that were processed
+
+    Raises:
+        ValueError: If no dates are specified or if ESPN API configuration is missing
+    """
+    # Use async version but run it in a new event loop
+    return asyncio.run(ingest_scoreboard_async(config))
 
 
 # For backward compatibility with existing code

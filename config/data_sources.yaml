@@ -5,11 +5,18 @@ espn_api:
     team_detail: "/teams/{team_id}"
     scoreboard: "/scoreboard"
     game_summary: "/summary"
-  request_delay: 0.6  # seconds between requests
+  initial_request_delay: 0.5  # Initial delay between requests in seconds
+  min_request_delay: 0.1      # Minimum delay between requests
+  max_request_delay: 5.0      # Maximum delay after backoff
+  max_concurrency: 5          # Maximum concurrent requests
+  backoff_factor: 1.5         # Multiplicative factor for backoff
+  recovery_factor: 0.9        # Factor to reduce delay after success
+  error_threshold: 3          # Number of errors before reducing concurrency
+  success_threshold: 10       # Successes needed to increase concurrency
   max_retries: 3
   timeout: 10.0  # seconds
   historical_start_date: "2021-8-01"
-  batch_size: 80  # Process dates in batches of 30
+  batch_size: 80  # Process dates in batches of 80
 
 data_paths:
   bronze: "data/bronze"
