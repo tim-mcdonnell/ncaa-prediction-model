@@ -108,15 +108,15 @@ def scoreboard(ctx: click.Context, **kwargs: dict[str, Any]) -> None:
 
     # Process date parameters
     if kwargs.get("date"):
-        date_obj = cast(datetime, kwargs["date"])
+        date_obj = cast("datetime", kwargs["date"])
         processed_kwargs["date"] = date_obj.strftime("%Y-%m-%d")
 
     if kwargs.get("start_date"):
-        start_date_obj = cast(datetime, kwargs["start_date"])
+        start_date_obj = cast("datetime", kwargs["start_date"])
         processed_kwargs["start_date"] = start_date_obj.strftime("%Y-%m-%d")
 
     if kwargs.get("end_date"):
-        end_date_obj = cast(datetime, kwargs["end_date"])
+        end_date_obj = cast("datetime", kwargs["end_date"])
         processed_kwargs["end_date"] = end_date_obj.strftime("%Y-%m-%d")
 
     # Copy other parameters
@@ -126,7 +126,7 @@ def scoreboard(ctx: click.Context, **kwargs: dict[str, Any]) -> None:
 
     # Process seasons if provided
     if kwargs.get("seasons"):
-        seasons_str = cast(str, kwargs["seasons"])
+        seasons_str = cast("str", kwargs["seasons"])
         processed_kwargs["seasons"] = [s.strip() for s in seasons_str.split(",")]
 
     # Log concurrency settings if provided

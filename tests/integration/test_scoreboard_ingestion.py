@@ -6,6 +6,7 @@ including performance, error handling, and adaptive backoff behavior.
 
 import asyncio
 import time
+from contextlib import suppress
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
@@ -13,7 +14,6 @@ import pytest
 
 from src.ingest.scoreboard import (
     ScoreboardIngestion,
-    ScoreboardIngestionConfig,
 )
 from src.utils.config import ESPNApiConfig
 from src.utils.database import Database
@@ -31,7 +31,9 @@ class TestScoreboardIngestionIntegration:
     def espn_api_config(self):
         """Create a test ESPN API configuration."""
         return ESPNApiConfig(
-            base_url="https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball",
+            base_url=(
+                "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball"
+            ),
             endpoints={"scoreboard": "scoreboard"},
             initial_request_delay=0.05,  # Fast for testing
             max_retries=2,
@@ -54,8 +56,8 @@ class TestScoreboardIngestionIntegration:
         mock.get_processed_dates.return_value = []  # No dates processed initially
         mock.inserted_data = {}
 
-        def mock_insert(date, url, params, data):
-            mock.inserted_data[date] = data
+        def mock_insert(date, **kwargs):
+            mock.inserted_data[date] = kwargs.get("data")
 
         mock.insert_bronze_scoreboard.side_effect = mock_insert
         return mock
@@ -70,7 +72,7 @@ class TestScoreboardIngestionIntegration:
                 "events": [
                     {
                         "id": f"event_{date}_{i}",
-                        "date": f"2023-03-15T{20+i}:00Z",
+                        "date": f"2023-03-15T{20 + i}:00Z",
                         "name": f"Game {i} on {date}",
                         "competitions": [
                             {
@@ -102,7 +104,7 @@ class TestScoreboardIngestionIntegration:
         mock_api_client.get_endpoint_url.return_value = "https://example.com/endpoint"
 
         # Setup async fetch method
-        async def mock_fetch_async(date, **kwargs):
+        async def mock_fetch_async(date):
             # Simulate API delay
             await asyncio.sleep(0.01)
             espn_date = date.replace("-", "")
@@ -117,10 +119,6 @@ class TestScoreboardIngestionIntegration:
             patch("src.ingest.scoreboard.Database.__exit__", return_value=None),
         ):
             # Act
-            config = ScoreboardIngestionConfig(
-                espn_api_config=espn_api_config,
-                db_path=TEST_DB_PATH,
-            )
             # Create direct instance for testing
             ingestion = ScoreboardIngestion(espn_api_config, TEST_DB_PATH)
 
@@ -133,7 +131,8 @@ class TestScoreboardIngestionIntegration:
         assert sorted(result) == sorted(TEST_DATES)
 
         # Each date should have a corresponding API call
-        assert mock_api_client.fetch_scoreboard_async.call_count == len(TEST_DATES)
+        expected_call_count = len(TEST_DATES)
+        assert mock_api_client.fetch_scoreboard_async.call_count == expected_call_count
 
         # Each date should be stored in the database
         assert len(mock_db.inserted_data) == len(TEST_DATES)
@@ -143,7 +142,8 @@ class TestScoreboardIngestionIntegration:
             # Verify data structure
             data = mock_db.inserted_data[date]
             assert "events" in data
-            assert len(data["events"]) == 2  # Each date has 2 events
+            events_per_date = 2  # Number of events per date in mock data
+            assert len(data["events"]) == events_per_date
 
     @pytest.mark.asyncio()
     async def test_performance_improvement_with_concurrent_vs_sequential(
@@ -159,7 +159,7 @@ class TestScoreboardIngestionIntegration:
         mock_sync_client = MagicMock(spec=ESPNApiClient)
         mock_sync_client.get_endpoint_url.return_value = "https://example.com/endpoint"
 
-        def mock_fetch_sync(date, **kwargs):
+        def mock_fetch_sync(date):
             # Simulate API delay - sequential
             time.sleep(fixed_delay)
             espn_date = date.replace("-", "")
@@ -171,7 +171,7 @@ class TestScoreboardIngestionIntegration:
         mock_async_client = MagicMock(spec=ESPNApiClient)
         mock_async_client.get_endpoint_url.return_value = "https://example.com/endpoint"
 
-        async def mock_fetch_async(date, **kwargs):
+        async def mock_fetch_async(date):
             # Simulate same API delay - but concurrent
             await asyncio.sleep(fixed_delay)
             espn_date = date.replace("-", "")
@@ -185,8 +185,6 @@ class TestScoreboardIngestionIntegration:
             ingestion.api_client = mock_sync_client
 
             # Override process_date_range to avoid calling async version
-            original_process = ingestion.process_date_range
-
             def sync_process(dates):
                 with Database(ingestion.db_path) as db:
                     processed_dates = []
@@ -195,11 +193,14 @@ class TestScoreboardIngestionIntegration:
                         processed_dates.append(date)
                 return processed_dates
 
-            ingestion.process_date_range = sync_process
+            # Use monkeypatch instead of direct assignment
+            monkeypatch = pytest.MonkeyPatch()
+            monkeypatch.setattr(ingestion, "process_date_range", sync_process)
 
             start_time = time.time()
             ingestion.process_date_range(test_dates)
             end_time = time.time()
+            monkeypatch.undo()
             return end_time - start_time
 
         # Measure async performance
@@ -249,10 +250,11 @@ class TestScoreboardIngestionIntegration:
 
         # Add an error counter to track error handling
         error_count = 0
+        expected_errors = 2  # Number of errors we expect to encounter
         api_calls = set()  # Track which dates had API calls
 
         # Setup async fetch method with errors
-        async def mock_fetch_async(date, **kwargs):
+        async def mock_fetch_async(date):
             nonlocal error_count
             api_calls.add(date)  # Track which date is being processed
 
@@ -260,16 +262,18 @@ class TestScoreboardIngestionIntegration:
             if date == "20230302":  # Already in API format (YYYYMMDD)
                 # Simulate rate limit error
                 error_count += 1
+                error_msg = "429 Too Many Requests"
                 raise httpx.HTTPStatusError(
-                    "429 Too Many Requests",
+                    error_msg,
                     request=MagicMock(),
                     response=MagicMock(status_code=429),
                 )
             elif date == "20230304":  # Already in API format (YYYYMMDD)
                 # Simulate server error
                 error_count += 1
+                error_msg = "500 Internal Server Error"
                 raise httpx.HTTPStatusError(
-                    "500 Internal Server Error",
+                    error_msg,
                     request=MagicMock(),
                     response=MagicMock(status_code=500),
                 )
@@ -284,7 +288,7 @@ class TestScoreboardIngestionIntegration:
         successful_inserts = set()
 
         # Mock the insert_bronze_scoreboard method to track successful inserts
-        def insert_tracking(date, **kwargs):
+        def insert_tracking(date, **_):
             successful_inserts.add(date)
 
         mock_db.insert_bronze_scoreboard = insert_tracking
@@ -297,7 +301,8 @@ class TestScoreboardIngestionIntegration:
             patch("src.ingest.scoreboard.ESPNApiClient", return_value=mock_api_client),
             patch("src.ingest.scoreboard.Database.__enter__", return_value=mock_db),
             patch("src.ingest.scoreboard.Database.__exit__", return_value=None),
-            # Mock format_date_for_api to just return the date as is (since we're using pre-formatted dates)
+            # Mock format_date_for_api to just return the date as is
+            # (since we're using pre-formatted dates)
             patch(
                 "src.ingest.scoreboard.format_date_for_api",
                 side_effect=lambda x: x.replace("-", ""),
@@ -308,7 +313,7 @@ class TestScoreboardIngestionIntegration:
             ingestion.api_client = mock_api_client
 
             # Execute async processing
-            result = await ingestion.process_date_range_async(TEST_DATES)
+            await ingestion.process_date_range_async(TEST_DATES)
 
         # Assert
         # All dates should have API call attempts (in ESPN format - YYYYMMDD)
@@ -316,16 +321,16 @@ class TestScoreboardIngestionIntegration:
         assert api_calls == set(formatted_test_dates)
 
         # We should have encountered exactly 2 errors
-        assert error_count == 2, f"Expected 2 errors, but got {error_count}"
+        assert (
+            error_count == expected_errors
+        ), f"Expected {expected_errors} errors, but got {error_count}"
 
         # Only successful dates should be inserted into the database (in YYYY-MM-DD format)
         expected_success = {"2023-03-01", "2023-03-03", "2023-03-05"}
         assert successful_inserts == expected_success
 
     @pytest.mark.asyncio()
-    async def test_backoff_strategy_behavior_with_simulated_rate_limits(
-        self, mock_db, espn_api_config
-    ):
+    async def test_backoff_strategy_behavior_with_simulated_rate_limits(self, espn_api_config):
         """Test backoff strategy behavior with simulated rate limits."""
         # Arrange
         # Create a client that tracks delay changes
@@ -335,20 +340,22 @@ class TestScoreboardIngestionIntegration:
         # Create base API client
         api_client = ESPNApiClient(espn_api_config)
 
-        # Override _request_async to capture delay and concurrency changes
-        original_request = api_client._request_async
+        # Constants for test thresholds
+        error_simulation_count = 3
+        success_check_index = 4
 
-        async def tracking_request(url, params=None):
+        async def tracking_request(_, _params=None):
             # Record current state
             delay_history.append(api_client.current_request_delay)
             concurrency_history.append(api_client.max_concurrency)
 
             # Simulate rate limit error for first few calls
-            if len(delay_history) <= 3:
+            if len(delay_history) <= error_simulation_count:
                 # Trigger backoff by simulating rate limit
                 api_client._track_request_result(success=False, status_code=429)
+                error_msg = "429 Too Many Requests"
                 raise httpx.HTTPStatusError(
-                    "429 Too Many Requests",
+                    error_msg,
                     request=MagicMock(),
                     response=MagicMock(status_code=429),
                 )
@@ -357,21 +364,21 @@ class TestScoreboardIngestionIntegration:
             api_client._track_request_result(success=True)
             return {"events": [{"id": "test"}]}
 
-        # Replace request method with our tracking version
-        api_client._request_async = tracking_request
-        api_client._retry_request_async = tracking_request  # Skip retries for this test
+        # Replace request method with our tracking version using monkeypatch
+        monkeypatch = pytest.MonkeyPatch()
+        monkeypatch.setattr(api_client, "_request_async", tracking_request)
+        monkeypatch.setattr(
+            api_client, "_retry_request_async", tracking_request
+        )  # Skip retries for this test
 
         # Act - just make a series of requests and observe backoff behavior
         try:
-            for i in range(6):
-                try:
+            for _ in range(6):
+                with suppress(httpx.HTTPStatusError):
                     await api_client._request_async("https://example.com")
-                except httpx.HTTPStatusError:
-                    # Expected for first few calls
-                    pass
         finally:
-            # Restore original method
-            api_client._request_async = original_request
+            # Undo the monkeypatching
+            monkeypatch.undo()
 
         # Assert
         # Delay should increase after each error
@@ -386,8 +393,9 @@ class TestScoreboardIngestionIntegration:
         ), "Concurrency should decrease after persistent errors"
 
         # Delay should decrease or stay the same after successful calls
-        # Depending on recovery_factor and success_threshold, it might take more than one success to decrease
-        if len(delay_history) > 4:
+        # Depending on recovery_factor and success_threshold,
+        # it might take more than one success to decrease
+        if len(delay_history) > success_check_index:
             assert (
-                delay_history[4] <= delay_history[3]
+                delay_history[success_check_index] <= delay_history[success_check_index - 1]
             ), "Delay should decrease or remain stable after success"

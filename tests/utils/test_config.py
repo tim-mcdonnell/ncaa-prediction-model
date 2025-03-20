@@ -1,4 +1,5 @@
 import copy
+from typing import Any
 
 import pytest
 import yaml
@@ -18,7 +19,7 @@ class TestConfigModule:
     def test_get_config_with_valid_file_returns_config(self, tmp_path):
         """Test that get_config returns configuration from a valid file."""
         # Arrange
-        valid_config = {
+        valid_config: dict[str, Any] = {
             "espn_api": {
                 "base_url": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball",
                 "endpoints": {"scoreboard": "scoreboard", "teams": "teams"},

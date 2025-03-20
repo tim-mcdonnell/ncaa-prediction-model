@@ -8,7 +8,7 @@ Includes asynchronous request capabilities with adaptive backoff.
 import asyncio
 import time
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 import structlog
@@ -16,6 +16,15 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 # Initialize logger
 logger = structlog.get_logger(__name__)
+
+# Constants for HTTP status codes and response thresholds
+HTTP_STATUS_OK_MIN = 200
+HTTP_STATUS_OK_MAX = 300
+HTTP_STATUS_RATE_LIMIT = 429
+HTTP_STATUS_CLIENT_ERROR = 400
+HTTP_STATUS_SERVER_ERROR = 500
+SUSTAINED_SUCCESS_THRESHOLD = 3
+MAX_CONCURRENCY_LIMIT = 10
 
 
 @dataclass
@@ -157,7 +166,7 @@ class ESPNApiClient:
         self.last_request_time = time.time()
 
     def _track_request_result(
-        self: "ESPNApiClient", success: bool, status_code: Optional[int] = None
+        self: "ESPNApiClient", success: bool, status_code: int | None = None
     ) -> None:
         """Track request results and update adaptive parameters.
 
@@ -171,7 +180,7 @@ class ESPNApiClient:
             self.consecutive_successes += 1
 
             # Decrease delay after sustained success (but not below minimum)
-            if self.consecutive_successes >= 3:
+            if self.consecutive_successes >= SUSTAINED_SUCCESS_THRESHOLD:
                 self.current_request_delay = max(
                     self.current_request_delay * self.recovery_factor,
                     self.min_request_delay,
@@ -185,7 +194,7 @@ class ESPNApiClient:
             # Increase concurrency after sustained success
             if self.consecutive_successes >= self.success_threshold:
                 self.max_concurrency = min(
-                    self.max_concurrency + 1, 10
+                    self.max_concurrency + 1, MAX_CONCURRENCY_LIMIT
                 )  # Cap at reasonable maximum
                 self.semaphore = asyncio.Semaphore(self.max_concurrency)
                 logger.info(
@@ -206,13 +215,13 @@ class ESPNApiClient:
 
             # Log based on status code
             if status_code:
-                if status_code == 429:
+                if status_code == HTTP_STATUS_RATE_LIMIT:
                     logger.warning(
                         "Rate limit exceeded, increasing delay",
                         new_delay=self.current_request_delay,
                         status_code=status_code,
                     )
-                elif status_code >= 500:
+                elif status_code >= HTTP_STATUS_SERVER_ERROR:
                     logger.warning(
                         "Server error, increasing delay",
                         new_delay=self.current_request_delay,
@@ -274,7 +283,7 @@ class ESPNApiClient:
             )
 
             # Track result for adaptive backoff
-            success = 200 <= response.status_code < 300
+            success = HTTP_STATUS_OK_MIN <= response.status_code < HTTP_STATUS_OK_MAX
             self._track_request_result(success=success, status_code=response.status_code)
 
             # Raise exception for non-200 responses
@@ -347,7 +356,7 @@ class ESPNApiClient:
                 )
                 raise
             except Exception as e:
-                logger.error(
+                logger.exception(
                     "Unexpected error during async request",
                     error=str(e),
                     url=url,
@@ -376,7 +385,7 @@ class ESPNApiClient:
             httpx.HTTPError: If request fails after all retries
         """
         attempts = 0
-        last_error = None
+        last_error: Exception | None = None
 
         while attempts < self.max_retries:
             try:
@@ -384,9 +393,9 @@ class ESPNApiClient:
             except httpx.HTTPStatusError as e:
                 # Don't retry 4xx errors (except 429 - rate limit)
                 if (
-                    e.response.status_code >= 400
-                    and e.response.status_code < 500
-                    and e.response.status_code != 429
+                    e.response.status_code >= HTTP_STATUS_CLIENT_ERROR
+                    and e.response.status_code < HTTP_STATUS_SERVER_ERROR
+                    and e.response.status_code != HTTP_STATUS_RATE_LIMIT
                 ):
                     raise
 
@@ -419,7 +428,7 @@ class ESPNApiClient:
                 await asyncio.sleep(wait_time)
 
         # If we get here, all retries failed
-        logger.error(
+        logger.exception(
             "All retry attempts failed",
             max_retries=self.max_retries,
             url=url,
@@ -427,10 +436,10 @@ class ESPNApiClient:
 
         if last_error:
             raise last_error
-
-        # This should never happen, but just in case
-        error_msg = f"All {self.max_retries} retry attempts failed for URL: {url}"
-        raise RuntimeError(error_msg)
+        else:
+            # This should never happen, but just in case
+            error_msg = f"All {self.max_retries} retry attempts failed for URL: {url}"
+            raise RuntimeError(error_msg)
 
     def fetch_scoreboard(
         self: "ESPNApiClient",
@@ -542,10 +551,11 @@ class ESPNApiClient:
                 logger.info(
                     "Fetched scoreboard data asynchronously", date=date, events_count=events_count
                 )
-                return date, data
             except Exception as e:
-                logger.error("Failed to fetch scoreboard data", date=date, error=str(e))
+                logger.exception("Failed to fetch scoreboard data", date=date, error=str(e))
                 return date, None
+            else:
+                return date, data
 
         # Create tasks for all dates
         for date in dates:
