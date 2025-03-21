@@ -2,11 +2,8 @@ import json
 import os
 import shutil
 from pathlib import Path
-import datetime
 
 import polars as pl
-import pyarrow as pa
-import pyarrow.parquet as pq
 import pytest
 
 from src.utils.config import ESPNApiConfig
