@@ -55,6 +55,9 @@ nav:
     - Task Example: development-guides/task-example.md
   - API Reference:
     - ESPN API: espn-api-reference.md
+    - ESPN Basketball APIs:
+      - Scoreboard API: espn-api-documentation/basketball-scoreboard-api.md
+      - Teams API: espn-api-documentation/basketball-teams-api.md
 
 plugins:
   - search
