@@ -107,7 +107,7 @@ FORCE_UPDATE_OPTION = typer.Option(
 
 # Options for teams command
 CONFERENCE_OPTION = typer.Option(None, help="Conference ID to limit ingestion")
-TEAM_SEASONS_OPTION = typer.Option(None, help="Comma-separated list of seasons (YYYY-YY)")
+TEAM_SEASONS_OPTION = typer.Option(None, help="Comma-separated list of seasons (YYYY)")
 
 
 @ingest_app.command("teams")

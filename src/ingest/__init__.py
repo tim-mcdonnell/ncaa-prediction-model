@@ -5,5 +5,6 @@ into the bronze layer of the medallion architecture.
 """
 
 from .scoreboard import ingest_scoreboard
+from .teams import ingest_teams
 
-__all__ = ["ingest_scoreboard"]
+__all__ = ["ingest_scoreboard", "ingest_teams"]

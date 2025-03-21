@@ -1,7 +1,7 @@
 espn_api:
-  base_url: "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball"
+  base_url: "https://sports.core.api.espn.com/v3/sports/basketball/mens-college-basketball"
   endpoints:
-    teams: "/teams"
+    teams: "/seasons/{season}/teams"
     team_detail: "/teams/{team_id}"
     scoreboard: "/scoreboard"
     game_summary: "/summary"
