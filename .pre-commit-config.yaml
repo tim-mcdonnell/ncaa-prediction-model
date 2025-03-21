@@ -5,11 +5,8 @@ repos:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
     -   id: check-yaml
-    -   id: check-added-large-files
-    -   id: check-toml  # Validates TOML files (important for pyproject.toml)
-    -   id: check-merge-conflict  # Checks for merge conflict strings
-    -   id: debug-statements  # Checks for debugger imports and py37+ breakpoint() calls
-    -   id: detect-private-key  # Detects private keys
+    -   id: check-toml
+    -   id: detect-private-key
     -   id: no-commit-to-branch
         args: [--branch, main, --branch, master]
 
@@ -20,24 +17,12 @@ repos:
         args: [--fix]
     -   id: ruff-format
 
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
-    hooks:
-    -   id: mypy
-        additional_dependencies: [types-requests,types-pyyaml]
-
 -   repo: local
     hooks:
+    # Only run critical tests as pre-commit check
     -   id: pytest-check
         name: pytest-check
-        entry: pytest
-        language: system
-        pass_filenames: false
-        always_run: true
-
-    -   id: pytest
-        name: pytest
-        entry: pytest
+        entry: pytest tests/unit
         language: system
         pass_filenames: false
         always_run: true

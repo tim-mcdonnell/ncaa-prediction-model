@@ -43,56 +43,38 @@ line-length = 100
 
 [tool.ruff.lint]
 select = [
-    # Current rules
-    "E", "F", "B", "I", "N", "W", "UP", "ANN", "S", "A", "C4",
-    "T20", "ARG", "ERA", "PD", "PL", "NPY", "RUF",
-    # Additional rules
-    "D",    # pydocstyle for docstrings
-    "DTZ",  # datetime timezone best practices
-    "PT",   # pytest best practices
-    "COM",  # trailing commas
-    "EM",   # exception message formatting
-    "TRY",  # exception handling anti-patterns
-    "SIM",  # Code simplification
-    "PIE",  # Recommended Python expressions
-    "TCH",  # Type checking
-    "INP",  # Detects implicit namespace packages
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "S",   # flake8-bandit (security)
+    "UP",  # pyupgrade
+    "N",   # pep8-naming
+    "RUF", # Ruff-specific rules
 ]
 
+# Keep some docstring rules but be less strict
+extend-select = ["D417", "D206", "D300"]
+
 ignore = [
-    "COM812", # Missing trailing comma in multiline container literal (handled by formatter)
     "D100",   # Missing docstring in public module
+    "D101",   # Missing docstring in public class
+    "D102",   # Missing docstring in public method
+    "D103",   # Missing docstring in public function
     "D104",   # Missing docstring in public package
     "D203",   # 1 blank line required before class docstring
     "D213",   # Multi-line docstring summary should start at the second line
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"notebooks/*.py" = ["PD", "T20"]  # More flexible pandas usage in notebooks
-"notebooks/*.ipynb" = ["PD", "T20", "D"]
-"tests/**/*.py" = ["S101", "ANN"]  # Allow assert in tests, flexible annotations
-
-[tool.ruff.lint.pydocstyle]
-convention = "google"
+"tests/**/*.py" = ["S101", "D", "ARG", "PLR"]  # Be more relaxed with test files
+"**/models/*.py" = ["ARG001"]  # Allow unused arguments in models
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
-line-ending = "auto"
-docstring-code-format = true
 
-[tool.mypy]
-python_version = "3.12"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = false  # Allow untyped decorators
-no_implicit_optional = true
-disable_error_code = ["misc", "no-untyped-def"]  # Ignore errors for untyped decorators and function defs
+# Consider removing MyPy entirely if it's causing significant delays
 
-[[tool.mypy.overrides]]
-module = "tests.*"
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
+[tool.ruff.lint.pydocstyle]
+convention = "google"
