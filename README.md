@@ -41,7 +41,12 @@ pre-commit install
 ncaa-prediction-model/
 ├── config/              # Configuration files
 ├── data/                # Data directory
-│   ├── ncaa.duckdb      # Database containing all data layers
+│   ├── raw/             # Bronze layer - partitioned Parquet files
+│   │   ├── scoreboard/  # Time-series data with year/month partitioning
+│   │   │   ├── year=YYYY/month=MM/*.parquet
+│   │   ├── teams/       # Reference data with appropriate partitioning
+│   │   └── ...          # Other API endpoints with suitable partitioning
+│   ├── ncaa.duckdb      # Database containing silver and gold layers
 │   ├── predictions/     # Output predictions
 │   └── models/          # Trained models
 ├── docs/                # Documentation

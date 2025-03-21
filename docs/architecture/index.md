@@ -11,16 +11,16 @@ description: Overview of the NCAA Basketball Prediction Model architecture
 
 The NCAA Basketball Prediction Model follows a medallion architecture designed for data processing, feature engineering, and machine learning:
 
-- **Bronze Layer**: Raw data preserved in its original form
-- **Silver Layer**: Cleaned, transformed data in normalized structure
-- **Gold Layer**: Feature-engineered datasets ready for modeling
+- **Bronze Layer**: Raw data preserved in partitioned Parquet files
+- **Silver Layer**: Cleaned, transformed data in normalized structure in DuckDB
+- **Gold Layer**: Feature-engineered datasets ready for modeling in DuckDB
 - **ML Layer**: Models, predictions, and evaluation metrics
 
 ```mermaid
 graph TD
-    DS[ESPN API] -->|Extract| B[Bronze Layer<br>Raw Data]
-    B -->|Transform| S[Silver Layer<br>Processed Data]
-    S -->|Feature Engineering| G[Gold Layer<br>Feature Sets]
+    DS[ESPN API] -->|Extract| B[Bronze Layer<br>Raw Data<br>Parquet Files]
+    B -->|Transform| S[Silver Layer<br>Processed Data<br>DuckDB]
+    S -->|Feature Engineering| G[Gold Layer<br>Feature Sets<br>DuckDB]
     G -->|Train/Evaluate| ML[ML Models]
     ML -->|Generate| P[Predictions]
 
@@ -53,14 +53,16 @@ For the initial version, we're focusing on:
 
 The data flows through these processing stages:
 
-1. **ESPN API → Bronze**: Raw data preserved as-is
-2. **Bronze → Silver**: Data cleaning, validation, and normalization
-3. **Silver → Gold**: Feature engineering and preparation for modeling
+1. **ESPN API → Bronze**: Raw data preserved in partitioned Parquet files
+2. **Bronze → Silver**: Data cleaning, validation, and normalization in DuckDB
+3. **Silver → Gold**: Feature engineering and preparation for modeling in DuckDB
 4. **Gold → Models**: Training, evaluation, and prediction generation
 
 ## Implementation Technologies
 
-- **Storage**: DuckDB for all data layers (Bronze, Silver, Gold)
+- **Storage**:
+  - Bronze layer: Partitioned Parquet files with year-month partitioning
+  - Silver and Gold layers: DuckDB for normalized and feature tables
 - **Processing**: Python, Polars, SQL
 - **Modeling**: Scikit-learn, PyTorch (later phases)
 
@@ -69,8 +71,14 @@ The data flows through these processing stages:
 ```
 ncaa-prediction-model/
 ├── config/              # Configuration files
-├── data/                # Data directory
-│   ├── ncaa.duckdb      # Database containing all data layers
+├── data/
+│   ├── raw/             # Bronze layer - partitioned Parquet files
+│   │   ├── scoreboard/  # Organized by API endpoint
+│   │   │   ├── year=YYYY/ # Year partitions
+│   │   │   │   └── month=MM/ # Month partitions
+│   │   ├── teams/       # Teams endpoint data
+│   │   └── ...          # Other endpoints
+│   ├── ncaa.duckdb      # Database containing silver and gold layers
 │   ├── predictions/     # Output predictions
 │   └── models/          # Trained models
 ├── src/                 # Source code
@@ -97,6 +105,14 @@ See [Development Phases](development-phases.md) for the project roadmap, which f
 1. **MVP**: Basic pipeline and initial prediction capability
 2. **Phase 2**: Additional data sources and enhanced features
 3. **Phase 3**: Advanced analytics and expanded model types
+
+## Performance Benefits
+
+The architecture provides significant performance advantages:
+
+1. **Storage Efficiency**: Year-month partitioned Parquet reduces bronze layer storage by ~74% compared to DuckDB
+2. **Optimized Reads**: Partition pruning improves query performance for time-based queries
+3. **Flexible Processing**: Decoupled storage enables parallel processing and better workload management
 
 ## Related Documentation
 

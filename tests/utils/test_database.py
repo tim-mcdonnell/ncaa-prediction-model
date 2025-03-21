@@ -144,7 +144,7 @@ class TestDatabaseModule:
         mock_duckdb_connection = MagicMock()
 
         # Use side_effect to return different mocks based on the query
-        def mock_execute(query, *args, **kwargs):  # noqa: ARG001
+        def mock_execute(query, *args, **kwargs):
             if "SELECT id FROM bronze_scoreboard" in query:
                 return mock_check_exists
             elif "SELECT MAX(id) FROM bronze_scoreboard" in query:
