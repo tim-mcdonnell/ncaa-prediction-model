@@ -22,14 +22,17 @@ Thank you for your interest in contributing to the NCAA Basketball Prediction Mo
 
 ## Project Architecture
 
-This project implements a medallion data architecture with three distinct processing layers:
+This project implements a medallion architecture with three distinct processing layers:
 
-- **Bronze**: Raw data captured from ESPN APIs preserved in its original form
-- **Silver**: Cleansed data with consistent schema and validation applied
-- **Gold**: Feature-engineered datasets ready for model consumption
+- **Bronze**: Raw data captured from ESPN APIs preserved as partitioned Parquet files
+- **Silver**: Cleansed data with consistent schema and validation applied in DuckDB
+- **Gold**: Feature-engineered datasets ready for model consumption in DuckDB
 
-All data is stored in a single DuckDB database with consistent naming conventions:
-- Bronze layer tables: `bronze_{api_endpoint_name}`
+The bronze layer uses endpoint-specific partitioning strategies:
+- Time-series data (e.g., scoreboard): `data/raw/{endpoint}/year=YYYY/month=MM/*.parquet`
+- Reference data (e.g., teams): `data/raw/{endpoint}/*.parquet` or other appropriate schemes
+
+Silver and gold layers are stored in a DuckDB database with consistent naming conventions:
 - Silver layer tables: `silver_{entity_name}`
 - Gold layer tables: `gold_{feature_set_name}`
 
@@ -221,10 +224,12 @@ For logging:
 
 When working with data, follow these principles:
 
-- Preserve all raw data in the bronze layer
-- Include data provenance metadata (source, timestamp)
+- Preserve all raw data in the bronze layer using appropriate partitioned Parquet structures
+- Apply endpoint-specific partitioning based on data characteristics
+- Include data provenance metadata (source, timestamp) in all Parquet files
 - Implement robust error handling for API failures
 - Build incremental processing capabilities
+- Leverage partitioning for efficient filtering and processing
 
 For detailed implementation guidelines, see the [Data Pipeline](docs/architecture/data-pipeline.md) documentation.
 

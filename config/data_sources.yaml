@@ -15,7 +15,7 @@ espn_api:
   success_threshold: 10       # Successes needed to increase concurrency
   max_retries: 3
   timeout: 10.0  # seconds
-  historical_start_date: "2021-8-01"
+  historical_start_date: "2001-8-01"
   batch_size: 80  # Process dates in batches of 80
 
 data_paths:
