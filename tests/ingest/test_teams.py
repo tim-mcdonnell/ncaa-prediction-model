@@ -20,9 +20,10 @@ from src.utils.espn_api_client import ESPNApiConfig
 def mock_espn_api_config():
     """Create a mock ESPN API configuration for testing."""
     return ESPNApiConfig(
-        base_url="https://sports.core.api.espn.com/v3/sports/basketball/mens-college-basketball",
+        base_url="https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball",
+        v3_base_url="https://sports.core.api.espn.com/v3/sports/basketball/mens-college-basketball",
         endpoints={
-            "teams": "/seasons/{season}/teams",
+            "teams": "v3:/seasons/{season}/teams",
         },
         initial_request_delay=0.01,
         max_retries=1,

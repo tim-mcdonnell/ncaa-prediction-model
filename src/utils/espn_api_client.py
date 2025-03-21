@@ -36,6 +36,7 @@ class ESPNApiConfig:
     endpoints: dict[str, str]
 
     # Optional parameters with defaults
+    v3_base_url: str = ""
     initial_request_delay: float = 1.0
     max_retries: int = 3
     timeout: float = 10.0
@@ -61,6 +62,7 @@ class ESPNApiClient:
             config: ESPNApiConfig object with client configuration
         """
         self.base_url = config.base_url
+        self.v3_base_url = config.v3_base_url
         self.endpoints = config.endpoints
         self.current_request_delay = config.initial_request_delay
         self.min_request_delay = config.min_request_delay
@@ -85,6 +87,7 @@ class ESPNApiClient:
         logger.debug(
             "Initialized ESPN API client",
             base_url=self.base_url,
+            v3_base_url=self.v3_base_url,
             endpoints=self.endpoints,
             initial_request_delay=self.current_request_delay,
             min_request_delay=self.min_request_delay,
@@ -109,12 +112,25 @@ class ESPNApiClient:
         Raises:
             ValueError: If endpoint is not recognized
         """
-        if endpoint not in self.endpoints:
-            error_msg = f"Invalid endpoint: {endpoint}"
-            raise ValueError(error_msg)
+        # Handle both dictionary and attribute access for endpoints
+        if hasattr(self.endpoints, 'get') and callable(self.endpoints.get):
+            # Dictionary access
+            if endpoint not in self.endpoints:
+                error_msg = f"Invalid endpoint: {endpoint}"
+                raise ValueError(error_msg)
+            path = self.endpoints[endpoint]
+        else:
+            # Attribute access (SimpleNamespace)
+            if not hasattr(self.endpoints, endpoint):
+                error_msg = f"Invalid endpoint: {endpoint}"
+                raise ValueError(error_msg)
+            path = getattr(self.endpoints, endpoint)
 
-        # Build the path
-        path = self.endpoints[endpoint]
+        # Check if this is a v3 API endpoint (prefixed with v3:)
+        use_v3 = False
+        if path.startswith("v3:"):
+            path = path[3:]  # Remove the v3: prefix
+            use_v3 = True
 
         # Format path with any provided parameters
         if kwargs:
@@ -124,6 +140,10 @@ class ESPNApiClient:
         if not path.startswith("/"):
             path = f"/{path}"
 
+        # Use v3_base_url if it's a v3 endpoint and available in config
+        if use_v3 and hasattr(self, "v3_base_url") and self.v3_base_url:
+            return f"{self.v3_base_url}{path}"
+        
         return f"{self.base_url}{path}"
 
     def get_endpoint_url(self: "ESPNApiClient", endpoint: str, **kwargs: str) -> str:

@@ -7,6 +7,8 @@ other system-wide settings.
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, Dict, Union
+from types import SimpleNamespace
 
 import structlog
 import yaml
@@ -30,11 +32,10 @@ class ESPNApiConfig:
 
     base_url: str
     endpoints: dict[str, str]
-    initial_request_delay: float
-    max_retries: int
-    timeout: float
-    historical_start_date: str | None = None
-    batch_size: int = 50
+    v3_base_url: str = ""
+    initial_request_delay: float = 1.0
+    max_retries: int = 3
+    timeout: float = 10.0
     max_concurrency: int = 5
     min_request_delay: float = 0.1
     max_request_delay: float = 5.0
@@ -42,6 +43,8 @@ class ESPNApiConfig:
     recovery_factor: float = 0.9
     error_threshold: int = 3
     success_threshold: int = 10
+    historical_start_date: str | None = None
+    batch_size: int = 50
 
 
 @dataclass
@@ -72,79 +75,137 @@ class Config:
     seasons: SeasonsConfig
 
 
-def get_config(config_dir: Path) -> Config:
-    """Load configuration from YAML files in config directory.
+def get_default_config() -> Dict[str, Any]:
+    """Get default configuration settings.
+
+    Returns:
+        Dictionary with default configuration values
+    """
+    return {
+        "logging": {
+            "level": "INFO",
+            "file": None,
+            "json_format": False,
+        },
+        "espn_api": {
+            "base_url": "",
+            "endpoints": {},
+            "v3_base_url": "",
+            "initial_request_delay": 1.0,
+            "max_retries": 3,
+            "timeout": 10.0,
+            "max_concurrency": 5,
+            "min_request_delay": 0.1,
+            "max_request_delay": 5.0,
+            "backoff_factor": 1.5,
+            "recovery_factor": 0.9,
+            "error_threshold": 3,
+            "success_threshold": 10,
+            "historical_start_date": None,
+            "batch_size": 50,
+        },
+        "data_paths": {
+            "bronze": "",
+            "silver": "",
+            "gold": "",
+            "models": "",
+        },
+        "seasons": {
+            "current": "",
+            "historical": [],
+        },
+    }
+
+
+def deep_merge(target: Dict[str, Any], source: Dict[str, Any]) -> Dict[str, Any]:
+    """Deep merge two dictionaries recursively.
+
+    Args:
+        target: Target dictionary to merge into
+        source: Source dictionary to merge from
+
+    Returns:
+        Merged dictionary
+    """
+    for key, value in source.items():
+        if key in target and isinstance(target[key], dict) and isinstance(value, dict):
+            deep_merge(target[key], value)
+        else:
+            target[key] = value
+    return target
+
+
+def dict_to_config(config_dict: Dict[str, Any]) -> SimpleNamespace:
+    """Convert a nested dictionary to a SimpleNamespace object recursively.
+
+    Args:
+        config_dict: Dictionary to convert
+
+    Returns:
+        SimpleNamespace object with attributes from dictionary
+    """
+    namespace = SimpleNamespace()
+    for key, value in config_dict.items():
+        if isinstance(value, dict):
+            setattr(namespace, key, dict_to_config(value))
+        else:
+            setattr(namespace, key, value)
+    return namespace
+
+
+def get_config(config_dir: Path) -> Any:
+    """Load configuration from YAML files.
 
     Args:
         config_dir: Path to configuration directory
 
     Returns:
-        Config object with all settings
+        Config object with merged configuration
     """
-    # Create default logging config
-    logging_config = LoggingConfig()
+    # Ensure config directory exists
+    if not config_dir.exists():
+        raise FileNotFoundError(f"Configuration directory not found: {config_dir}")
 
-    # Load data sources configuration
-    data_sources_path = config_dir / "data_sources.yaml"
-    if not data_sources_path.exists():
-        logger.warning("Data sources configuration not found", path=str(data_sources_path))
-        error_msg = f"Configuration file not found: {data_sources_path}"
-        raise FileNotFoundError(error_msg)
+    # Initialize with default config
+    config_data = get_default_config()
 
-    try:
-        with open(data_sources_path) as f:
-            data_sources = yaml.safe_load(f)
-    except yaml.YAMLError as err:
-        logger.exception("Invalid YAML in configuration file", error=str(err))
-        error_msg = f"Configuration error in YAML: {err}"
-        raise ValueError(error_msg) from err
-    else:
-        try:
-            # Extract ESPN API config
-            espn_api_config = ESPNApiConfig(
-                base_url=data_sources["espn_api"]["base_url"],
-                endpoints=data_sources["espn_api"]["endpoints"],
-                initial_request_delay=data_sources["espn_api"]["initial_request_delay"],
-                max_retries=data_sources["espn_api"]["max_retries"],
-                timeout=data_sources["espn_api"]["timeout"],
-                # Set defaults for historical_start_date and batch_size if not present
-                historical_start_date=data_sources["espn_api"].get("historical_start_date"),
-                batch_size=data_sources["espn_api"].get("batch_size", 50),
-                max_concurrency=data_sources["espn_api"].get("max_concurrency", 5),
-                min_request_delay=data_sources["espn_api"].get("min_request_delay", 0.1),
-                max_request_delay=data_sources["espn_api"].get("max_request_delay", 5.0),
-                backoff_factor=data_sources["espn_api"].get("backoff_factor", 1.5),
-                recovery_factor=data_sources["espn_api"].get("recovery_factor", 0.9),
-                error_threshold=data_sources["espn_api"].get("error_threshold", 3),
-                success_threshold=data_sources["espn_api"].get("success_threshold", 10),
-            )
+    # Load all YAML files
+    for yaml_file in config_dir.glob("*.yaml"):
+        with open(yaml_file, "r") as f:
+            file_config = yaml.safe_load(f)
+            if file_config:
+                # Deep merge into config
+                deep_merge(config_data, file_config)
 
-            # Extract data paths config
-            data_paths_config = DataPathsConfig(
-                bronze=data_sources["data_paths"]["bronze"],
-                silver=data_sources["data_paths"]["silver"],
-                gold=data_sources["data_paths"]["gold"],
-                models=data_sources["data_paths"]["models"],
-            )
+    # Create config object
+    config = dict_to_config(config_data)
 
-            # Extract seasons config
-            seasons_config = SeasonsConfig(
-                current=data_sources["seasons"]["current"],
-                historical=data_sources["seasons"]["historical"],
-            )
+    # Specially handle ESPN API config to create ESPNApiConfig objects
+    if hasattr(config, "espn_api"):
+        # Extract values for ESPNApiConfig
+        base_url = config.espn_api.base_url
+        endpoints = config.espn_api.endpoints
+        
+        # Get v3_base_url if it exists
+        v3_base_url = getattr(config.espn_api, "v3_base_url", "")
 
-            # Create main config object
-            config = Config(
-                logging=logging_config,
-                espn_api=espn_api_config,
-                data_paths=data_paths_config,
-                seasons=seasons_config,
-            )
+        # Get other parameters or use defaults
+        config.espn_api = ESPNApiConfig(
+            base_url=base_url,
+            endpoints=endpoints,
+            v3_base_url=v3_base_url,
+            initial_request_delay=getattr(config.espn_api, "initial_request_delay", 1.0),
+            max_retries=getattr(config.espn_api, "max_retries", 3),
+            timeout=getattr(config.espn_api, "timeout", 10.0),
+            max_concurrency=getattr(config.espn_api, "max_concurrency", 5),
+            min_request_delay=getattr(config.espn_api, "min_request_delay", 0.1),
+            max_request_delay=getattr(config.espn_api, "max_request_delay", 5.0),
+            backoff_factor=getattr(config.espn_api, "backoff_factor", 1.5),
+            recovery_factor=getattr(config.espn_api, "recovery_factor", 0.9),
+            error_threshold=getattr(config.espn_api, "error_threshold", 3),
+            success_threshold=getattr(config.espn_api, "success_threshold", 10),
+            historical_start_date=getattr(config.espn_api, "historical_start_date"),
+            batch_size=getattr(config.espn_api, "batch_size", 50),
+        )
 
-            return config
-        except KeyError as err:
-            logger.exception("Missing required configuration key", error=str(err))
-            error_msg = f"Missing required configuration key: {err}"
-            raise KeyError(error_msg) from err
-        else:
-            return config
+    return config

@@ -275,7 +275,7 @@ class ParquetStorage:
         content_hash: str | None = None,
         created_at: datetime.datetime | None = None,
     ) -> dict[str, Any]:
-        """Write team data to Parquet file (no date partitioning).
+        """Write team data to Parquet files.
 
         Args:
             source_url: Source URL
@@ -287,13 +287,16 @@ class ParquetStorage:
         Returns:
             Dict containing success status and file information
         """
-        # Create directory for teams without date partitioning
+        # Create team directory
         teams_dir = self.base_dir / "teams"
         teams_dir.mkdir(parents=True, exist_ok=True)
 
         # Prepare data for storage
         if created_at is None:
             created_at = datetime.datetime.now()
+
+        # Extract season from parameters
+        season = parameters.get("season", "unknown")
 
         # Handle parameters - ensure it's a JSON string
         params_json = parameters if isinstance(parameters, str) else json.dumps(parameters)
@@ -304,169 +307,77 @@ class ParquetStorage:
         # Generate content hash if not provided
         if content_hash is None:
             content_hash = hashlib.sha256(json_data.encode("utf-8")).hexdigest()
-            logger.debug("Generated content hash for team data", hash=content_hash)
+            logger.debug("Generated content hash for team data", season=season, hash=content_hash)
 
-        # Define target file path
-        file_path = teams_dir / "data.parquet"
+        # Define target file path - use season in filename
+        file_path = teams_dir / f"season_{season}.parquet"
 
         # Create DataFrame with a single row
         new_row = pl.DataFrame(
             {
+                "season": [season],
                 "source_url": [source_url],
                 "parameters": [params_json],
-                "content_hash": [content_hash],  # Now always has a value
+                "content_hash": [content_hash],
                 "raw_data": [json_data],
                 "created_at": [created_at],
+                "team_count": [len(data.get("items", []))],
             }
         )
 
-        # If file exists, read it, check if data exists with the same hash, and update if needed
-        if file_path.exists():
-            try:
-                # Read existing file
+        try:
+            if file_path.exists():
+                # Check if this is a duplicate entry
                 try:
                     existing_df = pl.read_parquet(file_path)
-                except Exception as e:
-                    logger.error(
-                        "Error reading existing team Parquet file, will create new file",
-                        file=str(file_path),
-                        error=str(e),
-                    )
-                    # If file is corrupted, create a new one
-                    try:
-                        success = self._write_dataframe_safely(new_row, file_path)
-                        if not success:
-                            logger.error(
-                                "Failed to create new team data file after read error",
-                                file=str(file_path),
-                            )
-                            return {"success": False, "error": "Failed to write Parquet file"}
-
-                        logger.info(
-                            "Created new team data Parquet file after read error",
-                            file=str(file_path),
+                    if content_hash in existing_df["content_hash"].to_list():
+                        logger.debug(
+                            "Skipping duplicate team data entry",
+                            season=season, 
+                            content_hash=content_hash,
                         )
                         return {
                             "success": True,
+                            "duplicate": True,
                             "file_path": str(file_path),
-                            "directory": str(teams_dir),
+                            "message": "Content hash already exists in file"
                         }
-                    except Exception as e:
-                        logger.error(
-                            "Error creating new team Parquet file after read error",
-                            file=str(file_path),
-                            error=str(e),
-                        )
-                        return {"success": False, "error": str(e)}
-
-                # Check if we already have data with the same parameters
-                param_matches = existing_df.filter(pl.col("parameters") == params_json)
-                if param_matches.height > 0:
-                    try:
-                        # Get the existing hash for matching parameters
-                        existing_hash = param_matches.select("content_hash").row(0)[0]
-
-                        # Handle empty hash case
-                        if not existing_hash:
-                            logger.info(
-                                "Empty content hash found - updating team data",
-                                new_hash=content_hash[:10],
-                            )
-                            # Remove existing entry with these parameters
-                            updated_df = existing_df.filter(pl.col("parameters") != params_json)
-                            combined_df = pl.concat([updated_df, new_row], how="diagonal")
-                        # Compare hashes to see if data has changed
-                        elif existing_hash == content_hash:
-                            logger.info(
-                                "Content hash unchanged - skipping team data update",
-                                hash=content_hash[:10],
-                            )
-                            return {
-                                "success": True,
-                                "file_path": str(file_path),
-                                "directory": str(teams_dir),
-                                "unchanged": True,
-                            }
-                        else:
-                            # Update the existing row since content has changed
-                            logger.info(
-                                "Content hash changed - updating team data",
-                                old_hash=existing_hash[:10] if existing_hash else "",
-                                new_hash=content_hash[:10],
-                            )
-                            # Remove existing entry with these parameters
-                            updated_df = existing_df.filter(pl.col("parameters") != params_json)
-                            combined_df = pl.concat([updated_df, new_row], how="diagonal")
-                    except Exception as e:
-                        # If there's any error accessing the hash, update the row
-                        logger.warning(
-                            "Error accessing content hash - updating team data",
-                            error=str(e),
-                            new_hash=content_hash[:10],
-                        )
-                        # Remove existing entry with these parameters
-                        updated_df = existing_df.filter(pl.col("parameters") != params_json)
-                        combined_df = pl.concat([updated_df, new_row], how="diagonal")
-                else:
-                    # No existing data with these parameters, append the new row
-                    combined_df = pl.concat([existing_df, new_row], how="diagonal")
-
-                # Add extra error handling around write operation
-                try:
-                    success = self._write_dataframe_safely(combined_df, file_path)
-                    if not success:
-                        logger.error(
-                            "Failed to write team data",
-                            file=str(file_path),
-                        )
-                        return {"success": False, "error": "Failed to write Parquet file"}
-
-                    logger.info(
-                        "Updated existing team data in Parquet file",
-                        file=str(file_path),
-                    )
+                    
+                    # Append to existing file - use safe write with chunking
+                    combined_df = pl.concat([existing_df, new_row])
+                    self._write_dataframe_safely(combined_df, file_path)
+                    
                 except Exception as e:
                     logger.error(
-                        "Error writing team Parquet file",
-                        file=str(file_path),
+                        "Error processing existing team data file", 
                         error=str(e),
+                        file_path=str(file_path),
                     )
                     return {"success": False, "error": str(e)}
-            except Exception as e:
-                logger.error(
-                    "Error updating existing Parquet file",
-                    file=str(file_path),
-                    error=str(e),
-                )
-                return {"success": False, "error": str(e)}
-        else:
-            # Write new DataFrame to Parquet file
-            try:
-                success = self._write_dataframe_safely(new_row, file_path)
-                if not success:
-                    logger.error(
-                        "Failed to create new team data file",
-                        file=str(file_path),
-                    )
-                    return {"success": False, "error": "Failed to write Parquet file"}
+            else:
+                # Create new file - use safe write
+                self._write_dataframe_safely(new_row, file_path)
 
-                logger.info(
-                    "Created new team data Parquet file",
-                    file=str(file_path),
-                )
-            except Exception as e:
-                logger.error(
-                    "Error creating new team Parquet file",
-                    file=str(file_path),
-                    error=str(e),
-                )
-                return {"success": False, "error": str(e)}
-
-        return {
-            "success": True,
-            "file_path": str(file_path),
-            "directory": str(teams_dir),
-        }
+            logger.info(
+                "Team data written successfully",
+                season=season,
+                file_path=str(file_path),
+                team_count=len(data.get("items", [])),
+            )
+            
+            return {
+                "success": True,
+                "file_path": str(file_path),
+                "team_count": len(data.get("items", [])),
+            }
+            
+        except Exception as e:
+            logger.error(
+                "Error writing team data", 
+                error=str(e),
+                file_path=str(file_path),
+            )
+            return {"success": False, "error": str(e)}
 
     def read_scoreboard_data(
         self: "ParquetStorage", date: str, latest_only: bool = True
@@ -527,44 +438,80 @@ class ParquetStorage:
             return None
 
     def read_team_data(self: "ParquetStorage", latest_only: bool = True) -> str | None:
-        """Read team data.
+        """Read team data from Parquet files.
 
         Args:
-            latest_only: If True, return only the latest record
+            latest_only: Whether to return only the latest version
 
         Returns:
-            Raw JSON data string or None if not found
+            JSON string containing team data, or None if no data
         """
-        # Path to the teams directory
         teams_dir = self.base_dir / "teams"
-        file_path = teams_dir / "data.parquet"
-
-        if not file_path.exists():
-            logger.warning("Team data file does not exist", file_path=str(file_path))
+        if not teams_dir.exists():
+            logger.warning("Teams directory does not exist", dir=str(teams_dir))
             return None
 
-        try:
-            df = pl.read_parquet(file_path)
-
-            if df.is_empty():
-                logger.warning("No team data found")
-                return None
-
-            if latest_only:
-                # Get the latest record based on created_at
-                latest_record = df.sort("created_at", descending=True).row(0, named=True)
-                return latest_record["raw_data"]
-            else:
-                # Return all records as a list
-                return df.get_column("raw_data").to_list()
-
-        except Exception as e:
-            logger.error(
-                "Error reading Parquet file",
-                file=str(file_path),
-                error=str(e),
-            )
+        # List all Parquet files
+        parquet_files = list(teams_dir.glob("*.parquet"))
+        if not parquet_files:
+            logger.warning("No team data files found", dir=str(teams_dir))
             return None
+
+        # If there are multiple files and latest_only is True, 
+        # return the latest one based on created_at
+        if latest_only and len(parquet_files) > 1:
+            latest_data = None
+            latest_timestamp = datetime.datetime.min
+
+            for file_path in parquet_files:
+                try:
+                    df = pl.read_parquet(file_path)
+                    if df.height == 0:
+                        continue
+                        
+                    # Get the latest created_at timestamp from this file
+                    file_latest = df["created_at"].max()
+                    if file_latest > latest_timestamp:
+                        # Extract the raw JSON for the latest entry
+                        latest_idx = df["created_at"].arg_max()
+                        latest_data = df["raw_data"][latest_idx]
+                        latest_timestamp = file_latest
+                        
+                except Exception as e:
+                    logger.error(
+                        "Error reading team data file", 
+                        error=str(e),
+                        file=str(file_path),
+                    )
+                    continue
+
+            return latest_data
+
+        # Otherwise, return all data from all files
+        all_data = []
+        for file_path in parquet_files:
+            try:
+                df = pl.read_parquet(file_path)
+                if df.height == 0:
+                    continue
+                    
+                for row in df.rows():
+                    # Get the index of the raw_data column
+                    raw_data_idx = df.columns.index("raw_data")
+                    all_data.append(row[raw_data_idx])
+                    
+            except Exception as e:
+                logger.error(
+                    "Error reading team data file", 
+                    error=str(e),
+                    file=str(file_path),
+                )
+                continue
+
+        if not all_data:
+            return None
+            
+        return all_data[0] if latest_only else json.dumps(all_data)
 
     def get_processed_dates(self: "ParquetStorage", endpoint: str = "scoreboard") -> list[str]:
         """Get list of dates that have already been processed.
