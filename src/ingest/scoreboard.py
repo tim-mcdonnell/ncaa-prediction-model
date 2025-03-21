@@ -206,9 +206,8 @@ class ScoreboardIngestion:
             # Format date for ESPN API
             espn_date = format_date_for_api(date)
 
-            # Fetch data (uses synchronous method with retry logic)
-            loop = asyncio.get_running_loop()
-            data = await loop.run_in_executor(None, self.api_client.fetch_scoreboard, espn_date)
+            # Fetch data using the async method
+            data = await self.api_client.fetch_scoreboard_async(date=espn_date)
 
             # Store in Parquet (uses synchronous method since filesystem operations)
             from src.utils.parquet_storage import ParquetStorage
@@ -224,6 +223,7 @@ class ScoreboardIngestion:
             }
 
             # Run the write operation in an executor
+            loop = asyncio.get_running_loop()
             result = await loop.run_in_executor(
                 None, lambda: parquet_storage.write_scoreboard_data(**write_params)
             )

@@ -2,6 +2,7 @@ import json
 import os
 import shutil
 from pathlib import Path
+import datetime
 
 import polars as pl
 import pyarrow as pa
@@ -64,7 +65,6 @@ class TestParquetIntegration:
             espn_api_config=espn_api_config,
             date="2023-03-15",  # Specific date for consistent testing
             db_path=os.path.join(test_data_dir, "test.duckdb"),
-            use_parquet=True,  # Enable Parquet storage
             parquet_dir=raw_dir,
         )
 
@@ -128,7 +128,7 @@ class TestParquetIntegration:
         assert "month" in data.columns, "month partition column missing"
 
         # Check the data values
-        assert "2023-03-15" in data["date"].values, "Date not found in Parquet data"
+        assert "2023-03-15" in data["date"].to_list(), "Date not found in Parquet data"
         assert all(data["year"] == "2023"), "Year partition value incorrect"
         assert all(data["month"] == "03"), "Month partition value incorrect"
 
@@ -180,15 +180,15 @@ class TestParquetIntegration:
                         }
                     )
                 ],
-                "created_at": [pl.Timestamp("2023-03-15 12:00:00")],
+                "created_at": ["2023-03-15T12:00:00"],
                 "year": ["2023"],
                 "month": ["03"],
             }
         )
 
         # Write test Parquet file
-        test_file = os.path.join(scoreboard_dir, "test_data.parquet")
-        test_data.to_parquet(test_file, index=False)
+        test_file = os.path.join(scoreboard_dir, "data.parquet")
+        test_data.write_parquet(test_file)
 
         # Create a ParquetStorage instance
         storage = ParquetStorage(base_dir=parquet_dir)
@@ -279,33 +279,15 @@ class TestParquetIntegration:
                         }
                     )
                 ],
-                "created_at": [pl.Timestamp("2023-03-15 12:00:00")],
+                "created_at": ["2023-03-15T12:00:00"],
                 "year": ["2023"],
                 "month": ["03"],
             }
         )
 
         # Write test Parquet file
-        test_file = os.path.join(scoreboard_dir, "test_data.parquet")
-
-        # Set schema explicitly when writing
-        schema = pa.schema(
-            [
-                pa.field("id", pa.int32()),
-                pa.field("date", pa.string()),
-                pa.field("source_url", pa.string()),
-                pa.field("parameters", pa.string()),
-                pa.field("content_hash", pa.string()),
-                pa.field("raw_data", pa.string()),
-                pa.field("created_at", pa.timestamp("us")),
-                pa.field("year", pa.string()),
-                pa.field("month", pa.string()),
-            ]
-        )
-
-        # Convert to PyArrow table with explicit schema and write to file
-        table = pa.Table.from_polars(test_data, schema=schema)
-        pq.write_table(table, test_file)
+        test_file = os.path.join(scoreboard_dir, "data.parquet")
+        test_data.write_parquet(test_file)
 
         # Create storage instance
         parquet_storage = ParquetStorage(base_dir=parquet_dir)
@@ -417,9 +399,9 @@ class TestParquetIntegration:
                     ),
                 ],
                 "created_at": [
-                    pl.Timestamp("2023-03-15 12:00:00"),
-                    pl.Timestamp("2023-03-16 12:00:00"),
-                    pl.Timestamp("2023-03-17 12:00:00"),
+                    "2023-03-15T12:00:00",
+                    "2023-03-16T12:00:00",
+                    "2023-03-17T12:00:00",
                 ],
                 "year": ["2023"] * 3,
                 "month": ["03"] * 3,
@@ -427,26 +409,8 @@ class TestParquetIntegration:
         )
 
         # Write test Parquet file
-        test_file = os.path.join(scoreboard_dir, "test_data.parquet")
-
-        # Set schema explicitly when writing
-        schema = pa.schema(
-            [
-                pa.field("id", pa.int32()),
-                pa.field("date", pa.string()),
-                pa.field("source_url", pa.string()),
-                pa.field("parameters", pa.string()),
-                pa.field("content_hash", pa.string()),
-                pa.field("raw_data", pa.string()),
-                pa.field("created_at", pa.timestamp("us")),
-                pa.field("year", pa.string()),
-                pa.field("month", pa.string()),
-            ]
-        )
-
-        # Convert to PyArrow table with explicit schema and write to file
-        table = pa.Table.from_polars(test_data, schema=schema)
-        pq.write_table(table, test_file)
+        test_file = os.path.join(scoreboard_dir, "data.parquet")
+        test_data.write_parquet(test_file)
 
         # Act
         # Count records in DuckDB
