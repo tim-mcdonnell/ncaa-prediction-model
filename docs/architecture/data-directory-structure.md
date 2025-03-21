@@ -26,7 +26,7 @@ flowchart TD
     E1 --> YP2[/year=YYYY/]
     YP1 --> MP1[/month=MM/]
     YP1 --> MP2[/month=MM/]
-    
+
     DB --> S[Silver Layer Tables]
     DB --> G[Gold Layer Tables]
     DB --> MT[Metadata Tables]
@@ -165,16 +165,16 @@ Common data access patterns with the new architecture:
 def read_scoreboard_data(date):
     """Read scoreboard data for a specific date."""
     year, month, day = date.split("-")
-    
+
     # Path to the specific partition
     path = f"data/raw/scoreboard/year={year}/month={month}/"
-    
+
     # Read the partition with a filter
     df = pl.read_parquet(
-        path, 
+        path,
         filters=[pl.col("date") == date]
     )
-    
+
     if len(df) > 0:
         # Get the raw data from the most recent record
         return df.sort("created_at", descending=True)[0, "raw_data"]
@@ -206,7 +206,7 @@ The revised data pipeline follows this flow:
    - Update metadata registry
 
 2. **Processing**:
-   - Read bronze layer Parquet files 
+   - Read bronze layer Parquet files
    - Transform into silver layer normalized tables
    - Store in DuckDB
    - Update lineage tracking

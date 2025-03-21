@@ -22,7 +22,7 @@ repos:
     # Only run critical tests as pre-commit check
     -   id: pytest-check
         name: pytest-check
-        entry: pytest tests/unit
+        entry: pytest tests
         language: system
         pass_filenames: false
         always_run: true
