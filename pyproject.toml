@@ -11,14 +11,15 @@ dependencies = [
     "polars[pyarrow]>=1.25.2",
     "duckdb>=1.2.1",
     "scikit-learn>=1.6.1",
-    
+
     # Utilities
     "click>=8.1.8",
+    "typer>=0.15.2",
     "structlog>=25.2.0",
     "rich>=13.9.4",
     "httpx>=0.28.1",
     "tenacity>=9.0.0",
-    
+
     # Visualization
     "dash>=3.0.0",
 ]
@@ -30,6 +31,7 @@ dev = [
     "pytest>=8.3.5",
     "pytest-mock>=3.14.0",
     "pytest-cov>=6.0.0",
+    "pytest-asyncio>=0.25.3",
 ]
 
 docs = [

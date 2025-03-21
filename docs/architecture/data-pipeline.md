@@ -70,7 +70,7 @@ The Bronze layer preserves raw data from ESPN APIs in its original form.
 ### Implementation
 
 1. **Storage Format**: Partitioned Parquet files using year-month partitioning scheme
-2. **Directory Structure**: 
+2. **Directory Structure**:
    ```
    data/raw/{endpoint}/year=YYYY/month=MM/*.parquet
    ```
@@ -98,21 +98,21 @@ The Bronze layer preserves raw data from ESPN APIs in its original form.
 def ingest_scoreboard(date, response_data):
     """
     Store raw scoreboard data in the bronze layer.
-    
+
     Args:
         date: Date in YYYY-MM-DD format
         response_data: Raw API response
     """
     # Extract year and month for partitioning
     year, month, _ = date.split('-')
-    
+
     # Create directory structure if needed
     partition_dir = f"data/raw/scoreboard/year={year}/month={month}"
     os.makedirs(partition_dir, exist_ok=True)
-    
+
     # Calculate content hash for change detection
     content_hash = hashlib.md5(json.dumps(response_data).encode()).hexdigest()
-    
+
     # Create record with metadata
     record = {
         "id": None,  # Will be assigned automatically
@@ -125,17 +125,17 @@ def ingest_scoreboard(date, response_data):
         "year": year,
         "month": month
     }
-    
+
     # Create DataFrame and write to parquet partition
     df = pl.DataFrame([record])
     output_path = f"{partition_dir}/scoreboard-{date}.parquet"
     df.write_parquet(output_path)
-    
+
     # Update metadata registry in DuckDB
     with duckdb.connect("data/ncaa.duckdb") as conn:
         conn.execute("""
             INSERT INTO source_metadata (
-                source_type, source_date, file_path, 
+                source_type, source_date, file_path,
                 content_hash, processed, ingestion_timestamp
             ) VALUES (?, ?, ?, ?, ?, ?)
         """, ["scoreboard", date, output_path, content_hash, False, datetime.now()])
@@ -172,34 +172,34 @@ def process_games(date):
 
     Args:
         date: Date in YYYY-MM-DD format
-    
+
     Returns:
         List of normalized game dictionaries
     """
     # Extract year and month for loading bronze data
     year, month, _ = date.split('-')
-    
+
     # Path to the bronze layer partition
     bronze_path = f"data/raw/scoreboard/year={year}/month={month}"
-    
+
     # Load the raw data from parquet
     try:
         df = pl.read_parquet(
-            bronze_path, 
+            bronze_path,
             filters=[pl.col("date") == date]
         )
-        
+
         if len(df) == 0:
             return []
-            
+
         # Get the most recent record for this date
         raw_data = json.loads(df.sort("created_at", descending=True)[0, "raw_data"])
     except Exception as e:
         logger.error(f"Error loading bronze data: {e}")
         return []
-    
+
     games = []
-    
+
     for event in raw_data.get("events", []):
         game_id = event.get("id")
         competitions = event.get("competitions", [])

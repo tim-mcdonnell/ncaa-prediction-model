@@ -60,7 +60,7 @@ The data flows through these processing stages:
 
 ## Implementation Technologies
 
-- **Storage**: 
+- **Storage**:
   - Bronze layer: Partitioned Parquet files with year-month partitioning
   - Silver and Gold layers: DuckDB for normalized and feature tables
 - **Processing**: Python, Polars, SQL
@@ -71,7 +71,7 @@ The data flows through these processing stages:
 ```
 ncaa-prediction-model/
 ├── config/              # Configuration files
-├── data/                
+├── data/
 │   ├── raw/             # Bronze layer - partitioned Parquet files
 │   │   ├── scoreboard/  # Organized by API endpoint
 │   │   │   ├── year=YYYY/ # Year partitions
