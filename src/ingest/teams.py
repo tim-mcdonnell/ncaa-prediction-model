@@ -43,7 +43,7 @@ class TeamsIngestionConfig:
     # API configuration
     espn_api_config: ESPNApiConfig
 
-    # Data storage configuration - use empty string as placeholder, 
+    # Data storage configuration - use empty string as placeholder,
     # will be filled from config if empty
     parquet_dir: str = ""
 
@@ -349,7 +349,7 @@ class TeamsIngestion:
         Initialize the TeamsIngestion class.
 
         Args:
-            espn_api_config: Configuration for the ESPN API, either as an ESPNApiConfig object 
+            espn_api_config: Configuration for the ESPN API, either as an ESPNApiConfig object
                 or a dictionary
             db_path: Path to the SQLite database. If None, uses config value.
         """

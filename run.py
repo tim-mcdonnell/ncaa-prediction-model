@@ -104,7 +104,7 @@ CAUTIOUS_OPTION = typer.Option(False, help="Use cautious settings for better rel
 FORCE_CHECK_OPTION = typer.Option(
     False,
     help="Force fetching data for all dates, even if they already exist "
-         "(checks hash to detect changes)",
+    "(checks hash to detect changes)",
 )
 FORCE_OVERWRITE_OPTION = typer.Option(
     False, help="Force overwrite data for all dates without hash comparison (always updates files)"

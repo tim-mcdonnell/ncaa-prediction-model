@@ -200,9 +200,9 @@ class TestDatabaseModule:
             assert insert_args[2] == test_url, "URL should match test URL"
             assert json.loads(insert_args[3]) == test_params, "Parameters should match test params"
             # Not testing content_hash as it depends on the exact json encoding
-            assert json.loads(insert_args[5]) == sample_scoreboard_data, (
-                "Raw data should match sample data"
-            )
+            assert (
+                json.loads(insert_args[5]) == sample_scoreboard_data
+            ), "Raw data should match sample data"
 
     def test_insert_bronze_scoreboard_with_duplicate_data_skips_insertion(
         self,

@@ -7,7 +7,7 @@ espn_api:
     team_detail: "/teams/{team_id}"
     scoreboard: "/scoreboard"
     game_summary: "/summary"
-  
+
   # API client behavior
   request_settings:
     initial_request_delay: 0.5  # Initial delay between requests in seconds
@@ -25,7 +25,7 @@ espn_api:
 # Data storage configuration
 data_storage:
   raw: "data/raw"               # Raw data directory (bronze layer)
-  silver: "data/silver"         # Silver layer 
+  silver: "data/silver"         # Silver layer
   gold: "data/gold"             # Gold layer
   models: "models"              # Trained models
 

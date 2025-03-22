@@ -258,9 +258,9 @@ class TestScoreboardIngestionIntegration:
             test_dates=len(test_dates),
         )
 
-        assert speedup > min_expected_speedup, (
-            f"Concurrent should be at least {min_expected_speedup}x faster than sequential"
-        )
+        assert (
+            speedup > min_expected_speedup
+        ), f"Concurrent should be at least {min_expected_speedup}x faster than sequential"
 
     @pytest.mark.asyncio()
     async def test_async_error_handling_with_simulated_api_failures(

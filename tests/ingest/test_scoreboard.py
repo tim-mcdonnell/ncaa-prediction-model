@@ -1116,9 +1116,9 @@ class TestScoreboardIngestion:
 
             # Assert
             assert result == existing_data_dict, f"Should return cached data. Got {result}"
-            assert not mock_async_api_client.fetch_scoreboard_async.called, (
-                "API should not be called when force_overwrite=False"
-            )
+            assert (
+                not mock_async_api_client.fetch_scoreboard_async.called
+            ), "API should not be called when force_overwrite=False"
 
             # Reset mocks
             mock_async_api_client.fetch_scoreboard_async.reset_mock()

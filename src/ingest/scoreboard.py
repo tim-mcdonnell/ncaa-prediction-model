@@ -334,7 +334,7 @@ class ScoreboardIngestion:
 
         # If we're not forcing checks, filter out dates we've already processed
         if self.skip_existing and not self.force_check and not self.force_overwrite:
-            # Filter dates that have already been processed 
+            # Filter dates that have already been processed
             # (check each date individually for efficiency)
             filtered_dates = []
             skipped_count = 0

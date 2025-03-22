@@ -121,8 +121,8 @@ class TestForceFlags:
             assert mock_api_client.fetch_scoreboard_async.call_count == 1
             assert mock_parquet_storage.write_scoreboard_data.call_count == 2
             assert (
-                mock_parquet_storage.write_scoreboard_data.call_args_list[0][1]
-                ["force_overwrite"] is False
+                mock_parquet_storage.write_scoreboard_data.call_args_list[0][1]["force_overwrite"]
+                is False
             )
 
     @pytest.mark.asyncio
