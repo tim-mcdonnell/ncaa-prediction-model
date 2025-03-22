@@ -1,192 +1,238 @@
 ---
-title: Command-Line Interface Design
+title: CLI Design
 description: Command-line interface design for the NCAA Basketball Prediction Model
 ---
 
 # Command-Line Interface Design
 
-[TOC]
-
-This document outlines the command-line interface design for the NCAA Basketball Prediction Model, providing a consistent and intuitive way to interact with the application's functionality.
+This document outlines the command-line interface (CLI) design for the NCAA Basketball Prediction Model.
 
 ## Command Structure
 
-The NCAA Basketball Prediction Model uses a simple Python script (`run.py`) at the project root for all operations. Commands follow a hierarchical structure with this pattern:
+The CLI follows the structure:
 
 ```
 python run.py <command> <subcommand> [options]
 ```
 
 Where:
-- `<command>` is the primary operation category
-- `<subcommand>` is the specific operation
-- `[options]` are optional flags and parameters
+- `<command>` is the main category (e.g., `ingest`, `process`, `model`)
+- `<subcommand>` is the specific action within that category
+- `[options]` are parameters specific to the subcommand
 
-## Implementation Details
+## Implementation
 
-The command interface is implemented using [Click](https://click.palletsprojects.com/), which provides:
+The CLI is implemented using [Click](https://click.palletsprojects.com/), which provides:
 
-1. **Composability**: Easy to compose complex command hierarchies
+1. **Composability**: Commands can be nested and combined
 2. **Type Safety**: Automatic type conversion and validation
-3. **Self-Documentation**: Automatic help text generation
-4. **Testability**: Easy to test commands
-
-The main script (`run.py`) handles:
-- Command-line argument parsing
-- Loading configuration
-- Setting up logging
-- Executing the appropriate functionality
-- Error handling and exit codes
-
-## Code Organization
-
-The CLI implementation follows this structure:
-
-```
-ncaa-prediction-model/
-├── run.py                 # Main CLI entry point
-└── src/                   # Source code
-    ├── ingest/            # Data ingestion commands
-    │   ├── __init__.py
-    │   ├── scoreboard.py  # Scoreboard ingestion implementation
-    │   └── teams.py       # Teams ingestion implementation
-    ├── process/           # Data processing commands
-    ├── features/          # Feature engineering commands
-    ├── models/            # Model training/prediction commands
-    └── utils/             # Shared utilities
-        ├── __init__.py
-        ├── config.py      # Configuration management
-        └── logging.py     # Logging setup
-```
-
-The `run.py` script imports functionality directly from the modules in `src/`:
-
-```python
-# Example import in run.py
-from utils.config import get_config
-from utils.logging import configure_logging
-from ingest.scoreboard import ingest_scoreboard
-```
+3. **Self-Documentation**: Help text generated automatically
+4. **Testability**: Commands can be invoked programmatically in tests
 
 ## Command Categories
 
-### 1. Data Ingestion Commands
+### Data Ingestion Commands
 
-Commands for fetching data from external sources:
-
-```
-python run.py ingest scoreboard [--date YYYY-MM-DD] [--seasons YYYY-YY]
-python run.py ingest teams [--conference CONF] [--seasons YYYY-YY]
-python run.py ingest games [--team-id TEAM_ID] [--seasons YYYY-YY]
-```
-
-### 2. Data Processing Commands
-
-Commands for transforming data through the medallion layers:
+Ingestion commands use a unified approach based on configuration objects:
 
 ```
-python run.py process bronze-to-silver --entity ENTITY [--incremental]
-python run.py process silver-to-gold --feature-set FEATURE_SET [--incremental]
+python run.py ingest [endpoint] [options]
 ```
 
-### 3. Feature Engineering Commands
+Where `[endpoint]` can be:
 
-Commands for generating and managing features:
-
-```
-python run.py features generate --feature-set FEATURE_SET
-python run.py features list [--entity ENTITY]
-python run.py features analyze --feature FEATURE [--plot]
-```
-
-### 4. Model Commands
-
-Commands for training, evaluating, and using models:
+#### Scoreboard Endpoint
 
 ```
-python run.py model train --model-type MODEL_TYPE --feature-set FEATURE_SET
-python run.py model evaluate --model-id MODEL_ID [--test-set TEST_SET]
-python run.py model predict --model-id MODEL_ID [--upcoming] [--date YYYY-MM-DD]
+python run.py ingest scoreboard [--date YYYY-MM-DD] [--start-date YYYY-MM-DD] [--end-date YYYY-MM-DD] [--seasons SEASON[,SEASON...]] [--today] [--yesterday] [--year YEAR] [--force-check] [--force-overwrite] [--concurrency N]
 ```
 
-### 5. Utility Commands
+Options:
+- `--date`: Single date to ingest (format: YYYY-MM-DD)
+- `--start-date`/`--end-date`: Date range to ingest
+- `--seasons`: Comma-separated list of seasons (e.g., "2022-23,2023-24")
+- `--today`/`--yesterday`: Flags to ingest data for today or yesterday
+- `--year`: Calendar year to ingest all dates
+- `--force-check`: Force API checks even if data exists
+- `--force-overwrite`: Force overwrite of existing data
+- `--concurrency`: Number of concurrent requests (default: 5)
 
-Commands for system maintenance and information:
+#### Teams Endpoint
+
+```
+python run.py ingest teams [--seasons SEASON[,SEASON...]] [--conference CONF] [--limit N] [--page N] [--force-check] [--force-overwrite] [--concurrency N]
+```
+
+Options:
+- `--seasons`: Comma-separated list of seasons (e.g., "2022-23,2023-24")
+- `--conference`: Filter by conference
+- `--limit`: Items per page
+- `--page`: Page number
+- `--force-check`: Force API checks even if data exists
+- `--force-overwrite`: Force overwrite of existing data
+- `--concurrency`: Number of concurrent requests (default: 5)
+
+#### Multiple Endpoints (Unified Ingestion)
+
+```
+python run.py ingest all [--endpoints ENDPOINT[,ENDPOINT...]] [--max-parallel N] [<endpoint-specific-options>]
+```
+
+Options:
+- `--endpoints`: Comma-separated list of endpoints to ingest (e.g., "scoreboard,teams")
+- `--max-parallel`: Maximum number of endpoints to process in parallel
+- All options from individual endpoints are supported
+
+### Data Processing Commands
+
+```
+python run.py process bronze-to-silver [--entity ENTITY] [--date YYYY-MM-DD] [--start-date YYYY-MM-DD] [--end-date YYYY-MM-DD] [--incremental]
+```
+
+Options:
+- `--entity`: Entity to process (games, teams, etc.)
+- `--date`: Single date to process
+- `--start-date`/`--end-date`: Date range to process
+- `--incremental`: Only process new records
+
+### Feature Engineering Commands
+
+```
+python run.py features generate [--feature-set FEATURE_SET] [--season SEASON] [--date YYYY-MM-DD] [--start-date YYYY-MM-DD] [--end-date YYYY-MM-DD] [--lookback N]
+```
+
+Options:
+- `--feature-set`: Feature set to generate
+- `--season`: Season identifier
+- `--date`: Date to generate features for
+- `--start-date`/`--end-date`: Date range to generate features for
+- `--lookback`: Number of games to consider for trailing metrics
+
+### Model Commands
+
+```
+python run.py model train [--model-type MODEL_TYPE] [--feature-set FEATURE_SET] [--season SEASON] [--split-date YYYY-MM-DD] [--cv-folds N]
+```
+
+```
+python run.py model predict [--model-id MODEL_ID] [--upcoming] [--date YYYY-MM-DD]
+```
+
+Options:
+- `--model-type`: Type of model to train
+- `--feature-set`: Feature set to use
+- `--season`: Season to train/predict on
+- `--split-date`: Date to split train/test data
+- `--cv-folds`: Number of cross-validation folds
+- `--model-id`: ID of trained model to use for prediction
+- `--upcoming`: Flag to predict upcoming games
+
+### Utility Commands
 
 ```
 python run.py utils info [--verbose]
-python run.py utils cleanup [--older-than DAYS]
-python run.py utils validate [--config] [--data]
 ```
+
+```
+python run.py utils purge-cache [--entity ENTITY] [--confirm]
+```
+
+Options:
+- `--verbose`: Show detailed information
+- `--entity`: Specific entity to purge from cache
+- `--confirm`: Skip confirmation prompt
 
 ## Common Option Patterns
 
-The interface uses consistent option patterns:
+1. **Date Selection**:
+   - Single date (`--date`)
+   - Date range (`--start-date` and `--end-date`)
+   - Season (`--season`)
+   - Special shortcuts (`--today`, `--yesterday`, `--year`)
 
-1. **Date Options**: `--date YYYY-MM-DD` for date-specific operations
-2. **Range Options**: `--start-date YYYY-MM-DD --end-date YYYY-MM-DD` for date ranges
-3. **Filter Options**: `--entity`, `--conference`, etc. for filtering
-4. **Output Options**: `--format [json|csv|table]` for output formatting
-5. **Behavioral Options**: `--verbose`, `--dry-run`, `--force` for behavior modification
+2. **Processing Control**:
+   - Force operations (`--force-check`, `--force-overwrite`)
+   - Incremental processing (`--incremental`)
+   - Concurrency control (`--concurrency`, `--max-parallel`)
 
-## Consistent Return Values
+3. **Output Control**:
+   - Verbosity (`--verbose`)
+   - Format (`--format`)
 
-Commands follow consistent exit code patterns:
+## Examples
 
+1. Ingest scoreboard data for a specific date:
+   ```
+   python run.py ingest scoreboard --date 2023-03-15
+   ```
+
+2. Ingest teams data for the 2023-24 season:
+   ```
+   python run.py ingest teams --seasons 2023-24
+   ```
+
+3. Ingest multiple endpoints in one command:
+   ```
+   python run.py ingest all --endpoints scoreboard,teams --date 2023-03-15 --seasons 2023-24
+   ```
+
+4. Process bronze data to silver for games entity:
+   ```
+   python run.py process bronze-to-silver --entity games --start-date 2023-03-01 --end-date 2023-03-31
+   ```
+
+5. Generate team performance features:
+   ```
+   python run.py features generate --feature-set team_performance --season 2023-24
+   ```
+
+6. Train a prediction model:
+   ```
+   python run.py model train --model-type logistic --feature-set team_performance --season 2023-24
+   ```
+
+7. Make predictions for upcoming games:
+   ```
+   python run.py model predict --model-id logistic-20230501 --upcoming
+   ```
+
+## Return Values
+
+All CLI commands return appropriate exit codes:
 - `0`: Success
-- `1`: User error (bad input, etc.)
-- `2`: System error (IO error, network error, etc.)
+- `1`: Error (with appropriate error message)
 
-## Documentation
-
-Help text is automatically generated from docstrings and option descriptions:
-
-```bash
-$ python run.py --help
-Usage: run.py [OPTIONS] COMMAND [ARGS]...
-
-  NCAA Basketball Prediction Model.
-
-  Run commands for data ingestion, processing, model training, and more.
-
-Options:
-  --log-level TEXT      Override logging level
-  --config-dir TEXT     Configuration directory
-  --help                Show this message and exit.
-
-Commands:
-  features  Commands for feature engineering.
-  ingest    Commands for data ingestion.
-  model     Commands for model operations.
-  process   Commands for data processing.
-  utils     Utility commands.
+For commands that create or modify data, a summary of changes is printed:
+```
+Successfully ingested scoreboard data:
+  - Date: 2023-03-15
+  - Games: 45
+  - Storage path: data/raw/scoreboard/year=2023/month=03/scoreboard-2023-03-15.parquet
 ```
 
-More detailed help is available for each command and subcommand:
+## Help Text
 
-```bash
+Help text is generated automatically from docstrings:
+
+```
 $ python run.py ingest scoreboard --help
 Usage: run.py ingest scoreboard [OPTIONS]
 
   Ingest scoreboard data from ESPN API.
 
+  This command fetches and stores raw scoreboard data for specified dates.
+  Data is stored in the bronze layer as Parquet files.
+
 Options:
-  --date [%Y-%m-%d]  Date to fetch scoreboard data for (YYYY-MM-DD)
-  --seasons TEXT     Comma-separated list of seasons (YYYY-YY)
-  --help             Show this message and exit.
-```
-
-## Testing Commands
-
-Commands can be tested using Click's testing utilities:
-
-```python
-from click.testing import CliRunner
-from run import cli
-
-def test_scoreboard_ingestion():
-    runner = CliRunner()
-    result = runner.invoke(cli, ["ingest", "scoreboard", "--date", "2023-03-15"])
-    assert result.exit_code == 0
-    assert "Scoreboard ingestion completed successfully" in result.output
+  --date TEXT                     Single date to ingest (YYYY-MM-DD)
+  --start-date TEXT               Start date for range (YYYY-MM-DD)
+  --end-date TEXT                 End date for range (YYYY-MM-DD)
+  --seasons TEXT                  Comma-separated list of seasons
+  --today                         Ingest data for today
+  --yesterday                     Ingest data for yesterday
+  --year INTEGER                  Calendar year to ingest
+  --force-check                   Force API checks even if data exists
+  --force-overwrite               Force overwrite of existing data
+  --concurrency INTEGER           Number of concurrent requests
+  --help                          Show this message and exit.
 ```

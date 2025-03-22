@@ -119,16 +119,24 @@ TEAM_SEASONS_OPTION = typer.Option(None, help="Comma-separated list of seasons (
 def teams(
     conference: str | None = CONFERENCE_OPTION,
     seasons: str | None = TEAM_SEASONS_OPTION,
+    force_check: bool = FORCE_CHECK_OPTION,
+    force_overwrite: bool = FORCE_OVERWRITE_OPTION,
 ):
     """Ingest team data from ESPN API."""
-    from src.ingest.teams import ingest_teams
+    from src.ingest.teams import TeamsIngestionConfig, ingest_teams
 
     # Process seasons if provided
     season_list = None
     if seasons:
         season_list = [s.strip() for s in seasons.split(",")]
 
-    logger.info("Starting team ingestion", conference=conference, seasons=season_list)
+    logger.info(
+        "Starting team ingestion",
+        conference=conference,
+        seasons=season_list,
+        force_check=force_check,
+        force_overwrite=force_overwrite,
+    )
 
     try:
         with Progress(
@@ -140,8 +148,18 @@ def teams(
         ) as progress:
             task = progress.add_task("[green]Ingesting team data...", total=None)
 
+            # Create teams ingestion config
+            ingestion_config = TeamsIngestionConfig(
+                espn_api_config=state.config.espn_api,
+                parquet_dir="data/raw",
+                seasons=season_list,
+                conference=conference,
+                force_check=force_check,
+                force_overwrite=force_overwrite,
+            )
+
             # Call the actual implementation
-            ingest_teams(conference, season_list, state.config.espn_api)
+            ingest_teams(ingestion_config)
             progress.update(task, completed=True)
 
         console.print("[bold green]Team ingestion completed successfully[/bold green]")
@@ -237,7 +255,7 @@ def scoreboard(
             # Create ingestion config
             ingestion_config = ScoreboardIngestionConfig(
                 espn_api_config=state.config.espn_api,
-                db_path="data/ncaa.duckdb",
+                parquet_dir="data/raw",
                 date=processed_kwargs.get("date"),
                 start_date=processed_kwargs.get("start_date"),
                 end_date=processed_kwargs.get("end_date"),
@@ -246,8 +264,6 @@ def scoreboard(
                 seasons=processed_kwargs.get("seasons"),
                 year=processed_kwargs.get("year"),
                 concurrency=processed_kwargs.get("concurrency"),
-                aggressive=processed_kwargs.get("aggressive", False),
-                cautious=processed_kwargs.get("cautious", False),
                 force_check=processed_kwargs.get("force_check", False),
                 force_overwrite=processed_kwargs.get("force_overwrite", False),
             )

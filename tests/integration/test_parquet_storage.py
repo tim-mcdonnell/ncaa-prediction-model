@@ -71,8 +71,8 @@ class TestParquetIntegration:
         return ScoreboardIngestionConfig(
             espn_api_config=espn_api_config,
             date="2023-03-15",  # Specific date for consistent testing
-            db_path=os.path.join(test_data_dir, "test.duckdb"),
             parquet_dir=raw_dir,
+            force_overwrite=True,
         )
 
     @pytest.mark.asyncio()

@@ -37,30 +37,142 @@ The project uses ESPN's undocumented APIs to retrieve NCAA basketball data:
 - **Teams API**: Team information and metadata
   - URL: `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/teams/{team_id}`
 
-### Request Implementation
+## Ingestion Architecture
+
+The project uses a flexible, extensible ingestion architecture based on abstract base classes:
+
+### Core Components
+
+1. **BaseIngestionConfig**: Abstract configuration class that defines common parameters for all ingestion operations:
+   ```python
+   @dataclass
+   class BaseIngestionConfig:
+       # API configuration
+       espn_api_config: ESPNApiConfig
+
+       # Data storage configuration
+       parquet_dir: str = ""
+
+       # Processing options
+       force_check: bool = False  # Force API requests and check if data changed
+       force_overwrite: bool = False  # Force overwrite existing data
+
+       # Concurrency options
+       concurrency: Optional[int] = None
+   ```
+
+2. **BaseIngestion**: Abstract base class that standardizes ingestion patterns across all data sources:
+   ```python
+   class BaseIngestion(Generic[T], ABC):
+       """Abstract base class for all data ingestion implementations."""
+
+       def __init__(self, config: BaseIngestionConfig) -> None:
+           # Initialize with configuration
+
+       @abstractmethod
+       async def fetch_item_async(self, item_key: T) -> Dict[str, Any]:
+           """Fetch data for a specific item asynchronously."""
+           pass
+
+       @abstractmethod
+       async def store_item_async(self, item_key: T, data: Dict[str, Any]) -> Dict[str, Any]:
+           """Store data for a specific item asynchronously."""
+           pass
+
+       @abstractmethod
+       def get_processed_items(self) -> List[T]:
+           """Get list of items that have already been processed."""
+           pass
+
+       @abstractmethod
+       def determine_items_to_process(self) -> List[T]:
+           """Determine which items to process based on configuration."""
+           pass
+
+       async def ingest_async(self) -> List[T]:
+           """Run the ingestion process asynchronously."""
+           # Implementation that orchestrates the ingestion process
+   ```
+
+### Endpoint-Specific Implementations
+
+Each data source has its own implementation that extends the base classes:
+
+#### Scoreboard Ingestion
 
 ```python
-def fetch_scoreboard(date: str, limit: int = 100) -> dict:
-    """
-    Fetch scoreboard data for a specific date.
+@dataclass
+class ScoreboardIngestionConfig(BaseIngestionConfig):
+    """Configuration for scoreboard data ingestion."""
+    # Date selection parameters (only one should be used)
+    date: Optional[str] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    yesterday: bool = False
+    today: bool = False
+    seasons: Optional[List[str]] = None
+    year: Optional[int] = None
 
-    Args:
-        date: Date in YYYYMMDD format
-        limit: Maximum number of games to return
+class ScoreboardIngestion(BaseIngestion[str]):
+    """Scoreboard data ingestion from ESPN API."""
 
-    Returns:
-        JSON response as dictionary
-    """
-    url = "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard"
-    params = {
-        "dates": date,
-        "limit": limit
-    }
+    async def fetch_item_async(self, date: str) -> Dict[str, Any]:
+        """Fetch scoreboard data for a specific date asynchronously."""
+        # Implementation
 
-    response = requests.get(url, params=params)
-    response.raise_for_status()
+    async def store_item_async(self, date: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Store scoreboard data for a specific date."""
+        # Implementation
+```
 
-    return response.json()
+#### Teams Ingestion
+
+```python
+@dataclass
+class TeamsIngestionConfig(BaseIngestionConfig):
+    """Configuration for teams data ingestion."""
+    # Season parameters
+    seasons: Optional[List[str]] = None
+
+    # Optional filters
+    conference: Optional[str] = None
+
+    # Pagination parameters
+    limit: int = 100
+    page: int = 1
+
+class TeamsIngestion(BaseIngestion[str]):
+    """Teams data ingestion from ESPN API."""
+
+    async def fetch_item_async(self, season: str) -> Dict[str, Any]:
+        """Fetch teams data for a specific season asynchronously."""
+        # Implementation
+
+    async def store_item_async(self, season: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Store teams data for a specific season."""
+        # Implementation
+```
+
+### Unified Ingestion
+
+For ingesting data from multiple endpoints concurrently:
+
+```python
+@dataclass
+class UnifiedIngestionConfig(BaseIngestionConfig):
+    """Configuration for unified multi-endpoint ingestion."""
+    # Endpoints to ingest
+    endpoints: List[str] = None
+
+    # Endpoint-specific parameters
+    # [All parameters from endpoint-specific configs]
+
+    # Global concurrency control
+    max_parallel_endpoints: int = 2
+
+async def ingest_multiple_endpoints(config: UnifiedIngestionConfig) -> Dict[str, List[str]]:
+    """Ingest data from multiple ESPN API endpoints."""
+    # Implementation that coordinates ingestion across multiple endpoints
 ```
 
 ## Bronze Layer
@@ -89,57 +201,8 @@ The Bronze layer preserves raw data from ESPN APIs in its original form.
        "month": String             # Partition value
    }
    ```
-5. **Compression**: ZSTD compression for optimal storage efficiency (year-month partitioning provides ~74% reduction compared to DuckDB)
+5. **Compression**: ZSTD compression for optimal storage efficiency
 6. **Metadata Tracking**: Additional columns for request parameters, hash values, and lineage tracking
-
-### Bronze Layer Ingestion Example
-
-```python
-def ingest_scoreboard(date, response_data):
-    """
-    Store raw scoreboard data in the bronze layer.
-
-    Args:
-        date: Date in YYYY-MM-DD format
-        response_data: Raw API response
-    """
-    # Extract year and month for partitioning
-    year, month, _ = date.split('-')
-
-    # Create directory structure if needed
-    partition_dir = f"data/raw/scoreboard/year={year}/month={month}"
-    os.makedirs(partition_dir, exist_ok=True)
-
-    # Calculate content hash for change detection
-    content_hash = hashlib.md5(json.dumps(response_data).encode()).hexdigest()
-
-    # Create record with metadata
-    record = {
-        "id": None,  # Will be assigned automatically
-        "date": date,
-        "source_url": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard",
-        "parameters": json.dumps({"dates": date.replace('-', '')}),
-        "content_hash": content_hash,
-        "raw_data": json.dumps(response_data),
-        "created_at": datetime.now(),
-        "year": year,
-        "month": month
-    }
-
-    # Create DataFrame and write to parquet partition
-    df = pl.DataFrame([record])
-    output_path = f"{partition_dir}/scoreboard-{date}.parquet"
-    df.write_parquet(output_path)
-
-    # Update metadata registry in DuckDB
-    with duckdb.connect("data/ncaa.duckdb") as conn:
-        conn.execute("""
-            INSERT INTO source_metadata (
-                source_type, source_date, file_path,
-                content_hash, processed, ingestion_timestamp
-            ) VALUES (?, ?, ?, ?, ?, ?)
-        """, ["scoreboard", date, output_path, content_hash, False, datetime.now()])
-```
 
 ## Silver Layer
 
@@ -163,83 +226,6 @@ The Silver layer transforms raw data into cleaned, normalized structures.
    - Create relationships between entities
 3. **Data Lineage**: Track source records from bronze layer to maintain data provenance
 
-### Example Transformation
-
-```python
-def process_games(date):
-    """
-    Process raw scoreboard data into normalized game records.
-
-    Args:
-        date: Date in YYYY-MM-DD format
-
-    Returns:
-        List of normalized game dictionaries
-    """
-    # Extract year and month for loading bronze data
-    year, month, _ = date.split('-')
-
-    # Path to the bronze layer partition
-    bronze_path = f"data/raw/scoreboard/year={year}/month={month}"
-
-    # Load the raw data from parquet
-    try:
-        df = pl.read_parquet(
-            bronze_path,
-            filters=[pl.col("date") == date]
-        )
-
-        if len(df) == 0:
-            return []
-
-        # Get the most recent record for this date
-        raw_data = json.loads(df.sort("created_at", descending=True)[0, "raw_data"])
-    except Exception as e:
-        logger.error(f"Error loading bronze data: {e}")
-        return []
-
-    games = []
-
-    for event in raw_data.get("events", []):
-        game_id = event.get("id")
-        competitions = event.get("competitions", [])
-
-        if not competitions:
-            continue
-
-        competition = competitions[0]
-
-        # Extract teams and scores
-        teams_data = {}
-        for competitor in competition.get("competitors", []):
-            is_home = competitor.get("homeAway") == "home"
-            team_id = competitor.get("team", {}).get("id")
-            score = competitor.get("score")
-
-            role = "home" if is_home else "away"
-            teams_data[role] = {
-                "team_id": team_id,
-                "score": int(score) if score else None
-            }
-
-        # Create normalized game record
-        game = {
-            "game_id": game_id,
-            "date": event.get("date"),
-            "status": competition.get("status", {}).get("type", {}).get("name"),
-            "home_team_id": teams_data.get("home", {}).get("team_id"),
-            "away_team_id": teams_data.get("away", {}).get("team_id"),
-            "home_score": teams_data.get("home", {}).get("score"),
-            "away_score": teams_data.get("away", {}).get("score"),
-            "neutral_site": competition.get("neutralSite", False),
-            "conference_game": competition.get("conferenceCompetition", False)
-        }
-
-        games.append(game)
-
-    return games
-```
-
 ## Gold Layer
 
 The Gold layer generates features for machine learning models.
@@ -248,119 +234,100 @@ The Gold layer generates features for machine learning models.
 
 1. **Team Performance**:
    - Win/loss record (overall, home/away, conference)
-   - Scoring averages (points for/against)
-   - Recent performance (last 5/10 games)
+   - Scoring statistics (points per game, points allowed, margin)
+   - Streaks (winning, losing, home, away)
+   - Recent performance (last N games)
 
 2. **Game Context**:
-   - Home/away/neutral
-   - Days of rest
-   - Conference matchup
-   - Historical matchup results
+   - Home/away/neutral site
+   - Days rest
+   - Travel distance
+   - Tournament/regular season
+
+3. **Historical Matchups**:
+   - Head-to-head record
+   - Previous game results
 
 ### Implementation
 
+1. **Storage Format**: DuckDB tables with `gold_{feature_set_name}` naming convention
+2. **Feature Generation Process**:
+   - Extract from silver layer tables
+   - Calculate derived features
+   - Apply feature transformations (scaling, encoding)
+   - Organize into feature sets for model training
+
+## Usage Patterns
+
+### Running Ingestion Operations
+
+#### Single Endpoint Ingestion
+
 ```python
-def calculate_team_features(team_id: str, games: List[dict]) -> dict:
-    """
-    Calculate team performance features from game data.
+from src.ingest import ScoreboardIngestionConfig, ingest_scoreboard
 
-    Args:
-        team_id: Team identifier
-        games: List of processed game dictionaries
+# Create configuration
+config = ScoreboardIngestionConfig(
+    espn_api_config=get_config().espn_api,
+    date="2023-03-15",
+    force_check=True,
+    concurrency=5
+)
 
-    Returns:
-        Dictionary of team features
-    """
-    team_games = [g for g in games if g["home_team_id"] == team_id or g["away_team_id"] == team_id]
-
-    # Calculate overall record
-    wins = 0
-    losses = 0
-    points_for = 0
-    points_against = 0
-
-    for game in team_games:
-        is_home = game["home_team_id"] == team_id
-        team_score = game["home_score"] if is_home else game["away_score"]
-        opponent_score = game["away_score"] if is_home else game["home_score"]
-
-        if team_score > opponent_score:
-            wins += 1
-        elif team_score < opponent_score:
-            losses += 1
-
-        points_for += team_score if team_score else 0
-        points_against += opponent_score if opponent_score else 0
-
-    # Calculate averages
-    games_played = wins + losses
-    if games_played > 0:
-        avg_points_for = points_for / games_played
-        avg_points_against = points_against / games_played
-        win_pct = wins / games_played
-    else:
-        avg_points_for = 0
-        avg_points_against = 0
-        win_pct = 0
-
-    return {
-        "team_id": team_id,
-        "games_played": games_played,
-        "wins": wins,
-        "losses": losses,
-        "win_pct": win_pct,
-        "avg_points_for": avg_points_for,
-        "avg_points_against": avg_points_against
-    }
+# Run ingestion
+processed_items = ingest_scoreboard(config)
 ```
 
-## Data Flow Execution
+#### Multi-Endpoint Ingestion
 
-The data pipeline is executed through a command-line interface with the following steps:
+```python
+from src.ingest import UnifiedIngestionConfig, ingest_all
 
-1. **Ingest**: Fetch and store raw data in Parquet files
-   ```bash
-   python run.py ingest scoreboard --date 2023-03-01
-   ```
+# Create configuration for multiple endpoints
+config = UnifiedIngestionConfig(
+    espn_api_config=get_config().espn_api,
+    endpoints=["scoreboard", "teams"],
+    date="2023-03-15",
+    seasons=["2023"],
+    max_parallel_endpoints=2
+)
 
-2. **Process**: Transform raw data into silver layer
-   ```bash
-   python run.py process bronze-to-silver --entity games
-   ```
+# Run ingestion for all specified endpoints
+results = ingest_all(config)
+```
 
-3. **Feature**: Generate features for prediction
-   ```bash
-   python run.py features generate --feature-set team_performance
-   ```
+### Processing Operations
 
-4. **Train**: Train prediction model
-   ```bash
-   python run.py model train --model-type logistic --feature-set team_performance
-   ```
+```python
+from src.process import process_bronze_to_silver
 
-5. **Predict**: Generate predictions
-   ```bash
-   python run.py model predict --upcoming
-   ```
+# Process raw data for games entity
+processed_items = process_bronze_to_silver(
+    entity="games",
+    date_range=("2023-01-01", "2023-01-31"),
+    incremental=True
+)
+```
 
-## Performance Considerations
+### Feature Engineering
 
-The revised bronze layer architecture offers several advantages:
+```python
+from src.features import generate_team_performance_features
 
-1. **Storage Efficiency**: Year-month partitioned Parquet files reduce storage requirements by approximately 74% compared to DuckDB storage (353MB vs 3.1GB in tests)
+# Generate team performance features
+features = generate_team_performance_features(
+    season="2023",
+    lookback_games=10
+)
+```
 
-2. **Optimized Compression**: ZSTD compression works more efficiently with data partitioned by month, as games from the same month have similar structures and patterns
+## Monitoring and Logging
 
-3. **Query Performance**: Reading specific date ranges is faster with partitioning, especially for filtered queries
+All pipeline operations implement structured logging with contextual metadata:
 
-4. **Scalability**: Better support for parallel processing and distributed workloads if needed in the future
+```
+2023-05-01T15:30:45.123Z [INFO] Fetching scoreboard data for date date=2023-03-15
+2023-05-01T15:30:46.456Z [INFO] Stored scoreboard data successfully date=2023-03-15 file_path=data/raw/scoreboard/year=2023/month=03/scoreboard-2023-03-15.parquet item_count=67
+```
 
-## Future Enhancements
-
-In later phases, the data pipeline will be expanded to include:
-
-1. Additional data sources (player statistics, advanced metrics)
-2. More sophisticated feature engineering
-3. Automated data quality monitoring
-4. Incremental processing capabilities
-5. Historical data backfilling
+This provides traceability across pipeline stages and enables effective monitoring and debugging.

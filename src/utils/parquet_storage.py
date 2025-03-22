@@ -305,6 +305,7 @@ class ParquetStorage:
         data: dict[str, Any],
         content_hash: str | None = None,
         created_at: datetime.datetime | None = None,
+        force_overwrite: bool = False,
     ) -> dict[str, Any]:
         """Write team data to Parquet files.
 
@@ -314,6 +315,7 @@ class ParquetStorage:
             data: Response data
             content_hash: Optional content hash (will be generated if not provided)
             created_at: Optional timestamp (will use current time if not provided)
+            force_overwrite: Force overwrite without checking hash
 
         Returns:
             Dict containing success status and file information
@@ -365,7 +367,10 @@ class ParquetStorage:
                 # Check if this is a duplicate entry
                 try:
                     existing_df = pl.read_parquet(file_path)
-                    if content_hash in existing_df["content_hash"].to_list():
+                    if (
+                        content_hash in existing_df["content_hash"].to_list()
+                        and not force_overwrite
+                    ):
                         logger.debug(
                             "Skipping duplicate team data entry",
                             season=season,
@@ -381,6 +386,13 @@ class ParquetStorage:
                     # Append to existing file - use safe write with chunking
                     combined_df = pl.concat([existing_df, new_row])
                     self._write_dataframe_safely(combined_df, file_path)
+
+                    if force_overwrite:
+                        logger.info(
+                            "Force overwrite enabled - updated team data",
+                            season=season,
+                            content_hash=content_hash[:10],
+                        )
 
                 except Exception as e:
                     logger.error(
@@ -772,15 +784,18 @@ class ParquetStorage:
             if batch_temp_path.exists():
                 os.remove(batch_temp_path)
 
-    def get_processed_seasons(self: "ParquetStorage") -> list[str]:
+    def get_processed_seasons(self: "ParquetStorage", endpoint: str = "teams") -> list[str]:
         """Get a list of processed seasons.
+
+        Args:
+            endpoint: API endpoint name (default: "teams")
 
         Returns:
             List of seasons that have been processed
         """
-        teams_dir = self.base_dir / "teams"
+        teams_dir = self.base_dir / endpoint
         if not teams_dir.exists():
-            logger.warning("Teams directory does not exist", dir=str(teams_dir))
+            logger.warning(f"{endpoint} directory does not exist", dir=str(teams_dir))
             return []
 
         seasons = set()
