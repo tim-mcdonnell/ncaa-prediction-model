@@ -110,9 +110,108 @@ FORCE_OVERWRITE_OPTION = typer.Option(
     False, help="Force overwrite data for all dates without hash comparison (always updates files)"
 )
 
+# Options for unified ingestion
+MAX_PARALLEL_OPTION = typer.Option(2, help="Maximum number of endpoints to process in parallel")
+ENDPOINTS_OPTION = typer.Option(
+    None, help="Comma-separated list of endpoints to ingest (default: all available endpoints)"
+)
+
 # Options for teams command
 CONFERENCE_OPTION = typer.Option(None, help="Conference ID to limit ingestion")
 TEAM_SEASONS_OPTION = typer.Option(None, help="Comma-separated list of seasons (YYYY)")
+
+
+@ingest_app.callback(invoke_without_command=True)
+def ingest_all_endpoints(
+    ctx: typer.Context,
+    endpoints: str | None = ENDPOINTS_OPTION,
+    max_parallel: int = MAX_PARALLEL_OPTION,
+    concurrency: int | None = CONCURRENCY_OPTION,
+    force_check: bool = FORCE_CHECK_OPTION,
+    force_overwrite: bool = FORCE_OVERWRITE_OPTION,
+    # Default date options for scoreboard
+    date: datetime | None = DATE_OPTION,
+    yesterday: bool = YESTERDAY_OPTION,
+    today: bool = TODAY_OPTION,
+    # Season options for seasonal data
+    seasons: str | None = TEAM_SEASONS_OPTION,
+):
+    """Ingest data from all available endpoints concurrently."""
+    # Skip if a subcommand is being called
+    if ctx.invoked_subcommand is not None:
+        return
+
+    from src.ingest.ingest_all import UnifiedIngestionConfig, ingest_all
+
+    # Process date parameters
+    date_str = date.strftime("%Y-%m-%d") if date else None
+
+    # Process endpoints if provided
+    endpoint_list = None
+    if endpoints:
+        endpoint_list = [e.strip() for e in endpoints.split(",")]
+
+    # Process seasons if provided
+    season_list = None
+    if seasons:
+        season_list = [s.strip() for s in seasons.split(",")]
+
+    if force_check and force_overwrite:
+        logger.warning(
+            "Both force_check and force_overwrite are enabled; force_overwrite takes precedence"
+        )
+
+    logger.info(
+        "Starting unified ingestion for all endpoints",
+        endpoints=endpoint_list,
+        max_parallel=max_parallel,
+        concurrency=concurrency,
+        force_check=force_check,
+        force_overwrite=force_overwrite,
+    )
+
+    try:
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[bold blue]{task.description}"),
+            BarColumn(),
+            TimeElapsedColumn(),
+            console=console,
+        ) as progress:
+            task = progress.add_task("[green]Ingesting data from all endpoints...", total=None)
+
+            # Create unified ingestion config
+            ingestion_config = UnifiedIngestionConfig(
+                espn_api_config=state.config.espn_api,
+                parquet_dir="data/raw",
+                endpoints=endpoint_list,
+                max_parallel_endpoints=max_parallel,
+                concurrency=concurrency,
+                force_check=force_check,
+                force_overwrite=force_overwrite,
+                # Date options
+                date=date_str,
+                yesterday=yesterday,
+                today=today,
+                # Season options
+                seasons=season_list,
+            )
+
+            # Call the unified implementation
+            results = ingest_all(ingestion_config)
+            progress.update(task, completed=True)
+
+            # Print results
+            console.print("[bold green]Unified ingestion completed successfully[/bold green]")
+            for endpoint, processed_items in results.items():
+                count = len(processed_items) if processed_items else 0
+                status = "[green]✓[/green]" if count > 0 else "[yellow]⚠[/yellow]"
+                console.print(f"{status} {endpoint}: {count} items processed")
+
+    except Exception as e:
+        logger.exception("Unified ingestion failed", error=str(e))
+        console.print(f"[bold red]Unified ingestion failed: {e!s}[/bold red]")
+        sys.exit(1)
 
 
 @ingest_app.command("teams")
