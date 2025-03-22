@@ -7,12 +7,13 @@ Includes asynchronous request capabilities with adaptive backoff.
 
 import asyncio
 import time
-from dataclasses import dataclass
 from typing import Any
 
 import httpx
 import structlog
 from tenacity import retry, stop_after_attempt, wait_exponential
+
+from src.utils.config import ESPNApiConfig
 
 # Initialize logger
 logger = structlog.get_logger(__name__)
@@ -25,28 +26,6 @@ HTTP_STATUS_CLIENT_ERROR = 400
 HTTP_STATUS_SERVER_ERROR = 500
 SUSTAINED_SUCCESS_THRESHOLD = 3
 MAX_CONCURRENCY_LIMIT = 10
-
-
-@dataclass
-class ESPNApiConfig:
-    """Configuration for ESPN API client."""
-
-    # Required parameters
-    base_url: str
-    endpoints: dict[str, str]
-
-    # Optional parameters with defaults
-    v3_base_url: str = ""
-    initial_request_delay: float = 1.0
-    max_retries: int = 3
-    timeout: float = 10.0
-    max_concurrency: int = 5
-    min_request_delay: float = 0.1
-    max_request_delay: float = 5.0
-    backoff_factor: float = 1.5
-    recovery_factor: float = 0.9
-    error_threshold: int = 3
-    success_threshold: int = 10
 
 
 class ESPNApiClient:
@@ -64,16 +43,19 @@ class ESPNApiClient:
         self.base_url = config.base_url
         self.v3_base_url = config.v3_base_url
         self.endpoints = config.endpoints
-        self.current_request_delay = config.initial_request_delay
-        self.min_request_delay = config.min_request_delay
-        self.max_request_delay = config.max_request_delay
-        self.max_retries = config.max_retries
-        self.timeout = config.timeout
-        self.max_concurrency = config.max_concurrency
-        self.backoff_factor = config.backoff_factor
-        self.recovery_factor = config.recovery_factor
-        self.error_threshold = config.error_threshold
-        self.success_threshold = config.success_threshold
+
+        # Extract request settings
+        rs = config.request_settings
+        self.current_request_delay = rs.initial_request_delay
+        self.min_request_delay = rs.min_request_delay
+        self.max_request_delay = rs.max_request_delay
+        self.max_retries = rs.max_retries
+        self.timeout = rs.timeout
+        self.max_concurrency = rs.max_concurrency
+        self.backoff_factor = rs.backoff_factor
+        self.recovery_factor = rs.recovery_factor
+        self.error_threshold = rs.error_threshold
+        self.success_threshold = rs.success_threshold
         self.last_request_time = 0.0
 
         # Statistics for adaptive behavior
@@ -113,7 +95,7 @@ class ESPNApiClient:
             ValueError: If endpoint is not recognized
         """
         # Handle both dictionary and attribute access for endpoints
-        if hasattr(self.endpoints, 'get') and callable(self.endpoints.get):
+        if hasattr(self.endpoints, "get") and callable(self.endpoints.get):
             # Dictionary access
             if endpoint not in self.endpoints:
                 error_msg = f"Invalid endpoint: {endpoint}"
@@ -143,7 +125,7 @@ class ESPNApiClient:
         # Use v3_base_url if it's a v3 endpoint and available in config
         if use_v3 and hasattr(self, "v3_base_url") and self.v3_base_url:
             return f"{self.v3_base_url}{path}"
-        
+
         return f"{self.base_url}{path}"
 
     def get_endpoint_url(self: "ESPNApiClient", endpoint: str, **kwargs: str) -> str:

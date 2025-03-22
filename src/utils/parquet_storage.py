@@ -21,12 +21,31 @@ logger = structlog.get_logger(__name__)
 class ParquetStorage:
     """Utility class for Parquet file operations with endpoint-specific partitioning strategies."""
 
-    def __init__(self: "ParquetStorage", base_dir: str = "data/raw") -> None:
+    def __init__(self: "ParquetStorage", base_dir: str = "") -> None:
         """Initialize Parquet storage.
 
         Args:
-            base_dir: Base directory for storing Parquet files
+            base_dir: Base directory for storing Parquet files. If empty, uses config value.
         """
+        if not base_dir:
+            try:
+                # Import here to avoid circular imports
+                import os
+
+                from src.utils.config import get_config
+
+                config_dir = Path(os.environ.get("CONFIG_DIR", "config"))
+                config = get_config(config_dir)
+                base_dir = config.data_storage.raw
+                logger.debug("Using raw data directory from config", base_dir=base_dir)
+            except Exception as e:
+                base_dir = "data/raw"
+                logger.warning(
+                    "Failed to load config for base_dir, using default",
+                    error=str(e),
+                    base_dir=base_dir,
+                )
+
         self.base_dir = Path(base_dir)
         self.base_dir.mkdir(parents=True, exist_ok=True)
         logger.debug("Initialized Parquet storage", base_dir=str(self.base_dir))
@@ -39,6 +58,7 @@ class ParquetStorage:
         data: dict[str, Any],
         content_hash: str | None = None,
         created_at: datetime.datetime | None = None,
+        force_overwrite: bool = False,
     ) -> dict[str, Any]:
         """Write scoreboard data to partitioned Parquet files.
 
@@ -49,6 +69,7 @@ class ParquetStorage:
             data: Response data
             content_hash: Optional content hash (will be generated if not provided)
             created_at: Optional timestamp (will use current time if not provided)
+            force_overwrite: Force overwrite without checking hash
 
         Returns:
             Dict containing success status and file information
@@ -148,55 +169,65 @@ class ParquetStorage:
                 # Check if this date already exists in the file
                 existing_row = existing_df.filter(pl.col("date") == date)
                 if existing_row.height > 0:
-                    try:
-                        # Get the existing hash
-                        existing_hash = existing_row.select("content_hash").row(0)[0]
-
-                        # Handle empty hash case
-                        if not existing_hash:
-                            logger.info(
-                                "Empty content hash found - updating data",
-                                date=date,
-                                new_hash=content_hash[:10],
-                            )
-                            updated_df = existing_df.filter(pl.col("date") != date)
-                            combined_df = pl.concat([updated_df, new_row], how="diagonal")
-                        # Compare hashes to see if data has changed
-                        elif existing_hash == content_hash:
-                            logger.info(
-                                "Content hash unchanged - skipping update",
-                                date=date,
-                                hash=content_hash[:10],
-                            )
-                            return {
-                                "success": True,
-                                "file_path": str(file_path),
-                                "partition_dir": str(partition_dir),
-                                "date": date,
-                                "year": year,
-                                "month": month,
-                                "unchanged": True,
-                            }
-                        else:
-                            # Update the existing row since content has changed
-                            logger.info(
-                                "Content hash changed - updating data",
-                                date=date,
-                                old_hash=existing_hash[:10] if existing_hash else "",
-                                new_hash=content_hash[:10],
-                            )
-                            updated_df = existing_df.filter(pl.col("date") != date)
-                            combined_df = pl.concat([updated_df, new_row], how="diagonal")
-                    except Exception as e:
-                        # If there's any error accessing the hash, update the row
-                        logger.warning(
-                            "Error accessing content hash - updating data",
+                    if force_overwrite:
+                        # Force overwrite without checking hash
+                        logger.info(
+                            "Force overwrite enabled - updating data without hash check",
                             date=date,
-                            error=str(e),
                             new_hash=content_hash[:10],
                         )
                         updated_df = existing_df.filter(pl.col("date") != date)
                         combined_df = pl.concat([updated_df, new_row], how="diagonal")
+                    else:
+                        try:
+                            # Get the existing hash
+                            existing_hash = existing_row.select("content_hash").row(0)[0]
+
+                            # Handle empty hash case
+                            if not existing_hash:
+                                logger.info(
+                                    "Empty content hash found - updating data",
+                                    date=date,
+                                    new_hash=content_hash[:10],
+                                )
+                                updated_df = existing_df.filter(pl.col("date") != date)
+                                combined_df = pl.concat([updated_df, new_row], how="diagonal")
+                            # Compare hashes to see if data has changed
+                            elif existing_hash == content_hash:
+                                logger.info(
+                                    "Content hash unchanged - skipping update",
+                                    date=date,
+                                    hash=content_hash[:10],
+                                )
+                                return {
+                                    "success": True,
+                                    "file_path": str(file_path),
+                                    "partition_dir": str(partition_dir),
+                                    "date": date,
+                                    "year": year,
+                                    "month": month,
+                                    "unchanged": True,
+                                }
+                            else:
+                                # Update the existing row since content has changed
+                                logger.info(
+                                    "Content hash changed - updating data",
+                                    date=date,
+                                    old_hash=existing_hash[:10] if existing_hash else "",
+                                    new_hash=content_hash[:10],
+                                )
+                                updated_df = existing_df.filter(pl.col("date") != date)
+                                combined_df = pl.concat([updated_df, new_row], how="diagonal")
+                        except Exception as e:
+                            # If there's any error accessing the hash, update the row
+                            logger.warning(
+                                "Error accessing content hash - updating data",
+                                date=date,
+                                error=str(e),
+                                new_hash=content_hash[:10],
+                            )
+                            updated_df = existing_df.filter(pl.col("date") != date)
+                            combined_df = pl.concat([updated_df, new_row], how="diagonal")
                 else:
                     # Append the new row
                     combined_df = pl.concat([existing_df, new_row], how="diagonal")
@@ -309,8 +340,13 @@ class ParquetStorage:
             content_hash = hashlib.sha256(json_data.encode("utf-8")).hexdigest()
             logger.debug("Generated content hash for team data", season=season, hash=content_hash)
 
-        # Define target file path - use season in filename
-        file_path = teams_dir / f"season_{season}.parquet"
+        # Define target file path - use season in partitioned directory structure
+        season_dir = teams_dir / f"season={season}"
+        season_dir.mkdir(parents=True, exist_ok=True)
+        file_path = season_dir / "data.parquet"
+
+        # Check if file exists to determine if we're updating or creating
+        file_exists = file_path.exists()
 
         # Create DataFrame with a single row
         new_row = pl.DataFrame(
@@ -321,35 +357,34 @@ class ParquetStorage:
                 "content_hash": [content_hash],
                 "raw_data": [json_data],
                 "created_at": [created_at],
-                "team_count": [len(data.get("items", []))],
             }
         )
 
         try:
-            if file_path.exists():
+            if file_exists:
                 # Check if this is a duplicate entry
                 try:
                     existing_df = pl.read_parquet(file_path)
                     if content_hash in existing_df["content_hash"].to_list():
                         logger.debug(
                             "Skipping duplicate team data entry",
-                            season=season, 
+                            season=season,
                             content_hash=content_hash,
                         )
                         return {
                             "success": True,
                             "duplicate": True,
                             "file_path": str(file_path),
-                            "message": "Content hash already exists in file"
+                            "message": "Content hash already exists in file",
                         }
-                    
+
                     # Append to existing file - use safe write with chunking
                     combined_df = pl.concat([existing_df, new_row])
                     self._write_dataframe_safely(combined_df, file_path)
-                    
+
                 except Exception as e:
                     logger.error(
-                        "Error processing existing team data file", 
+                        "Error processing existing team data file",
                         error=str(e),
                         file_path=str(file_path),
                     )
@@ -364,16 +399,16 @@ class ParquetStorage:
                 file_path=str(file_path),
                 team_count=len(data.get("items", [])),
             )
-            
+
             return {
                 "success": True,
                 "file_path": str(file_path),
                 "team_count": len(data.get("items", [])),
             }
-            
+
         except Exception as e:
             logger.error(
-                "Error writing team data", 
+                "Error writing team data",
                 error=str(e),
                 file_path=str(file_path),
             )
@@ -437,10 +472,13 @@ class ParquetStorage:
             )
             return None
 
-    def read_team_data(self: "ParquetStorage", latest_only: bool = True) -> str | None:
+    def read_team_data(
+        self: "ParquetStorage", season: str | None = None, latest_only: bool = True
+    ) -> str | None:
         """Read team data from Parquet files.
 
         Args:
+            season: Optional season to filter by
             latest_only: Whether to return only the latest version
 
         Returns:
@@ -451,13 +489,39 @@ class ParquetStorage:
             logger.warning("Teams directory does not exist", dir=str(teams_dir))
             return None
 
-        # List all Parquet files
-        parquet_files = list(teams_dir.glob("*.parquet"))
+        # Determine which files to read based on season parameter
+        parquet_files = []
+
+        if season:
+            # New directory structure: teams/season={season}/data.parquet
+            season_dir = teams_dir / f"season={season}"
+            new_file_path = season_dir / "data.parquet"
+
+            # Legacy format: teams/season_{season}.parquet
+            legacy_file_path = teams_dir / f"season_{season}.parquet"
+
+            # Check both locations
+            if new_file_path.exists():
+                parquet_files.append(new_file_path)
+            elif legacy_file_path.exists():
+                parquet_files.append(legacy_file_path)
+        else:
+            # Check new directory structure
+            for season_dir in teams_dir.glob("season=*"):
+                if season_dir.is_dir():
+                    data_file = season_dir / "data.parquet"
+                    if data_file.exists():
+                        parquet_files.append(data_file)
+
+            # Also check legacy files
+            legacy_files = list(teams_dir.glob("season_*.parquet"))
+            parquet_files.extend(legacy_files)
+
         if not parquet_files:
             logger.warning("No team data files found", dir=str(teams_dir))
             return None
 
-        # If there are multiple files and latest_only is True, 
+        # If there are multiple files and latest_only is True,
         # return the latest one based on created_at
         if latest_only and len(parquet_files) > 1:
             latest_data = None
@@ -468,7 +532,7 @@ class ParquetStorage:
                     df = pl.read_parquet(file_path)
                     if df.height == 0:
                         continue
-                        
+
                     # Get the latest created_at timestamp from this file
                     file_latest = df["created_at"].max()
                     if file_latest > latest_timestamp:
@@ -476,42 +540,45 @@ class ParquetStorage:
                         latest_idx = df["created_at"].arg_max()
                         latest_data = df["raw_data"][latest_idx]
                         latest_timestamp = file_latest
-                        
+
                 except Exception as e:
                     logger.error(
-                        "Error reading team data file", 
-                        error=str(e),
+                        "Error reading team data file",
                         file=str(file_path),
+                        error=str(e),
                     )
-                    continue
 
             return latest_data
 
-        # Otherwise, return all data from all files
+        # If only one file or latest_only is False, read all files and concatenate
         all_data = []
         for file_path in parquet_files:
             try:
                 df = pl.read_parquet(file_path)
                 if df.height == 0:
                     continue
-                    
-                for row in df.rows():
-                    # Get the index of the raw_data column
-                    raw_data_idx = df.columns.index("raw_data")
-                    all_data.append(row[raw_data_idx])
-                    
+
+                if latest_only:
+                    # Get only the latest record from this file
+                    latest_idx = df["created_at"].arg_max()
+                    all_data.append(df["raw_data"][latest_idx])
+                else:
+                    # Get all records
+                    all_data.extend(df["raw_data"].to_list())
+
             except Exception as e:
                 logger.error(
-                    "Error reading team data file", 
-                    error=str(e),
+                    "Error reading team data file",
                     file=str(file_path),
+                    error=str(e),
                 )
-                continue
 
-        if not all_data:
-            return None
-            
-        return all_data[0] if latest_only else json.dumps(all_data)
+        # Return the first item if there's only one and latest_only is True
+        if latest_only and len(all_data) == 1:
+            return all_data[0]
+
+        # Otherwise return all data
+        return all_data if all_data else None
 
     def get_processed_dates(self: "ParquetStorage", endpoint: str = "scoreboard") -> list[str]:
         """Get list of dates that have already been processed.
@@ -704,3 +771,77 @@ class ParquetStorage:
             batch_temp_path = Path(str(temp_path) + ".batch")
             if batch_temp_path.exists():
                 os.remove(batch_temp_path)
+
+    def get_processed_seasons(self: "ParquetStorage") -> list[str]:
+        """Get a list of processed seasons.
+
+        Returns:
+            List of seasons that have been processed
+        """
+        teams_dir = self.base_dir / "teams"
+        if not teams_dir.exists():
+            logger.warning("Teams directory does not exist", dir=str(teams_dir))
+            return []
+
+        seasons = set()
+
+        # Check new directory structure
+        for season_dir in teams_dir.glob("season=*"):
+            if season_dir.is_dir():
+                data_file = season_dir / "data.parquet"
+                if data_file.exists():
+                    # Extract season from directory name (season=YYYY)
+                    season = season_dir.name.split("=")[1]
+                    seasons.add(season)
+
+        # Also check legacy files
+        for legacy_file in teams_dir.glob("season_*.parquet"):
+            # Extract season from filename (season_YYYY.parquet)
+            season = legacy_file.stem.split("_")[1]
+            seasons.add(season)
+
+        return sorted(list(seasons))
+
+    def is_date_processed(self: "ParquetStorage", date: str, endpoint: str = "scoreboard") -> bool:
+        """Check if a specific date has already been processed.
+
+        This is much more efficient than getting all dates when only checking a single date.
+
+        Args:
+            date: Date to check in YYYY-MM-DD format
+            endpoint: API endpoint name (default: "scoreboard")
+
+        Returns:
+            Whether the date has been processed
+        """
+        if endpoint != "scoreboard":
+            # Non-date-based endpoints don't have processed dates
+            return False
+
+        try:
+            # Parse the date to get year and month for partition lookup
+            year, month, _ = date.split("-")
+        except ValueError:
+            logger.error("Invalid date format", date=date)
+            return False
+
+        # Check if the partition exists
+        partition_path = (
+            self.base_dir / "scoreboard" / f"year={year}" / f"month={month}" / "data.parquet"
+        )
+        if not partition_path.exists():
+            return False
+
+        try:
+            # Check if the date exists in the partition
+            df = pl.read_parquet(partition_path)
+            filtered = df.filter(pl.col("date") == date)
+            return filtered.height > 0
+        except Exception as e:
+            logger.error(
+                "Error checking if date exists in Parquet file",
+                date=date,
+                file=str(partition_path),
+                error=str(e),
+            )
+            return False

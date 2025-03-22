@@ -105,7 +105,7 @@ class TestDateUtils:
     def test_get_season_date_range_with_valid_season_returns_date_range(self):
         """Test get_season_date_range with valid season format returns start and end dates."""
         # Arrange
-        season = "2022-23"
+        season = "2022"
         expected_start = "2022-11-01"
         expected_end = "2023-04-30"
 
@@ -119,7 +119,7 @@ class TestDateUtils:
     def test_get_season_date_range_with_invalid_season_format_raises_value_error(self):
         """Test get_season_date_range with invalid season format raises ValueError."""
         # Arrange
-        invalid_season = "20222023"  # Invalid format, should be YYYY-YY
+        invalid_season = "20222"  # Invalid format, should be YYYY
 
         # Act & Assert
         with pytest.raises(ValueError, match="Invalid season format"):

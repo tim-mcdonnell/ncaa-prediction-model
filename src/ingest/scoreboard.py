@@ -12,7 +12,7 @@ from typing import Any
 
 import structlog
 
-from src.utils.config import ESPNApiConfig
+from src.utils.config import ESPNApiConfig, RequestSettings, get_config
 from src.utils.database import Database
 from src.utils.date_utils import (
     format_date_for_api,
@@ -23,9 +23,26 @@ from src.utils.date_utils import (
 )
 from src.utils.espn_api_client import ESPNApiClient
 from src.utils.espn_api_client import ESPNApiConfig as ClientAPIConfig
+from src.utils.parquet_storage import ParquetStorage
 
 # Initialize logger
 logger = structlog.get_logger(__name__)
+
+
+# Load default config
+def get_default_db_path() -> str:
+    """Get default database path from config."""
+    try:
+        import os
+        from pathlib import Path
+
+        config_dir = Path(os.environ.get("CONFIG_DIR", "config"))
+        config = get_config(config_dir)
+        # Use data_storage.raw path as base directory for database
+        return str(Path(config.data_storage.raw).parent / "ncaa_basketball.db")
+    except Exception as e:
+        logger.warning(f"Failed to load config for DB path: {e}. Using fallback path.")
+        return "data/ncaa_basketball.db"
 
 
 @dataclass
@@ -36,10 +53,10 @@ class ScoreboardIngestionConfig:
     espn_api_config: ESPNApiConfig
 
     # Data storage configuration
-    parquet_dir: str = "data/raw"
+    parquet_dir: str = ""
 
     # Legacy DB path - only used for reading processed dates during migration
-    db_path: str = "data/ncaa.duckdb"
+    db_path: str = ""
 
     # Date selection parameters (only one should be used)
     date: str | None = None
@@ -56,7 +73,34 @@ class ScoreboardIngestionConfig:
     cautious: bool = False
 
     # Processing options
-    force_update: bool = False  # Force update even for existing dates
+    force_check: bool = False  # Force API requests for all dates and check if data changed
+    force_overwrite: bool = False  # Force overwrite existing data without checking hash
+
+    def __post_init__(self):
+        """Initialize default values from config if not provided."""
+        try:
+            import os
+            from pathlib import Path
+
+            config_dir = Path(os.environ.get("CONFIG_DIR", "config"))
+            config = get_config(config_dir)
+
+            # Set parquet_dir from config if not provided
+            if not self.parquet_dir:
+                self.parquet_dir = config.data_storage.raw
+
+            # Set db_path from config if not provided
+            if not self.db_path:
+                # In a real implementation, we would have a dedicated database path in config
+                # For now, we'll construct it from the raw data path
+                self.db_path = str(Path(config.data_storage.raw).parent / "ncaa.duckdb")
+        except Exception as e:
+            logger.warning(f"Failed to load config: {e}. Using fallback paths.")
+            # Default fallback values
+            if not self.parquet_dir:
+                self.parquet_dir = "data/raw"
+            if not self.db_path:
+                self.db_path = "data/ncaa.duckdb"
 
 
 def get_existing_dates(db: Database) -> list[str]:
@@ -80,7 +124,8 @@ class ScoreboardIngestion:
         db_path: str = "data/ncaa.duckdb",
         skip_existing: bool = False,
         parquet_dir: str = "data/raw",
-        force_update: bool = False,
+        force_check: bool = False,
+        force_overwrite: bool = False,
     ) -> None:
         """Initialize scoreboard ingestion.
 
@@ -90,13 +135,13 @@ class ScoreboardIngestion:
                 during migration)
             skip_existing: Whether to skip dates that are already in the database
             parquet_dir: Base directory for Parquet files
-            force_update: Force update even for existing dates
+            force_check: Force API requests for all dates and check if data changed
+            force_overwrite: Force overwrite existing data without checking hash
         """
         # Handle both object and dictionary config formats for testing compatibility
         if isinstance(espn_api_config, dict):
-            client_config = ClientAPIConfig(
-                base_url=espn_api_config.get("base_url", ""),
-                endpoints=espn_api_config.get("endpoints", {}),
+            # Create RequestSettings object
+            request_settings = RequestSettings(
                 initial_request_delay=espn_api_config.get("initial_request_delay", 1.0),
                 max_retries=espn_api_config.get("max_retries", 3),
                 timeout=espn_api_config.get("timeout", 10),
@@ -107,33 +152,51 @@ class ScoreboardIngestion:
                 recovery_factor=espn_api_config.get("recovery_factor", 0.9),
                 error_threshold=espn_api_config.get("error_threshold", 3),
                 success_threshold=espn_api_config.get("success_threshold", 10),
+                batch_size=espn_api_config.get("batch_size", 10),
             )
+
+            client_config = ClientAPIConfig(
+                base_url=espn_api_config.get("base_url", ""),
+                endpoints=espn_api_config.get("endpoints", {}),
+                v3_base_url=espn_api_config.get("v3_base_url", ""),
+                request_settings=request_settings,
+            )
+
+            self.batch_size = request_settings.batch_size
+            max_concurrency = request_settings.max_concurrency
+
+            # Get historical start date from the config
+            historical = espn_api_config.get("historical", {})
+            self.historical_start_date = historical.get("start_date", None)
+
+            # Initialize API client
             self.api_client = ESPNApiClient(client_config)
-            self.batch_size = espn_api_config.get("batch_size", 10)
-            max_concurrency = espn_api_config.get("max_concurrency", 5)
         else:
+            # Handle new config structure with request_settings
+            rs = espn_api_config.request_settings
             client_config = ClientAPIConfig(
                 base_url=espn_api_config.base_url,
                 endpoints=espn_api_config.endpoints,
-                initial_request_delay=espn_api_config.initial_request_delay,
-                max_retries=espn_api_config.max_retries,
-                timeout=espn_api_config.timeout,
-                max_concurrency=espn_api_config.max_concurrency,
-                min_request_delay=espn_api_config.min_request_delay,
-                max_request_delay=espn_api_config.max_request_delay,
-                backoff_factor=espn_api_config.backoff_factor,
-                recovery_factor=espn_api_config.recovery_factor,
-                error_threshold=espn_api_config.error_threshold,
-                success_threshold=espn_api_config.success_threshold,
+                v3_base_url=getattr(espn_api_config, "v3_base_url", ""),
+                request_settings=rs,
             )
+            self.batch_size = rs.batch_size
+            max_concurrency = rs.max_concurrency
+
+            # Get historical start date from the config
+            if hasattr(espn_api_config, "historical"):
+                self.historical_start_date = getattr(espn_api_config.historical, "start_date", None)
+            else:
+                self.historical_start_date = None
+
+            # Initialize API client
             self.api_client = ESPNApiClient(client_config)
-            self.batch_size = getattr(espn_api_config, "batch_size", 10)
-            max_concurrency = getattr(espn_api_config, "max_concurrency", 5)
 
         self.db_path = db_path
         self.skip_existing = skip_existing
         self.parquet_dir = parquet_dir
-        self.force_update = force_update
+        self.force_check = force_check
+        self.force_overwrite = force_overwrite
 
         # Create semaphore for concurrency control
         self.semaphore = asyncio.Semaphore(max_concurrency)
@@ -143,7 +206,8 @@ class ScoreboardIngestion:
             batch_size=self.batch_size,
             db_path=self.db_path,
             parquet_dir=self.parquet_dir,
-            force_update=self.force_update,
+            force_check=self.force_check,
+            force_overwrite=self.force_overwrite,
             max_concurrency=max_concurrency,
         )
 
@@ -170,8 +234,6 @@ class ScoreboardIngestion:
         data = self.api_client.fetch_scoreboard(date=espn_date)
 
         # Store in Parquet
-        from src.utils.parquet_storage import ParquetStorage
-
         parquet_storage = ParquetStorage(base_dir=self.parquet_dir)
         result = parquet_storage.write_scoreboard_data(
             date=date,
@@ -181,17 +243,15 @@ class ScoreboardIngestion:
         )
 
         # Log if data was unchanged (only when not force updating)
-        if not self.force_update and result.get("unchanged", False):
+        if not self.force_overwrite and result.get("unchanged", False):
             logger.info("Data unchanged for date - no update needed", date=date)
 
         return data
 
     async def fetch_and_store_date_async(
-        self: "ScoreboardIngestion",
-        date: str,
-        db: Database = None,  # Legacy parameter, not used
+        self: "ScoreboardIngestion", date: str, db: Database = None
     ) -> dict[str, Any]:
-        """Fetch and store scoreboard data for a specific date asynchronously.
+        """Asynchronously fetch and store scoreboard data for a specific date.
 
         Args:
             date: Date in YYYY-MM-DD format
@@ -210,8 +270,6 @@ class ScoreboardIngestion:
             data = await self.api_client.fetch_scoreboard_async(date=espn_date)
 
             # Store in Parquet (uses synchronous method since filesystem operations)
-            from src.utils.parquet_storage import ParquetStorage
-
             parquet_storage = ParquetStorage(base_dir=self.parquet_dir)
 
             # Create parameters for the write operation
@@ -220,6 +278,7 @@ class ScoreboardIngestion:
                 "source_url": f"{self.api_client.get_endpoint_url('scoreboard')}",
                 "parameters": {"dates": espn_date, "groups": "50", "limit": 200},
                 "data": data,
+                "force_overwrite": self.force_overwrite,
             }
 
             # Run the write operation in an executor
@@ -228,8 +287,8 @@ class ScoreboardIngestion:
                 None, lambda: parquet_storage.write_scoreboard_data(**write_params)
             )
 
-            # Log if data was unchanged (only when not force updating)
-            if not self.force_update and result.get("unchanged", False):
+            # Log if data was unchanged (only when not force overwriting)
+            if not self.force_overwrite and result.get("unchanged", False):
                 logger.info("Data unchanged for date - no update needed", date=date)
 
             return data
@@ -271,21 +330,39 @@ class ScoreboardIngestion:
         # Respect skip_existing if not forcing updates
         dates_to_process = dates
         processed_dates: list[str] = []
+        parquet_storage = ParquetStorage(base_dir=self.parquet_dir)
 
-        # If we're not forcing updates, filter out dates we've already processed
-        if self.skip_existing and not self.force_update:
-            existing_dates = set(self.get_existing_dates())
-            dates_to_process = [date for date in dates if date not in existing_dates]
+        # If we're not forcing checks, filter out dates we've already processed
+        if self.skip_existing and not self.force_check and not self.force_overwrite:
+            # Filter dates that have already been processed 
+            # (check each date individually for efficiency)
+            filtered_dates = []
+            skipped_count = 0
+
+            for date in dates:
+                if parquet_storage.is_date_processed(date, endpoint="scoreboard"):
+                    skipped_count += 1
+                    logger.debug("Skipping already processed date", date=date)
+                else:
+                    filtered_dates.append(date)
+
+            dates_to_process = filtered_dates
 
             logger.info(
                 "Dates to process",
                 count=len(dates_to_process),
                 total_dates=len(dates),
-                already_processed=len(dates) - len(dates_to_process),
+                already_processed=skipped_count,
             )
-        elif self.force_update:
+        elif self.force_check:
             logger.info(
-                "Force update enabled - processing all dates",
+                "Force check enabled - processing all dates",
+                count=len(dates_to_process),
+                total_dates=len(dates),
+            )
+        elif self.force_overwrite:
+            logger.info(
+                "Force overwrite enabled - processing all dates and overwriting data",
                 count=len(dates_to_process),
                 total_dates=len(dates),
             )
@@ -382,8 +459,6 @@ class ScoreboardIngestion:
         Returns:
             List of dates in YYYY-MM-DD format
         """
-        from src.utils.parquet_storage import ParquetStorage
-
         parquet_storage = ParquetStorage(base_dir=self.parquet_dir)
         return parquet_storage.get_processed_dates(endpoint="scoreboard")
 
@@ -424,6 +499,15 @@ class ScoreboardIngestion:
                     )
                     failed += 1
                     errors.append({"date": date, "error": str(result)})
+                elif isinstance(result, dict) and result.get("unchanged", False):
+                    # Handle unchanged case - still count as successful
+                    logger.info(
+                        "Date processed - data unchanged",
+                        date=date,
+                        force_check=self.force_check,
+                        force_overwrite=self.force_overwrite,
+                    )
+                    successful += 1
                 else:
                     successful += 1
         except Exception as e:
@@ -472,7 +556,17 @@ def _determine_dates_to_process(config: ScoreboardIngestionConfig) -> list[str]:
         dates_to_process = get_date_range(start, end)
     else:
         yesterday_date = get_yesterday()
-        historical_start = config.espn_api_config.historical_start_date
+        # Get historical start date from the appropriate configuration
+        # Import config here to avoid circular imports
+        import os
+        from pathlib import Path
+
+        from src.utils.config import get_config
+
+        config_dir = Path(os.environ.get("CONFIG_DIR", "config"))
+        config_obj = get_config(config_dir)
+        historical_start = config_obj.historical.get_start_date()
+
         if historical_start:
             dates_to_process = get_date_range(historical_start, yesterday_date)
 
@@ -507,7 +601,8 @@ async def ingest_scoreboard_async(config: ScoreboardIngestionConfig) -> list[str
         db_path=config.db_path,  # Kept for backward compatibility
         skip_existing=True,  # Always skip existing to support incremental ingestion
         parquet_dir=config.parquet_dir,
-        force_update=config.force_update,
+        force_check=config.force_check,
+        force_overwrite=config.force_overwrite,
     )
 
     # Configure concurrency
@@ -557,6 +652,8 @@ def ingest_scoreboard_legacy(
     year: int | None = None,
     espn_api_config: ESPNApiConfig | None = None,
     db_path: str = "data/ncaa.duckdb",
+    force_check: bool = False,
+    force_overwrite: bool = False,
 ) -> list[str]:
     """Legacy interface for scoreboard ingestion.
 
@@ -580,6 +677,8 @@ def ingest_scoreboard_legacy(
         year: Calendar year to ingest
         espn_api_config: ESPN API configuration
         db_path: Path to DuckDB database
+        force_check: Force API requests for all dates and check if data changed
+        force_overwrite: Force overwrite existing data without checking hash
 
     Returns:
         List of dates that were processed
@@ -605,6 +704,8 @@ def ingest_scoreboard_legacy(
         today=today,
         seasons=seasons,
         year=year,
+        force_check=force_check,
+        force_overwrite=force_overwrite,
     )
 
     return ingest_scoreboard(config)

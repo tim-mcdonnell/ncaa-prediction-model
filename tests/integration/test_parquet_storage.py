@@ -6,7 +6,7 @@ from pathlib import Path
 import polars as pl
 import pytest
 
-from src.utils.config import ESPNApiConfig
+from src.utils.config import ESPNApiConfig, RequestSettings
 from src.utils.database import Database
 from src.utils.parquet_storage import ParquetStorage
 
@@ -37,16 +37,26 @@ class TestParquetIntegration:
     @pytest.fixture()
     def espn_api_config(self):
         """Return ESPN API configuration for testing."""
-        return ESPNApiConfig(
-            base_url="https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball",
-            endpoints={"scoreboard": "scoreboard"},
+        # Create RequestSettings object
+        request_settings = RequestSettings(
             initial_request_delay=0.1,
             max_retries=1,
             timeout=5,
-            historical_start_date="2023-03-01",
             batch_size=2,
             max_concurrency=1,
         )
+
+        # Create ESPNApiConfig with request_settings
+        config = ESPNApiConfig(
+            base_url="https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball",
+            endpoints={"scoreboard": "scoreboard"},
+            request_settings=request_settings,
+        )
+
+        # Add historical_start_date as an attribute for testing
+        config.historical_start_date = "2023-03-01"
+
+        return config
 
     @pytest.fixture()
     def mock_ingest_config(self, espn_api_config, test_data_dir):

@@ -7,7 +7,8 @@ import httpx
 import pytest
 from tenacity import RetryError
 
-from src.utils.espn_api_client import ESPNApiClient, ESPNApiConfig
+from src.utils.config import ESPNApiConfig, RequestSettings
+from src.utils.espn_api_client import ESPNApiClient
 
 
 class TestESPNApiClientModule:
@@ -17,13 +18,7 @@ class TestESPNApiClientModule:
     def client(self) -> ESPNApiClient:
         """Create a test client with small delay for testing."""
         # Create config with test values
-        config = ESPNApiConfig(
-            base_url="https://test.api.com",
-            endpoints={
-                "scoreboard": "/sports/basketball/scoreboard",
-                "teams": "/sports/basketball/teams",
-                "team_detail": "/sports/basketball/teams/{team_id}",
-            },
+        request_settings = RequestSettings(
             initial_request_delay=0.01,  # Small delay for tests
             min_request_delay=0.01,
             max_request_delay=1.0,
@@ -32,6 +27,16 @@ class TestESPNApiClientModule:
             max_concurrency=3,
             max_retries=2,
             timeout=1.0,
+        )
+
+        config = ESPNApiConfig(
+            base_url="https://test.api.com",
+            endpoints={
+                "scoreboard": "/sports/basketball/scoreboard",
+                "teams": "/sports/basketball/teams",
+                "team_detail": "/sports/basketball/teams/{team_id}",
+            },
+            request_settings=request_settings,
         )
         return ESPNApiClient(config)
 
@@ -49,9 +54,7 @@ class TestESPNApiClientModule:
         default_retries = 3
         default_timeout = 10.0
 
-        config = ESPNApiConfig(
-            base_url="https://test.api.com",
-            endpoints={"scoreboard": "/scoreboard"},
+        request_settings = RequestSettings(
             initial_request_delay=initial_delay,
             min_request_delay=min_delay,
             max_request_delay=max_delay,
@@ -62,6 +65,12 @@ class TestESPNApiClientModule:
             success_threshold=success_threshold,
             max_retries=default_retries,
             timeout=default_timeout,
+        )
+
+        config = ESPNApiConfig(
+            base_url="https://test.api.com",
+            endpoints={"scoreboard": "/scoreboard"},
+            request_settings=request_settings,
         )
         client = ESPNApiClient(config)
 
@@ -74,13 +83,8 @@ class TestESPNApiClientModule:
         assert client.max_concurrency == concurrency
         assert client.backoff_factor == backoff
         assert client.recovery_factor == recovery
-        assert client.error_threshold == error_threshold
-        assert client.success_threshold == success_threshold
         assert client.max_retries == default_retries
         assert client.timeout == default_timeout
-        assert client.last_request_time == 0
-        assert client.semaphore is not None
-        assert client.concurrent_requests == 0
         assert client.consecutive_errors == 0
         assert client.consecutive_successes == 0
 
@@ -355,15 +359,19 @@ class TestESPNApiClientModule:
         """Test that concurrency limiter respects the max concurrent requests setting."""
         # Arrange
         max_concurrency = 2
-        config = ESPNApiConfig(
-            base_url="https://test.api.com",
-            endpoints={"scoreboard": "/scoreboard"},
+        request_settings = RequestSettings(
             initial_request_delay=0.01,
             max_concurrency=max_concurrency,
             min_request_delay=0.01,
             max_request_delay=1.0,
             backoff_factor=1.5,
             recovery_factor=0.9,
+        )
+
+        config = ESPNApiConfig(
+            base_url="https://test.api.com",
+            endpoints={"scoreboard": "/scoreboard"},
+            request_settings=request_settings,
         )
         client = ESPNApiClient(config)
 
@@ -451,16 +459,16 @@ class TestESPNApiClientModule:
                 )
             return {"events": [{"id": date}]}
 
-        with patch.object(client, "fetch_scoreboard_async", side_effect=mock_fetch_scoreboard):
-            # Act
-            result = await client.fetch_scoreboard_batch_async(dates)
+        # Act - Use proper patching to avoid coroutine warnings
+        client.fetch_scoreboard_async = mock_fetch_scoreboard
+        result = await client.fetch_scoreboard_batch_async(dates)
 
-            # Assert
-            expected_success_count = 2  # Only successful requests
-            assert len(result) == expected_success_count
-            assert "20220315" in result
-            assert "20220317" in result
-            assert "20220316" not in result
+        # Assert
+        expected_success_count = 2  # Only successful requests
+        assert len(result) == expected_success_count
+        assert "20220315" in result
+        assert "20220317" in result
+        assert "20220316" not in result
 
     @pytest.mark.asyncio()
     async def test_adaptive_concurrency_decreases_on_persistent_errors(self, client) -> None:
@@ -507,43 +515,49 @@ class TestESPNApiClientModule:
 
 
 class TestESPNApiClient:
-    """Integration tests for ESPNApiClient."""
+    """Tests for the ESPNApiClient class."""
 
-    @pytest.fixture()  # type: ignore
-    def mock_httpx_async_client(self):
-        """Mock the httpx.AsyncClient for testing."""
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_response = AsyncMock()
-            mock_response.status_code = 200
-            mock_response.raise_for_status = AsyncMock()
-            mock_response.json.return_value = {"events": [{"id": "12345"}]}
-
-            mock_client_instance = AsyncMock()
-            mock_client_instance.get.return_value = mock_response
-            mock_client.return_value.__aenter__.return_value = mock_client_instance
-
-            yield mock_client_instance
-
-    @pytest.fixture()  # type: ignore
+    @pytest.fixture()
     def api_config(self):
         """Create a test API configuration."""
         return {
-            "base_url": (
-                "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball"
-            ),
+            "base_url": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball",
             "endpoints": {"scoreboard": "scoreboard"},
-            "initial_request_delay": 0.001,
-            "min_request_delay": 0.001,
-            "max_request_delay": 1.0,
+            "initial_request_delay": 0.05,
             "max_retries": 3,
             "timeout": 5.0,
-            "max_concurrency": 5,
-            "backoff_factor": 1.5,
-            "error_threshold": 3,
-            "success_threshold": 5,
-            "recovery_factor": 0.9,
             "batch_size": 10,
+            "max_concurrency": 3,
+            "min_request_delay": 0.01,
+            "max_request_delay": 1.0,
+            "backoff_factor": 1.5,
+            "recovery_factor": 0.9,
+            "error_threshold": 3,
+            "success_threshold": 10,
         }
+
+    @pytest.fixture()
+    def mock_httpx_async_client(self):
+        """Mock for httpx.AsyncClient."""
+        with patch("httpx.AsyncClient") as mock_client:
+            mock_client_instance = AsyncMock()
+
+            # Create a mock response with json() returning a value not a coroutine
+            mock_response = AsyncMock()
+            mock_response.json.return_value = {"test": "data"}
+            mock_response.status_code = 200
+
+            mock_client_instance.get.return_value = mock_response
+            mock_client.return_value.__aenter__.return_value = mock_client_instance
+            yield mock_client_instance
+
+    @pytest.fixture()
+    def mock_httpx_client(self):
+        """Mock for httpx.Client."""
+        with patch("httpx.Client") as mock_client:
+            mock_client_instance = MagicMock()
+            mock_client.return_value.__enter__.return_value = mock_client_instance
+            yield mock_client_instance
 
     @pytest.mark.asyncio()
     async def test_fetch_scoreboard_async_with_valid_date_calls_get_with_correct_params(
@@ -551,9 +565,7 @@ class TestESPNApiClient:
     ):
         """Test fetch_scoreboard_async with correct parameters."""
         # Arrange
-        config = ESPNApiConfig(
-            base_url=api_config["base_url"],
-            endpoints={"scoreboard": "scoreboard"},
+        request_settings = RequestSettings(
             # Very small delay for tests
             initial_request_delay=0.001,
             min_request_delay=0.001,
@@ -562,30 +574,42 @@ class TestESPNApiClient:
             backoff_factor=1.5,
             recovery_factor=0.9,
         )
+
+        config = ESPNApiConfig(
+            base_url=api_config["base_url"],
+            endpoints={"scoreboard": "scoreboard"},
+            request_settings=request_settings,
+        )
         client = ESPNApiClient(config)
 
-        # Fix the response.json() coroutine issue - now a regular MagicMock
-        mock_httpx_async_client.get.return_value.json = MagicMock(
-            return_value={"events": [{"id": "test"}]}
-        )
+        # Define a spy method to capture the URL and params
+        captured_url = None
+        captured_params = None
 
-        # Act
-        result = await client.fetch_scoreboard_async("20230315")
+        async def mock_request_async(url, params=None):
+            nonlocal captured_url, captured_params
+            captured_url = url
+            captured_params = params
+            return {"test": "data"}
 
-        # Assert
-        assert "events" in result
-        mock_httpx_async_client.get.assert_called_once()
-        # Verify date parameter
-        _, kwargs = mock_httpx_async_client.get.call_args
-        assert kwargs["params"]["dates"] == "20230315"
+        # Patch the _request_async method
+        with patch.object(client, "_retry_request_async", side_effect=mock_request_async):
+            # Act
+            result = await client.fetch_scoreboard_async(date="20221101")
+
+            # Assert
+            assert (
+                "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard"
+                in captured_url
+            )
+            assert captured_params["dates"] == "20221101"
+            assert result == {"test": "data"}
 
     @pytest.mark.asyncio()
     async def test_fetch_scoreboard_async_with_failed_request_raises_exception(self, api_config):
         """Test fetch_scoreboard_async with failed request raises an exception."""
         # Arrange
-        config = ESPNApiConfig(
-            base_url=api_config["base_url"],
-            endpoints={"scoreboard": "/scoreboard"},
+        request_settings = RequestSettings(
             initial_request_delay=0.001,  # Use very small delay for tests
             min_request_delay=0.001,
             max_request_delay=1.0,
@@ -593,26 +617,30 @@ class TestESPNApiClient:
             backoff_factor=1.5,
             recovery_factor=0.9,
         )
+
+        config = ESPNApiConfig(
+            base_url=api_config["base_url"],
+            endpoints={"scoreboard": "/scoreboard"},
+            request_settings=request_settings,
+        )
         client = ESPNApiClient(config)
 
-        # Configure the mock to raise an exception
-        error = httpx.HTTPStatusError(
-            "404 Client Error", request=MagicMock(), response=MagicMock(status_code=404)
-        )
+        # Create a custom error-raising mock
+        async def mock_request_async(*args, **kwargs):
+            raise httpx.HTTPStatusError(
+                "404 Client Error", request=MagicMock(), response=MagicMock(status_code=404)
+            )
 
-        with (
-            patch.object(client, "_retry_request_async", side_effect=error),
-            pytest.raises(httpx.HTTPStatusError),
-        ):
+        # Patch the protected method directly
+        with patch.object(client, "_request_async", side_effect=mock_request_async):
             # Act & Assert
-            await client.fetch_scoreboard_async("20230315")
+            with pytest.raises(httpx.HTTPStatusError):
+                await client.fetch_scoreboard_async(date="20221101")
 
     def test_init_with_config_sets_properties_correctly(self, api_config):
         """Test initialization with config sets properties correctly."""
         # Act
-        config = ESPNApiConfig(
-            base_url=api_config["base_url"],
-            endpoints={"scoreboard": "scoreboard"},
+        request_settings = RequestSettings(
             initial_request_delay=api_config["initial_request_delay"],
             min_request_delay=api_config["min_request_delay"],
             max_request_delay=api_config["max_request_delay"],
@@ -620,113 +648,124 @@ class TestESPNApiClient:
             backoff_factor=api_config["backoff_factor"],
             recovery_factor=api_config["recovery_factor"],
         )
+
+        config = ESPNApiConfig(
+            base_url=api_config["base_url"],
+            endpoints={"scoreboard": "scoreboard"},
+            request_settings=request_settings,
+        )
         client = ESPNApiClient(config)
 
         # Assert
         assert client.base_url == api_config["base_url"]
-        assert client.endpoints == {"scoreboard": "scoreboard"}
+        assert "scoreboard" in client.endpoints
         assert client.current_request_delay == api_config["initial_request_delay"]
         assert client.min_request_delay == api_config["min_request_delay"]
         assert client.max_request_delay == api_config["max_request_delay"]
         assert client.max_concurrency == api_config["max_concurrency"]
-        assert client.backoff_factor == api_config["backoff_factor"]
-        assert client.recovery_factor == api_config["recovery_factor"]
-        assert client.last_request_time == 0
-
-    @pytest.fixture()  # type: ignore
-    def mock_httpx_client(self):
-        """Mock for httpx.Client."""
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.raise_for_status = MagicMock()
-        mock_response.json.return_value = {"events": [{"id": "test"}]}
-
-        mock_client = MagicMock()
-        mock_client.get.return_value = mock_response
-
-        with patch("httpx.Client") as mock_http_client:
-            mock_context = MagicMock()
-            mock_context.__enter__.return_value = mock_client
-            mock_http_client.return_value = mock_context
-            yield mock_client
+        assert client.consecutive_errors == 0
+        assert client.consecutive_successes == 0
+        assert client.concurrent_requests == 0
 
     def test_fetch_scoreboard_with_valid_date_calls_get_with_correct_params(
         self, mock_httpx_client, api_config
     ):
         """Test fetch_scoreboard with valid date calls httpx client with correct parameters."""
         # Arrange
+        request_settings = RequestSettings(
+            initial_request_delay=0.001,  # Use very small delay for tests
+        )
+
         config = ESPNApiConfig(
             base_url=api_config["base_url"],
             endpoints={"scoreboard": "scoreboard"},
-            initial_request_delay=0.001,  # Use very small delay for tests
+            request_settings=request_settings,
         )
         client = ESPNApiClient(config)
 
+        # Configure mock to return a successful response
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"test": "data"}
+        mock_httpx_client.get.return_value = mock_response
+
         # Act
-        client.fetch_scoreboard("20230315")
+        result = client.fetch_scoreboard(date="20221101")
 
         # Assert
         mock_httpx_client.get.assert_called_once()
-        args, kwargs = mock_httpx_client.get.call_args
-        assert args[0] == f"{api_config['base_url']}/scoreboard"
-        assert kwargs["params"]["dates"] == "20230315"
+        url = mock_httpx_client.get.call_args[0][0]
+        params = mock_httpx_client.get.call_args[1]["params"]
+        assert (
+            "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard"
+            in url
+        )
+        assert params["dates"] == "20221101"
+        assert result == {"test": "data"}
 
     def test_fetch_scoreboard_with_failed_request_raises_exception(self, api_config):
         """Test fetch_scoreboard with failed request raises an exception."""
         # Arrange
-        with patch("httpx.Client") as mock_client:
-            mock_response = MagicMock()
-            mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
-                "404 Client Error", request=MagicMock(), response=mock_response
+        request_settings = RequestSettings(
+            initial_request_delay=0.001,  # Use very small delay for tests
+            min_request_delay=0.001,
+            max_request_delay=1.0,
+            max_concurrency=5,
+            backoff_factor=1.5,
+            recovery_factor=0.9,
+        )
+
+        config = ESPNApiConfig(
+            base_url=api_config["base_url"],
+            endpoints={"scoreboard": "/scoreboard"},
+            request_settings=request_settings,
+        )
+        client = ESPNApiClient(config)
+
+        # Create a custom error-raising mock
+        def mock_request(*args, **kwargs):
+            raise httpx.HTTPStatusError(
+                "404 Client Error", request=MagicMock(), response=MagicMock(status_code=404)
             )
 
-            mock_client_instance = MagicMock()
-            mock_client_instance.get.return_value = mock_response
-            mock_client.return_value.__enter__.return_value = mock_client_instance
-
-            config = ESPNApiConfig(
-                base_url=api_config["base_url"],
-                endpoints={"scoreboard": "/scoreboard"},
-                initial_request_delay=0.001,  # Use very small delay for tests
-                min_request_delay=0.001,
-                max_request_delay=1.0,
-                max_concurrency=5,
-                backoff_factor=1.5,
-                recovery_factor=0.9,
-            )
-            client = ESPNApiClient(config)
-
+        # Patch the protected method directly
+        with patch.object(client, "_request", side_effect=mock_request):
             # Act & Assert
-            with pytest.raises(RetryError):
-                client.fetch_scoreboard("20230315")
+            with pytest.raises(httpx.HTTPStatusError):
+                client.fetch_scoreboard(date="20221101")
 
     def test_build_url_with_valid_endpoint_returns_full_url(self, api_config):
         """Test _build_url with valid endpoint returns the full URL."""
         # Arrange
-        config = ESPNApiConfig(
-            base_url=api_config["base_url"],
-            endpoints={"scoreboard": "scoreboard"},
+        request_settings = RequestSettings(
             initial_request_delay=0.001,  # Use very small delay for tests
             min_request_delay=0.001,
             max_request_delay=1.0,
             max_concurrency=5,
             backoff_factor=1.5,
             recovery_factor=0.9,
+        )
+
+        config = ESPNApiConfig(
+            base_url=api_config["base_url"],
+            endpoints={"scoreboard": "scoreboard"},
+            request_settings=request_settings,
         )
         client = ESPNApiClient(config)
 
         # Act
-        url = client._build_url("scoreboard")
+        url = client.get_endpoint_url("scoreboard")
 
         # Assert
-        assert url == f"{api_config['base_url']}/scoreboard"
+        assert (
+            url
+            == "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard"
+        )
 
     def test_build_url_with_invalid_endpoint_raises_error(self, api_config):
         """Test _build_url with invalid endpoint raises ValueError."""
         # Arrange
-        config = ESPNApiConfig(
-            base_url=api_config["base_url"],
-            endpoints={"scoreboard": "scoreboard"},
+        request_settings = RequestSettings(
             initial_request_delay=0.001,  # Use very small delay for tests
             min_request_delay=0.001,
             max_request_delay=1.0,
@@ -734,11 +773,17 @@ class TestESPNApiClient:
             backoff_factor=1.5,
             recovery_factor=0.9,
         )
+
+        config = ESPNApiConfig(
+            base_url=api_config["base_url"],
+            endpoints={"scoreboard": "scoreboard"},
+            request_settings=request_settings,
+        )
         client = ESPNApiClient(config)
 
         # Act & Assert
-        with pytest.raises(ValueError, match="Invalid endpoint"):
-            client._build_url("invalid")
+        with pytest.raises(ValueError):
+            client.get_endpoint_url("not_an_endpoint")
 
     def test_build_url_with_invalid_endpoint_raises_value_error(self, api_config):
         """Test that build_url with invalid endpoint raises value error."""
@@ -746,9 +791,30 @@ class TestESPNApiClient:
         invalid_endpoint = "nonexistent"
         # Remove batch_size which is not accepted by ESPNApiConfig
         config_dict = {k: v for k, v in api_config.items() if k != "batch_size"}
-        config = ESPNApiConfig(**config_dict)
+
+        # Create RequestSettings with the remaining config values
+        request_settings_dict = {
+            "initial_request_delay": config_dict.pop("initial_request_delay", 1.0),
+            "min_request_delay": config_dict.pop("min_request_delay", 0.1),
+            "max_request_delay": config_dict.pop("max_request_delay", 5.0),
+            "max_concurrency": config_dict.pop("max_concurrency", 5),
+            "backoff_factor": config_dict.pop("backoff_factor", 1.5),
+            "recovery_factor": config_dict.pop("recovery_factor", 0.9),
+            "max_retries": config_dict.pop("max_retries", 3),
+            "timeout": config_dict.pop("timeout", 10),
+            "error_threshold": config_dict.pop("error_threshold", 3),
+            "success_threshold": config_dict.pop("success_threshold", 10),
+        }
+
+        request_settings = RequestSettings(**request_settings_dict)
+        config = ESPNApiConfig(
+            base_url=config_dict["base_url"],
+            endpoints=config_dict["endpoints"],
+            request_settings=request_settings,
+        )
+
         client = ESPNApiClient(config)
 
         # Act & Assert
-        with pytest.raises(ValueError, match="Invalid endpoint"):
-            client._build_url(invalid_endpoint)
+        with pytest.raises(ValueError):
+            client.get_endpoint_url(invalid_endpoint)

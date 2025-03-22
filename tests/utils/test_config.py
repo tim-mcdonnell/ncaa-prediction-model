@@ -20,21 +20,44 @@ class TestConfigModule:
         """Test that get_config returns configuration from a valid file."""
         # Arrange
         valid_config: dict[str, Any] = {
-            "espn_api": {
-                "base_url": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball",
-                "endpoints": {"scoreboard": "scoreboard", "teams": "teams"},
-                "initial_request_delay": 0.5,
-                "max_retries": 3,
-                "timeout": 10.0,
-                "batch_size": 20,
+            "logging": {
+                "level": "INFO",
+                "file": "logs/app.log",
+                "json_format": True,
             },
-            "data_paths": {
-                "bronze": "data/bronze",
+            "espn_api": {
+                "base_url": "https://example.com/api",
+                "endpoints": {
+                    "teams": "/teams",
+                    "scoreboard": "/scoreboard",
+                },
+                "request_settings": {
+                    "initial_request_delay": 0.5,
+                    "max_retries": 3,
+                    "timeout": 10.0,
+                    "max_concurrency": 5,
+                    "min_request_delay": 0.1,
+                    "max_request_delay": 5.0,
+                    "backoff_factor": 1.5,
+                    "recovery_factor": 0.9,
+                    "error_threshold": 3,
+                    "success_threshold": 10,
+                    "batch_size": 50,
+                },
+            },
+            "data_storage": {
+                "raw": "data/raw",
                 "silver": "data/silver",
                 "gold": "data/gold",
-                "models": "data/models",
+                "models": "models",
             },
-            "seasons": {"current": "2022-23", "historical": ["2021-22", "2020-21"]},
+            "seasons": {
+                "current": "2022",
+                "format": "YYYY",
+            },
+            "historical": {
+                "start_season": "2001",
+            },
         }
 
         # Create config directory and file
@@ -51,19 +74,29 @@ class TestConfigModule:
         assert isinstance(result, Config)
         assert result.espn_api.base_url == valid_config["espn_api"]["base_url"]
         assert result.espn_api.endpoints == valid_config["espn_api"]["endpoints"]
+
+        # Request settings
+        rs = result.espn_api.request_settings
         assert (
-            result.espn_api.initial_request_delay
-            == valid_config["espn_api"]["initial_request_delay"]
+            rs.initial_request_delay
+            == valid_config["espn_api"]["request_settings"]["initial_request_delay"]
         )
-        assert result.espn_api.max_retries == valid_config["espn_api"]["max_retries"]
-        assert result.espn_api.timeout == valid_config["espn_api"]["timeout"]
-        assert result.espn_api.batch_size == valid_config["espn_api"]["batch_size"]
-        assert result.data_paths.bronze == valid_config["data_paths"]["bronze"]
-        assert result.data_paths.silver == valid_config["data_paths"]["silver"]
-        assert result.data_paths.gold == valid_config["data_paths"]["gold"]
-        assert result.data_paths.models == valid_config["data_paths"]["models"]
+        assert rs.max_retries == valid_config["espn_api"]["request_settings"]["max_retries"]
+        assert rs.timeout == valid_config["espn_api"]["request_settings"]["timeout"]
+        assert rs.batch_size == valid_config["espn_api"]["request_settings"]["batch_size"]
+
+        # Data storage
+        assert result.data_storage.raw == valid_config["data_storage"]["raw"]
+        assert result.data_storage.silver == valid_config["data_storage"]["silver"]
+        assert result.data_storage.gold == valid_config["data_storage"]["gold"]
+        assert result.data_storage.models == valid_config["data_storage"]["models"]
+
+        # Seasons
         assert result.seasons.current == valid_config["seasons"]["current"]
-        assert result.seasons.historical == valid_config["seasons"]["historical"]
+        assert result.seasons.format == valid_config["seasons"]["format"]
+
+        # Historical
+        assert result.historical.start_season == valid_config["historical"]["start_season"]
 
     def test_get_config_with_missing_config_file_raises_file_not_found_error(self, tmp_path):
         """Test handling a missing configuration file."""
@@ -95,17 +128,20 @@ class TestConfigModule:
             "espn_api": {
                 # Missing base_url
                 "endpoints": {"scoreboard": "scoreboard"},
-                "initial_request_delay": 0.5,
-                "max_retries": 3,
-                "timeout": 10.0,
+                "request_settings": {
+                    "initial_request_delay": 0.5,
+                    "max_retries": 3,
+                    "timeout": 10.0,
+                },
             },
-            "data_paths": {
-                "bronze": "data/bronze",
+            "data_storage": {
+                "raw": "data/raw",
                 "silver": "data/silver",
                 "gold": "data/gold",
-                "models": "data/models",
+                "models": "models",
             },
-            "seasons": {"current": "2022-23", "historical": ["2021-22", "2020-21"]},
+            "seasons": {"current": "2022", "format": "YYYY"},
+            "historical": {"start_season": "2001"},
         }
 
         config_dir = tmp_path
@@ -125,17 +161,20 @@ class TestConfigModule:
             "espn_api": {
                 "base_url": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball",
                 "endpoints": {"scoreboard": "scoreboard"},
-                "initial_request_delay": 0.5,
-                "max_retries": 3,
-                "timeout": 10.0,
+                "request_settings": {
+                    "initial_request_delay": 0.5,
+                    "max_retries": 3,
+                    "timeout": 10.0,
+                },
             },
-            "data_paths": {
-                "bronze": "data/bronze",
+            "data_storage": {
+                "raw": "data/raw",
                 "silver": "data/silver",
                 "gold": "data/gold",
-                "models": "data/models",
+                "models": "models",
             },
-            "seasons": {"current": "2022-23", "historical": ["2021-22"]},
+            "seasons": {"current": "2022", "format": "YYYY"},
+            "historical": {"start_season": "2001"},
         }
 
         config_dir = tmp_path
@@ -149,11 +188,11 @@ class TestConfigModule:
 
         # Assert
         espn_api = result.espn_api
-        data_paths = result.data_paths
+        data_storage = result.data_storage
         seasons = result.seasons
 
         assert espn_api.base_url == minimal_config["espn_api"]["base_url"]  # type: ignore
-        assert data_paths.bronze == minimal_config["data_paths"]["bronze"]  # type: ignore
+        assert data_storage.raw == minimal_config["data_storage"]["raw"]  # type: ignore
         assert seasons.current == minimal_config["seasons"]["current"]  # type: ignore
 
     def test_get_config_with_extra_keys_succeeds(self, tmp_path):
@@ -163,18 +202,21 @@ class TestConfigModule:
             "espn_api": {
                 "base_url": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball",
                 "endpoints": {"scoreboard": "scoreboard", "teams": "teams"},
-                "initial_request_delay": 0.5,
-                "max_retries": 3,
-                "timeout": 10.0,
-                "batch_size": 20,
+                "request_settings": {
+                    "initial_request_delay": 0.5,
+                    "max_retries": 3,
+                    "timeout": 10.0,
+                    "batch_size": 20,
+                },
             },
-            "data_paths": {
-                "bronze": "data/bronze",
+            "data_storage": {
+                "raw": "data/raw",
                 "silver": "data/silver",
                 "gold": "data/gold",
-                "models": "data/models",
+                "models": "models",
             },
-            "seasons": {"current": "2022-23", "historical": ["2021-22", "2020-21"]},
+            "seasons": {"current": "2022", "format": "YYYY"},
+            "historical": {"start_season": "2001"},
         }
 
         extra_config = copy.deepcopy(valid_config)
@@ -191,9 +233,72 @@ class TestConfigModule:
 
         # Assert
         espn_api = result.espn_api
-        data_paths = result.data_paths
+        data_storage = result.data_storage
         seasons = result.seasons
 
         assert espn_api.base_url == valid_config["espn_api"]["base_url"]  # type: ignore
-        assert data_paths.bronze == valid_config["data_paths"]["bronze"]  # type: ignore
+        assert data_storage.raw == valid_config["data_storage"]["raw"]  # type: ignore
         assert seasons.current == valid_config["seasons"]["current"]  # type: ignore
+
+    def test_get_config_with_merged_config(self, tmp_path):
+        """Test that get_config accepts a merged configuration."""
+        # Test with merged
+        merged_config = {
+            "logging": {
+                "level": "DEBUG",
+                "file": None,
+                "json_format": False,
+            },
+            "espn_api": {
+                "base_url": "https://example.com/api",
+                "endpoints": {
+                    "teams": "/teams",
+                    "scoreboard": "/scoreboard",
+                },
+                "v3_base_url": "",
+                "request_settings": {
+                    "initial_request_delay": 1.0,
+                    "max_retries": 3,
+                    "timeout": 10.0,
+                    "max_concurrency": 5,
+                    "min_request_delay": 0.1,
+                    "max_request_delay": 5.0,
+                    "backoff_factor": 1.5,
+                    "recovery_factor": 0.9,
+                    "error_threshold": 3,
+                    "success_threshold": 10,
+                    "batch_size": 50,
+                },
+            },
+            "data_storage": {
+                "raw": "/data/bronze",
+                "silver": "/data/silver",
+                "gold": "/data/gold",
+                "models": "/models",
+            },
+            "seasons": {
+                "current": "2022",
+                "format": "YYYY",
+            },
+            "historical": {
+                "start_season": "2001",
+            },
+        }
+
+        config_dir = tmp_path
+        data_sources_file = config_dir / "data_sources.yaml"
+
+        with open(data_sources_file, "w") as f:
+            yaml.dump(merged_config, f)
+
+        # Act
+        result = get_config(config_dir)
+
+        # Assert
+        espn_api = result.espn_api
+        data_storage = result.data_storage
+        seasons = result.seasons
+
+        assert espn_api.base_url == merged_config["espn_api"]["base_url"]  # type: ignore
+        assert data_storage.raw == merged_config["data_storage"]["raw"]  # type: ignore
+        assert seasons.current == merged_config["seasons"]["current"]  # type: ignore

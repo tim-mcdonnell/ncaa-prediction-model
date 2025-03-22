@@ -1,4 +1,5 @@
 espn_api:
+  # API endpoints configuration
   base_url: "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball"
   v3_base_url: "https://sports.core.api.espn.com/v3/sports/basketball/mens-college-basketball"
   endpoints:
@@ -6,29 +7,33 @@ espn_api:
     team_detail: "/teams/{team_id}"
     scoreboard: "/scoreboard"
     game_summary: "/summary"
-  initial_request_delay: 0.5  # Initial delay between requests in seconds
-  min_request_delay: 0.1      # Minimum delay between requests
-  max_request_delay: 5.0      # Maximum delay after backoff
-  max_concurrency: 5          # Maximum concurrent requests
-  backoff_factor: 1.5         # Multiplicative factor for backoff
-  recovery_factor: 0.9        # Factor to reduce delay after success
-  error_threshold: 3          # Number of errors before reducing concurrency
-  success_threshold: 10       # Successes needed to increase concurrency
-  max_retries: 3
-  timeout: 10.0  # seconds
-  historical_start_date: "2001-8-01"
-  batch_size: 80  # Process dates in batches of 80
+  
+  # API client behavior
+  request_settings:
+    initial_request_delay: 0.5  # Initial delay between requests in seconds
+    min_request_delay: 0.1      # Minimum delay between requests
+    max_request_delay: 5.0      # Maximum delay after backoff
+    max_concurrency: 5          # Maximum concurrent requests
+    backoff_factor: 1.5         # Multiplicative factor for backoff
+    recovery_factor: 0.9        # Factor to reduce delay after success
+    error_threshold: 3          # Number of errors before reducing concurrency
+    success_threshold: 10       # Successes needed to increase concurrency
+    max_retries: 3
+    timeout: 10.0               # seconds
+    batch_size: 80              # Process dates in batches of 80
 
-data_paths:
-  bronze: "data/bronze"
-  silver: "data/silver"
-  gold: "data/gold"
-  models: "models"
+# Data storage configuration
+data_storage:
+  raw: "data/raw"               # Raw data directory (bronze layer)
+  silver: "data/silver"         # Silver layer 
+  gold: "data/gold"             # Gold layer
+  models: "models"              # Trained models
 
+# Season configuration
 seasons:
-  current: "2024-25"
-  historical:
-    - "2023-24"
-    - "2022-23"
-    - "2021-22"
-    - "2020-21"
+  current: "2023"               # Current NCAA basketball season
+  format: "YYYY"                # Format used for season identifiers
+
+# Historical data settings
+historical:
+  start_season: "2002"          # First season to include in historical data

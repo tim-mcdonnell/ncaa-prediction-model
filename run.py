@@ -101,8 +101,13 @@ CONCURRENCY_OPTION = typer.Option(
 )
 AGGRESSIVE_OPTION = typer.Option(False, help="Use aggressive settings for maximum performance")
 CAUTIOUS_OPTION = typer.Option(False, help="Use cautious settings for better reliability")
-FORCE_UPDATE_OPTION = typer.Option(
-    False, help="Force update of data even if it already exists (checks hash to detect changes)"
+FORCE_CHECK_OPTION = typer.Option(
+    False,
+    help="Force fetching data for all dates, even if they already exist "
+         "(checks hash to detect changes)",
+)
+FORCE_OVERWRITE_OPTION = typer.Option(
+    False, help="Force overwrite data for all dates without hash comparison (always updates files)"
 )
 
 # Options for teams command
@@ -158,7 +163,8 @@ def scoreboard(
     concurrency: int | None = CONCURRENCY_OPTION,
     aggressive: bool = AGGRESSIVE_OPTION,
     cautious: bool = CAUTIOUS_OPTION,
-    force_update: bool = FORCE_UPDATE_OPTION,
+    force_check: bool = FORCE_CHECK_OPTION,
+    force_overwrite: bool = FORCE_OVERWRITE_OPTION,
 ):
     """Ingest scoreboard data from ESPN API."""
     from src.ingest.scoreboard import ScoreboardIngestionConfig, ingest_scoreboard
@@ -183,7 +189,8 @@ def scoreboard(
         ("concurrency", concurrency),
         ("aggressive", aggressive),
         ("cautious", cautious),
-        ("force_update", force_update),
+        ("force_check", force_check),
+        ("force_overwrite", force_overwrite),
     ]:
         if value is not None:
             processed_kwargs[key] = value
@@ -199,8 +206,21 @@ def scoreboard(
         logger.info("Using aggressive performance settings")
     if cautious:
         logger.info("Using cautious reliability settings")
-    if force_update:
-        logger.info("Force update enabled - will re-fetch all requested dates")
+    if force_check:
+        logger.info(
+            "Force check enabled - will fetch all requested dates and check if data has changed"
+        )
+    if force_overwrite:
+        logger.info(
+            "Force overwrite enabled - will fetch and overwrite all requested dates "
+            "without hash checking"
+        )
+
+    # Check for incompatible options
+    if force_check and force_overwrite:
+        logger.warning(
+            "Both force_check and force_overwrite are enabled; force_overwrite takes precedence"
+        )
 
     logger.info("Starting scoreboard ingestion", **processed_kwargs)
 
@@ -228,7 +248,8 @@ def scoreboard(
                 concurrency=processed_kwargs.get("concurrency"),
                 aggressive=processed_kwargs.get("aggressive", False),
                 cautious=processed_kwargs.get("cautious", False),
-                force_update=processed_kwargs.get("force_update", False),
+                force_check=processed_kwargs.get("force_check", False),
+                force_overwrite=processed_kwargs.get("force_overwrite", False),
             )
 
             # Call the actual implementation

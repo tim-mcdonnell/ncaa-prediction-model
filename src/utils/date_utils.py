@@ -8,7 +8,7 @@ date format requirements.
 from datetime import UTC, datetime, timedelta
 
 # Constants
-SEASON_FORMAT_LENGTH = 7  # Length of a season string in format "YYYY-YY"
+SEASON_FORMAT_LENGTH = 4  # Length of a season string in format "YYYY"
 
 
 def get_yesterday() -> str:
@@ -84,28 +84,28 @@ def get_date_range(start_date: str, end_date: str) -> list[str]:
 
 
 def get_season_date_range(season: str) -> tuple[str, str]:
-    """Convert season in YYYY-YY format to start and end dates.
+    """Convert season in YYYY format to start and end dates.
 
-    NCAA basketball season typically runs from November to April.
+    NCAA basketball season typically runs from November to April of the following year.
 
     Args:
-        season: Season in YYYY-YY format (e.g., "2022-23")
+        season: Season in YYYY format (e.g., "2022")
 
     Returns:
         Tuple of (start_date, end_date) in YYYY-MM-DD format
 
     Raises:
-        ValueError: If season is not in YYYY-YY format
+        ValueError: If season is not in YYYY format
     """
-    if not season or len(season) != SEASON_FORMAT_LENGTH or season[4] != "-":
-        error_msg = f"Invalid season format: {season}. Expected YYYY-YY."
+    if not season or len(season) != SEASON_FORMAT_LENGTH:
+        error_msg = f"Invalid season format: {season}. Expected YYYY."
         raise ValueError(error_msg)
 
     try:
-        start_year = int(season[0:4])
-        end_year = int(f"20{season[5:7]}")
+        start_year = int(season)
+        end_year = start_year + 1
     except ValueError as err:
-        error_msg = f"Invalid season format: {season}. Expected YYYY-YY."
+        error_msg = f"Invalid season format: {season}. Expected YYYY."
         raise ValueError(error_msg) from err
     else:
         # NCAA basketball season typically runs from November to April
