@@ -3,7 +3,12 @@ espn_api:
   base_url: "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball"
   v3_base_url: "https://sports.core.api.espn.com/v3/sports/basketball/mens-college-basketball"
   endpoints:
-    teams: "v3:/seasons/{season}/teams"
+    teams:
+      url: "v3:/seasons/{season}/teams"
+      pagination:
+        limit: 100
+        page_param: "page"
+        limit_param: "limit"
     team_detail: "/teams/{team_id}"
     scoreboard: "/scoreboard"
     game_summary: "/summary"

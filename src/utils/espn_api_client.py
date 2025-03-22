@@ -100,13 +100,19 @@ class ESPNApiClient:
             if endpoint not in self.endpoints:
                 error_msg = f"Invalid endpoint: {endpoint}"
                 raise ValueError(error_msg)
-            path = self.endpoints[endpoint]
+            endpoint_config = self.endpoints[endpoint]
         else:
             # Attribute access (SimpleNamespace)
             if not hasattr(self.endpoints, endpoint):
                 error_msg = f"Invalid endpoint: {endpoint}"
                 raise ValueError(error_msg)
-            path = getattr(self.endpoints, endpoint)
+            endpoint_config = getattr(self.endpoints, endpoint)
+
+        # Get the path from endpoint_config (can be either string or dictionary)
+        if isinstance(endpoint_config, dict):
+            path = endpoint_config.get("url", "")
+        else:
+            path = endpoint_config
 
         # Check if this is a v3 API endpoint (prefixed with v3:)
         use_v3 = False

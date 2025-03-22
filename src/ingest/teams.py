@@ -75,121 +75,15 @@ class TeamsIngestion(BaseIngestion[str]):
         """
         logger.info("Fetching teams data for season", season=season)
 
-        # We need to fetch all pages for this season
-        return await self._fetch_all_pages_async(season)
-
-    async def _fetch_page_async(self, season: str, page: int) -> dict[str, Any]:
-        """Fetch a single page of team data for a season asynchronously.
-
-        Args:
-            season: Season in YYYY format
-            page: Page number
-
-        Returns:
-            The API response data
-        """
-        # Build URL parameters
-        params = {
-            "limit": self.config.limit,
-            "page": page,
-        }
+        # Use the base class pagination handling
+        params = {"season": season}
 
         # Add conference filter if specified
         if self.config.conference:
             params["groups"] = self.config.conference
 
-        # Build URL
-        url = self.api_client.get_endpoint_url("teams", season=season)
-
-        # Make request
-        logger.debug(
-            "Fetching teams data page",
-            url=url,
-            season=season,
-            conference=self.config.conference if self.config.conference else "all",
-            page=page,
-            limit=self.config.limit,
-        )
-
-        try:
-            response = await self.api_client._request_async(url, params)
-            logger.debug(
-                "Fetched teams data page successfully",
-                season=season,
-                page=page,
-                count=response.get("count", 0),
-            )
-            return response
-        except Exception as e:
-            logger.error(
-                "Failed to fetch teams data page",
-                season=season,
-                page=page,
-                error=str(e),
-            )
-            raise
-
-    async def _fetch_all_pages_async(self, season: str) -> dict[str, Any]:
-        """Fetch all pages of team data for a season asynchronously.
-
-        Args:
-            season: Season in YYYY format
-
-        Returns:
-            Combined data from all pages
-        """
-        # Fetch first page
-        first_page = await self._fetch_page_async(season, 1)
-
-        # Extract pagination info
-        total_pages = first_page.get("pageCount", 1)
-
-        # If only one page, return immediately
-        if total_pages <= 1:
-            return first_page
-
-        # Initialize with first page data
-        all_teams = {
-            "count": first_page.get("count", 0),
-            "pageIndex": 1,
-            "pageSize": first_page.get("pageSize", self.config.limit),
-            "pageCount": total_pages,
-            "items": first_page.get("items", []),
-        }
-
-        # Create tasks for remaining pages
-        remaining_tasks = []
-        for page in range(2, total_pages + 1):
-            task = self._fetch_page_async(season, page)
-            remaining_tasks.append(task)
-
-        # Fetch all remaining pages
-        remaining_results = await asyncio.gather(*remaining_tasks, return_exceptions=True)
-
-        # Process results and add to combined data
-        for i, result in enumerate(remaining_results):
-            page_num = i + 2  # Page numbers start from 2
-
-            if isinstance(result, Exception):
-                logger.error(
-                    "Failed to fetch page",
-                    season=season,
-                    page=page_num,
-                    error=str(result),
-                )
-                continue
-
-            # Add items to combined result
-            all_teams["items"].extend(result.get("items", []))
-
-        logger.info(
-            "Fetched all team pages",
-            season=season,
-            total_pages=total_pages,
-            total_teams=len(all_teams["items"]),
-        )
-
-        return all_teams
+        # Fetch all pages using the base class method
+        return await self.fetch_all_pages_async("teams", params)
 
     async def store_item_async(self, season: str, data: dict[str, Any]) -> dict[str, Any]:
         """Store teams data for a specific season.
@@ -254,24 +148,7 @@ class TeamsIngestion(BaseIngestion[str]):
         Returns:
             List of seasons to process
         """
-        all_seasons = _determine_seasons_to_process(self.config)
-
-        # If neither force_check nor force_overwrite is enabled, skip already processed seasons
-        if not self.config.force_check and not self.config.force_overwrite:
-            processed_seasons = set(self.get_processed_items())
-            filtered_seasons = [season for season in all_seasons if season not in processed_seasons]
-
-            if len(all_seasons) != len(filtered_seasons):
-                logger.info(
-                    "Filtered out already processed seasons",
-                    total=len(all_seasons),
-                    to_process=len(filtered_seasons),
-                    skipped=len(all_seasons) - len(filtered_seasons),
-                )
-
-            return filtered_seasons
-
-        return all_seasons
+        return _determine_seasons_to_process(self.config)
 
 
 def _determine_seasons_to_process(config: TeamsIngestionConfig) -> list[str]:
@@ -281,68 +158,67 @@ def _determine_seasons_to_process(config: TeamsIngestionConfig) -> list[str]:
         config: Teams ingestion configuration
 
     Returns:
-        List of seasons to process in YYYY format
+        List of seasons to process
     """
+    # If specific seasons are provided, use those
     if config.seasons:
+        logger.info(f"Using {len(config.seasons)} seasons from configuration")
         return config.seasons
 
-    # Use config to determine seasons
-    import os
-    from pathlib import Path
+    # Otherwise, try to load from global config
+    try:
+        import os
+        from pathlib import Path
 
-    config_dir = Path(os.environ.get("CONFIG_DIR", "config"))
-    config_obj = get_config(config_dir)
+        config_dir = Path(os.environ.get("CONFIG_DIR", "config"))
+        global_config = get_config(config_dir)
 
-    current_season = config_obj.seasons.current  # Season is now just YYYY
+        # Get current season from global config
+        current_season = global_config.seasons.current
+        if not current_season:
+            logger.warning("No current season found in configuration, using default")
+            current_season = "2023"  # Default to 2023 if not specified
 
-    # Check if we should include historical seasons
-    include_historical = True  # Default to including historical seasons
+        # Get historical start season
+        historical_start = global_config.historical.start_season
 
-    if include_historical:
-        # Use the historical start season from config
-        historical_start_season = config_obj.historical.start_season
+        # Generate range of seasons
+        all_seasons = []
+        for year in range(int(historical_start), int(current_season) + 1):
+            all_seasons.append(str(year))
 
-        # Generate all seasons between historical_start_season and current_season
-        start_year = int(historical_start_season)
-        end_year = int(current_season)
-
-        seasons = []
-        for year in range(start_year, end_year + 1):
-            seasons.append(str(year))
-
-        logger.info(f"Processing {len(seasons)} seasons from {start_year} to {end_year}")
-    else:
-        # Just use current season
-        seasons = [current_season]
-        logger.info(f"Processing current season: {current_season}")
-
-    return seasons
+        logger.info(
+            f"Determined {len(all_seasons)} seasons from configuration",
+            start=historical_start,
+            end=current_season,
+        )
+        return all_seasons
+    except Exception as e:
+        # Fallback to only current season
+        logger.warning(f"Failed to determine seasons from configuration: {e}")
+        return ["2023"]  # Default to 2023 if configuration fails
 
 
 async def ingest_teams_async(config: TeamsIngestionConfig) -> list[str]:
-    """Process teams data ingestion asynchronously.
+    """Run teams ingestion process asynchronously.
 
     Args:
-        config: Ingestion configuration
+        config: Teams ingestion configuration
 
     Returns:
-        List of processed seasons
+        List of successfully processed teams
     """
-    # Initialize ingestion
-    ingestion = TeamsIngestion(config)
-
-    # Run ingestion
-    return await ingestion.ingest_async()
+    ingest = TeamsIngestion(config)
+    return await ingest.ingest_async()
 
 
 def ingest_teams(config: TeamsIngestionConfig) -> list[str]:
-    """Process teams data ingestion.
+    """Run teams ingestion process.
 
     Args:
-        config: Ingestion configuration
+        config: Teams ingestion configuration
 
     Returns:
-        List of processed seasons
+        List of successfully processed teams
     """
-    # Run the async version in a new event loop
     return asyncio.run(ingest_teams_async(config))

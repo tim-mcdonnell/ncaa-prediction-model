@@ -36,6 +36,11 @@ class BaseIngestionConfig:
     # Concurrency options
     concurrency: int | None = None
 
+    # Default pagination settings
+    default_page_limit: int = 100
+    default_page_param: str = "page"
+    default_limit_param: str = "limit"
+
     def __post_init__(self):
         """Initialize default values from config if not provided."""
         if not self.parquet_dir:
@@ -131,6 +136,234 @@ class BaseIngestion(Generic[T], ABC):
             List of item keys to process
         """
         pass
+
+    async def fetch_all_pages_async(
+        self, endpoint: str, params: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        """Fetch all pages of data from a paginated API endpoint.
+
+        This method handles pagination automatically, fetching all available pages and
+        combining the results. It also verifies completeness by checking if the last page
+        is full and fetching an additional page if needed.
+
+        Args:
+            endpoint: The API endpoint to query
+            params: Additional parameters to include in the request
+
+        Returns:
+            Combined data from all pages with items from all pages merged
+        """
+        # Initialize params if None
+        if params is None:
+            params = {}
+
+        # Get endpoint-specific pagination configuration
+        endpoint_config = self._get_endpoint_pagination_config(endpoint)
+
+        # Set up pagination parameters
+        page_param = endpoint_config.get("page_param", self.config.default_page_param)
+        limit_param = endpoint_config.get("limit_param", self.config.default_limit_param)
+        page_limit = endpoint_config.get("limit", self.config.default_page_limit)
+
+        # Create a copy of params with pagination settings
+        page_params = params.copy()
+        page_params[limit_param] = page_limit
+        page_params[page_param] = 1
+
+        # Fetch first page
+        url = self.api_client.get_endpoint_url(endpoint, **params)
+        first_page = await self.api_client._request_async(url, page_params)
+
+        # Check if multiple pages exist
+        total_pages = first_page.get("pageCount", 1)
+
+        # If only one page, return immediately
+        if total_pages <= 1:
+            logger.debug("Only one page of data available", endpoint=endpoint)
+            return first_page
+
+        # Initialize with first page data
+        all_data = {
+            "count": first_page.get("count", 0),
+            "pageIndex": 1,
+            "pageSize": first_page.get("pageSize", page_limit),
+            "pageCount": total_pages,
+            "items": first_page.get("items", []),
+        }
+
+        logger.debug(
+            "Fetching additional pages",
+            endpoint=endpoint,
+            total_pages=total_pages,
+            items_count_so_far=len(all_data["items"]),
+        )
+
+        # Create tasks for remaining pages
+        remaining_tasks = []
+        for page in range(2, total_pages + 1):
+            # Create a new params dict for each page
+            page_params = params.copy()
+            page_params[limit_param] = page_limit
+            page_params[page_param] = page
+
+            # Create task to fetch the page
+            task = self._fetch_page_async(endpoint, page_params)
+            remaining_tasks.append(task)
+
+        # Fetch all remaining pages concurrently
+        remaining_results = await asyncio.gather(*remaining_tasks, return_exceptions=True)
+
+        # Process results and add to combined data
+        for i, result in enumerate(remaining_results):
+            page_num = i + 2  # Page numbers start from 2
+
+            if isinstance(result, Exception):
+                logger.error(
+                    "Failed to fetch page",
+                    endpoint=endpoint,
+                    page=page_num,
+                    error=str(result),
+                )
+                continue
+
+            # Update count from the last valid page response
+            if "count" in result:
+                all_data["count"] = result["count"]
+
+            # Add items to combined result
+            all_data["items"].extend(result.get("items", []))
+
+        # Check if the last page is full (containing exactly page_limit items)
+        # If so, we need to fetch one more page to ensure we have all the data
+        last_page_result = None
+        for result in reversed(remaining_results):
+            if not isinstance(result, Exception) and "items" in result:
+                last_page_result = result
+                break
+
+        if last_page_result and len(last_page_result.get("items", [])) == page_limit:
+            logger.debug(
+                "Last page is full, fetching verification page",
+                endpoint=endpoint,
+                last_page=total_pages,
+                items_in_last_page=len(last_page_result.get("items", [])),
+            )
+
+            # Fetch one more page to verify we have all data
+            verification_page_params = params.copy()
+            verification_page_params[limit_param] = page_limit
+            verification_page_params[page_param] = total_pages + 1
+
+            try:
+                verification_page = await self._fetch_page_async(endpoint, verification_page_params)
+                verification_items = verification_page.get("items", [])
+
+                if verification_items:
+                    # There was more data, add it to our results
+                    all_data["items"].extend(verification_items)
+
+                    # Update count if provided in the verification page
+                    if "count" in verification_page:
+                        all_data["count"] = verification_page["count"]
+                    else:
+                        # Otherwise update count to match the actual number of items
+                        all_data["count"] = len(all_data["items"])
+
+                    logger.info(
+                        "Found additional items in verification page",
+                        endpoint=endpoint,
+                        additional_items=len(verification_items),
+                    )
+            except Exception as e:
+                logger.warning(
+                    "Failed to fetch verification page",
+                    endpoint=endpoint,
+                    page=total_pages + 1,
+                    error=str(e),
+                )
+
+        # Ensure count matches the actual number of items if empty pages were returned
+        if all_data["count"] != len(all_data["items"]):
+            # For empty page responses, update count to match actual items
+            if any(isinstance(r, dict) and not r.get("items", []) for r in remaining_results):
+                all_data["count"] = len(all_data["items"])
+
+        logger.info(
+            "Fetched all pages successfully",
+            endpoint=endpoint,
+            total_pages=total_pages,
+            total_items=len(all_data["items"]),
+        )
+
+        return all_data
+
+    async def _fetch_page_async(self, endpoint: str, params: dict[str, Any]) -> dict[str, Any]:
+        """Fetch a single page of data from an API endpoint.
+
+        Args:
+            endpoint: The API endpoint to query
+            params: Parameters to include in the request, including pagination params
+
+        Returns:
+            The API response data for the requested page
+        """
+        url = self.api_client.get_endpoint_url(
+            endpoint,
+            **{
+                k: v
+                for k, v in params.items()
+                if not k.startswith("page") and not k.startswith("limit")
+            },
+        )
+
+        logger.debug(
+            "Fetching page",
+            endpoint=endpoint,
+            url=url,
+            params=params,
+        )
+
+        try:
+            response = await self.api_client._request_async(url, params)
+            logger.debug(
+                "Fetched page successfully",
+                endpoint=endpoint,
+                page=params.get(self.config.default_page_param, 1),
+                item_count=len(response.get("items", [])),
+            )
+            return response
+        except Exception as e:
+            logger.error(
+                "Failed to fetch page",
+                endpoint=endpoint,
+                params=params,
+                error=str(e),
+            )
+            raise
+
+    def _get_endpoint_pagination_config(self, endpoint: str) -> dict[str, Any]:
+        """Get pagination configuration for a specific endpoint.
+
+        Retrieves endpoint-specific pagination settings from the API configuration,
+        falling back to default values if not specified.
+
+        Args:
+            endpoint: The API endpoint name
+
+        Returns:
+            Dictionary with pagination configuration for the endpoint
+        """
+        # Try to get endpoint configuration
+        endpoints = self.api_client.endpoints
+
+        # Check if endpoints is a dictionary with nested configuration
+        if isinstance(endpoints, dict) and endpoint in endpoints:
+            endpoint_config = endpoints[endpoint]
+            if isinstance(endpoint_config, dict) and "pagination" in endpoint_config:
+                return endpoint_config["pagination"]
+
+        # No endpoint-specific pagination config found, return empty dict
+        return {}
 
     async def process_item_async(self, item_key: T) -> dict[str, Any]:
         """Process a single item asynchronously.
